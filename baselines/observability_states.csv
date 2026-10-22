@@ -1,0 +1,7 @@
+sensor,state,label_fr,cell_date_count,coverage_products_acquired
+terra,unknown_observability,absence d'observation ou observabilité inconnue,220382,false
+terra,detection_observed,détection observée,39271,false
+aqua,detection_observed,détection observée,84165,false
+aqua,unknown_observability,absence d'observation ou observabilité inconnue,175488,false
+viirs_snpp,detection_observed,détection observée,246024,false
+viirs_snpp,unknown_observability,absence d'observation ou observabilité inconnue,13629,false

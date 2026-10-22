@@ -1,0 +1,10 @@
+[project]
+name = "pyrolens"
+version = "0.2.0"
+description = "PyroLens phase 2 — pipeline d'analyse MODIS/VIIRS (pilote Cameroun)"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+addopts = "-q"

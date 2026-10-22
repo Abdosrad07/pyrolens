@@ -1,0 +1,1276 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PyroLens API",
+    "description": "API de lecture des artefacts PyroLens et d'exécution des expériences d'harmonisation.\n\n* **Source de vérité** : le pipeline Python (`pyrolens`) écrit des artefacts horodatés ;\n  cette API les sert en lecture seule et exécute les expériences demandées dans un\n  thread séparé (aucun calcul scientifique n'est fait « à la va-vite » dans une requête).\n* **Intégrité** : aucun état n'affirme une absence de feu ; les valeurs manquantes ne\n  sont jamais converties ; chaque résultat porte sa provenance (paramètres, versions,\n  empreinte de la source, horodatage).\n* **Contrat** : `docs/api.md` (exemples curl + champs) ; contrat de référence dans\n  `docs/openapi.json` (exporté depuis `/api/v1/openapi.json`).",
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Santé du service",
+        "description": "Réponse immédiate sans lecture d'artefact : statut, horodatage de synchronisation et version.",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Api V1 Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meta": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Métadonnées de l'étude",
+        "description": "Période, configuration primaire, grilles, fenêtres, paires publiées et état de l'observabilité.",
+        "operationId": "meta_api_v1_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Meta Api V1 Meta Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/report": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Rapport scientifique",
+        "operationId": "report_api_v1_report_get",
+        "responses": {
+          "200": {
+            "description": "Rapport Markdown horodaté.",
+            "content": {
+              "text/markdown": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "summary": "Catalogue des jeux de données",
+        "description": "Jeux source (fenêtres canoniques FIRMS par capteur) et jeux dérivés (artefacts horodatés), avec provenance et indicateurs de qualité. Noms de fichiers relatifs uniquement.",
+        "operationId": "catalog_api_v1_catalog_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Catalog Api V1 Catalog Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/{dataset_id}": {
+      "get": {
+        "tags": [
+          "catalogue"
+        ],
+        "summary": "Détail d'un jeu de données",
+        "description": "Fichier par fichier (comptes, anomalies, période) pour les jeux source ; métadonnées pour les dérivés.",
+        "operationId": "catalog_detail_api_v1_catalog__dataset_id__get",
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Catalog Detail Api V1 Catalog  Dataset Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/audit/summary": {
+      "get": {
+        "tags": [
+          "audit"
+        ],
+        "summary": "Synthèse de l'audit qualité",
+        "description": "Comptabilité des lignes, anomalies par catégorie, distributions (FRP, confiance, volumes mensuels), trous temporels. Les entrées détaillées des trous (200 max) ne sont incluses qu'avec detail=1.",
+        "operationId": "audit_summary_api_v1_audit_summary_get",
+        "parameters": [
+          {
+            "name": "detail",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1,
+              "minimum": 0,
+              "description": "1 = inclure le détail des trous temporels (200 max).",
+              "default": 0,
+              "title": "Detail"
+            },
+            "description": "1 = inclure le détail des trous temporels (200 max)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Audit Summary Api V1 Audit Summary Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/summary": {
+      "get": {
+        "tags": [
+          "comparaisons"
+        ],
+        "summary": "Configurations de comparaison (Jaccard, tailles d'ensembles)",
+        "description": "24 configurations publiées intégralement (2 paires × 3 grilles × 4 fenêtres). Filtres facultatifs ; une configuration inexistante renvoie 404.",
+        "operationId": "summary_api_v1_summary_get",
+        "parameters": [
+          {
+            "name": "pair",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "terra__aqua | aqua__viirs_snpp",
+              "title": "Pair"
+            },
+            "description": "terra__aqua | aqua__viirs_snpp"
+          },
+          {
+            "name": "grid_deg",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "0.1 | 0.25 | 0.5",
+              "title": "Grid Deg"
+            },
+            "description": "0.1 | 0.25 | 0.5"
+          },
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "1 | 4 | 8 | 16",
+              "title": "Window Days"
+            },
+            "description": "1 | 4 | 8 | 16"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/RowsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/series/jaccard": {
+      "get": {
+        "tags": [
+          "comparaisons"
+        ],
+        "summary": "Série mensuelle de recouvrement",
+        "description": "Jaccard et comptes de divergence par mois pour une configuration donnée (pair requis).",
+        "operationId": "series_jaccard_api_v1_series_jaccard_get",
+        "parameters": [
+          {
+            "name": "pair",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "terra__aqua | aqua__viirs_snpp",
+              "title": "Pair"
+            },
+            "description": "terra__aqua | aqua__viirs_snpp"
+          },
+          {
+            "name": "grid_deg",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Grid Deg"
+            }
+          },
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Window Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/RowsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/series/divergence": {
+      "get": {
+        "tags": [
+          "comparaisons"
+        ],
+        "summary": "Séries de divergence jour / mois / région",
+        "description": "Publiées pour la configuration primaire uniquement (24 configurations × jour/mois/région ne sont pas toutes persistées dans l'artefact). Une résolution invalide renvoie 400.",
+        "operationId": "series_divergence_api_v1_series_divergence_get",
+        "parameters": [
+          {
+            "name": "pair",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "terra__aqua | aqua__viirs_snpp",
+              "title": "Pair"
+            },
+            "description": "terra__aqua | aqua__viirs_snpp"
+          },
+          {
+            "name": "resolution",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "day",
+                "month",
+                "region"
+              ],
+              "type": "string",
+              "description": "day | month | region",
+              "title": "Resolution"
+            },
+            "description": "day | month | region"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/RowsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/spatial": {
+      "get": {
+        "tags": [
+          "comparaisons"
+        ],
+        "summary": "Distribution spatiale par cellule (configuration primaire)",
+        "description": "Cellules (i,j) avec comptages par capteur ; pagination limit/offset. Configuration primaire uniquement.",
+        "operationId": "spatial_api_v1_spatial_get",
+        "parameters": [
+          {
+            "name": "pair",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "terra__aqua | aqua__viirs_snpp",
+              "title": "Pair"
+            },
+            "description": "terra__aqua | aqua__viirs_snpp"
+          },
+          {
+            "name": "grid_deg",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Grid Deg"
+            }
+          },
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Window Days"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 1000,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/observability": {
+      "get": {
+        "tags": [
+          "comparaisons"
+        ],
+        "summary": "États d'observabilité par capteur",
+        "description": "4 états du pipeline (détection observée, conditions plausibles sans détection, observabilité inconnue, indéterminé). Aucun état n'affirme une absence de feu.",
+        "operationId": "observability_api_v1_observability_get",
+        "parameters": [
+          {
+            "name": "grid_deg",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Maille publiée (configuration primaire).",
+              "title": "Grid Deg"
+            },
+            "description": "Maille publiée (configuration primaire)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Observability Api V1 Observability Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/export": {
+      "get": {
+        "tags": [
+          "comparaisons"
+        ],
+        "summary": "Export des séries publiées (CSV ou JSON)",
+        "description": "Exporte les lignes d'une table de comparaison. Les en-têtes CSV reprennent exactement les champs de l'artefact (reproductibilité). Le pair est requis hors `summary`.",
+        "operationId": "export_api_v1_export_get",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "summary | jaccard_monthly | daily | monthly | regions | spatial",
+              "title": "Dataset"
+            },
+            "description": "summary | jaccard_monthly | daily | monthly | regions | spatial"
+          },
+          {
+            "name": "pair",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pair"
+            }
+          },
+          {
+            "name": "grid_deg",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Grid Deg"
+            }
+          },
+          {
+            "name": "window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Window Days"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "csv",
+                "json"
+              ],
+              "type": "string",
+              "default": "csv",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/datasets/validate": {
+      "post": {
+        "tags": [
+          "validation"
+        ],
+        "summary": "Valider un CSV FIRMS téléversé",
+        "description": "Audit en mémoire d'un fichier CSV FIRMS (aucune intégration, aucune correction). Colonnes obligatoires : latitude, longitude, acq_date, acq_time, satellite. Taille maximale : PYROLENS_MAX_UPLOAD_BYTES (10 Mo par défaut).",
+        "operationId": "validate_dataset_api_v1_datasets_validate_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_validate_dataset_api_v1_datasets_validate_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experiments": {
+      "get": {
+        "tags": [
+          "expériences"
+        ],
+        "summary": "Lister les expériences",
+        "description": "Tâches connues du processus courant (plus les résultats persistés des tâches terminées).",
+        "operationId": "list_experiments_api_v1_experiments_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobListView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "expériences"
+        ],
+        "summary": "Configurer et lancer une expérience d'harmonisation",
+        "description": "Calcule une comparaison (paire × maille × fenêtre) sur la source configurée (données FIRMS normalisées ou échantillon synthétique). La réponse 202 porte l'identifiant de la tâche ; le suivi se fait sur /experiments/{job_id}. Si PYROLENS_API_TOKEN est défini, l'en-tête Authorization: Bearer <jeton> est exigé.",
+        "operationId": "create_experiment_api_v1_experiments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperimentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experiments/{job_id}": {
+      "get": {
+        "tags": [
+          "expériences"
+        ],
+        "summary": "Suivi d'une tâche",
+        "description": "Statut : queued → running → succeeded | failed. Le résultat se lit sur /result.",
+        "operationId": "get_experiment_api_v1_experiments__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/experiments/{job_id}/result": {
+      "get": {
+        "tags": [
+          "expériences"
+        ],
+        "summary": "Résultat d'une expérience",
+        "description": "Résultat complet avec provenance : paramètres, origine des données, empreinte de la source, versions logicielles, horodatages. 409 tant que la tâche n'est pas terminée.",
+        "operationId": "get_experiment_result_api_v1_experiments__job_id__result_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_validate_dataset_api_v1_datasets_validate_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "CSV FIRMS (UTF-8)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_validate_dataset_api_v1_datasets_validate_post"
+      },
+      "ExperimentRequest": {
+        "properties": {
+          "pair": {
+            "type": "string",
+            "title": "Pair",
+            "description": "Paire de capteurs : terra__aqua | aqua__viirs_snpp."
+          },
+          "grid_deg": {
+            "type": "number",
+            "title": "Grid Deg",
+            "description": "Maille en degrés : 0.1 | 0.25 | 0.5 (valeurs de la configuration)."
+          },
+          "window_days": {
+            "type": "integer",
+            "maximum": 365.0,
+            "minimum": 1.0,
+            "title": "Window Days",
+            "description": "Fenêtre temporelle en jours : 1 | 4 | 8 | 16."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "fixture",
+              "raw"
+            ],
+            "title": "Source",
+            "description": "Source : auto (données réelles sinon fixture), fixture (synthétique), raw (FIRMS normalisées).",
+            "default": "auto"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "pair",
+          "grid_deg",
+          "window_days"
+        ],
+        "title": "ExperimentRequest",
+        "examples": [
+          {
+            "grid_deg": 0.25,
+            "pair": "terra__aqua",
+            "source": "auto",
+            "window_days": 8
+          },
+          {
+            "grid_deg": 0.1,
+            "pair": "aqua__viirs_snpp",
+            "source": "fixture",
+            "window_days": 1
+          }
+        ]
+      },
+      "ExperimentResultResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Params"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "result": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Result"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "kind",
+          "params",
+          "status",
+          "created_at",
+          "result"
+        ],
+        "title": "ExperimentResultResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "JobListView": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/JobView"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count",
+          "items"
+        ],
+        "title": "JobListView"
+      },
+      "JobView": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Params"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "queued | running | succeeded | failed"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "links": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Links"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "kind",
+          "params",
+          "status",
+          "created_at"
+        ],
+        "title": "JobView"
+      },
+      "Meta": {
+        "properties": {
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At",
+            "description": "Horodatage ISO-8601 UTC de l'artefact source."
+          },
+          "data_origin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Origin",
+            "description": "Origine des données : nasa_firms | synthetic_fixture | uploaded_file | custom_source."
+          },
+          "artifact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact",
+            "description": "Nom de l'artefact (jamais de chemin serveur)."
+          },
+          "filters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Filters",
+            "description": "Filtres effectivement appliqués."
+          }
+        },
+        "type": "object",
+        "title": "Meta",
+        "description": "Métadonnées communes : horodatage de l'artefact et origine des données."
+      },
+      "RowsResponse": {
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "meta"
+        ],
+        "title": "RowsResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationResponse": {
+        "properties": {
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          },
+          "data_origin": {
+            "type": "string",
+            "title": "Data Origin",
+            "default": "uploaded_file"
+          },
+          "dataset": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Dataset"
+          },
+          "counts": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Counts"
+          },
+          "period": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Period"
+          },
+          "anomalies_by_category": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Anomalies By Category"
+          },
+          "anomalies_sample": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Anomalies Sample"
+          },
+          "software": {
+            "type": "string",
+            "title": "Software"
+          },
+          "integrated": {
+            "type": "boolean",
+            "title": "Integrated",
+            "default": false
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset",
+          "counts",
+          "period",
+          "anomalies_by_category",
+          "anomalies_sample",
+          "software",
+          "note"
+        ],
+        "title": "ValidationResponse"
+      }
+    }
+  }
+}

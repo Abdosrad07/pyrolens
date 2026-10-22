@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-10-18T12:43:24+00:00",
+  "data_origin": "nasa_firms",
+  "grid_deg": 0.25,
+  "coverage_products_acquired": false,
+  "states": {
+    "terra": {
+      "unknown_observability": 220382,
+      "detection_observed": 39271
+    },
+    "aqua": {
+      "detection_observed": 84165,
+      "unknown_observability": 175488
+    },
+    "viirs_snpp": {
+      "detection_observed": 246024,
+      "unknown_observability": 13629
+    }
+  },
+  "state_labels": {
+    "detection_observed": "détection observée",
+    "no_detection_plausible_conditions": "absence de détection en conditions d'observation plausibles",
+    "unknown_observability": "absence d'observation ou observabilité inconnue",
+    "indeterminate": "situation indéterminée"
+  },
+  "note": "Sans produit de couverture/nuages acquis, une cellule/jour sans détection est classée 'observabilité inconnue' et jamais 'pas de feu'."
+}

@@ -1,0 +1,232 @@
+{
+  "generated_at": "2026-10-16T11:25:34+00:00",
+  "source": "NASA CMR Search API (accès public, sans clé)",
+  "base_url": "https://cmr.earthdata.nasa.gov/search",
+  "bbox_note": "bounding_box CMR = boîte englobante [west,south,east,north], pas la frontière",
+  "period": {
+    "start": "2013-01-01",
+    "end": "2020-12-31"
+  },
+  "sensors": {
+    "terra": {
+      "label": "MODIS Terra",
+      "short_name": "MOD14",
+      "configured_version": "061",
+      "versions_found": [
+        {
+          "version_id": "061",
+          "time_start": "2000-02-24T00:00:00.000Z",
+          "title": "MODIS/Terra Thermal Anomalies/Fire 5-Min L2 Swath 1km V061"
+        },
+        {
+          "version_id": "6.1NRT",
+          "time_start": "2021-02-07T00:00:00.000Z",
+          "title": "MODIS/Terra Thermal Anomalies/Fire 5-Min L2 Swath 1km NRT"
+        }
+      ],
+      "version_used": "061",
+      "years": {
+        "2013": {
+          "granules_in_bbox": 1354,
+          "temporal": "2013-01-01T00:00:00Z,2013-12-31T23:59:59Z"
+        },
+        "2014": {
+          "granules_in_bbox": 1356,
+          "temporal": "2014-01-01T00:00:00Z,2014-12-31T23:59:59Z"
+        },
+        "2015": {
+          "granules_in_bbox": 1376,
+          "temporal": "2015-01-01T00:00:00Z,2015-12-31T23:59:59Z"
+        },
+        "2016": {
+          "granules_in_bbox": 1334,
+          "temporal": "2016-01-01T00:00:00Z,2016-12-31T23:59:59Z"
+        },
+        "2017": {
+          "granules_in_bbox": 1349,
+          "temporal": "2017-01-01T00:00:00Z,2017-12-31T23:59:59Z"
+        },
+        "2018": {
+          "granules_in_bbox": 1403,
+          "temporal": "2018-01-01T00:00:00Z,2018-12-31T23:59:59Z"
+        },
+        "2019": {
+          "granules_in_bbox": 1350,
+          "temporal": "2019-01-01T00:00:00Z,2019-12-31T23:59:59Z"
+        },
+        "2020": {
+          "granules_in_bbox": 1356,
+          "temporal": "2020-01-01T00:00:00Z,2020-12-31T23:59:59Z"
+        }
+      },
+      "sample_granules_2019": [
+        {
+          "title": "MOD14.A2019001.0925.061.2021351024504",
+          "id": "G2282139737-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD14.061/MOD14.A2019001.0925.061.2021351024504/MOD14.A2019001.0925.061.2021351024504.hdf"
+          ]
+        },
+        {
+          "title": "MOD14.A2019001.0930.061.2021351024459",
+          "id": "G2282139602-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD14.061/MOD14.A2019001.0930.061.2021351024459/MOD14.A2019001.0930.061.2021351024459.hdf"
+          ]
+        },
+        {
+          "title": "MOD14.A2019001.2155.061.2021351024523",
+          "id": "G2282139461-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MOD14.061/MOD14.A2019001.2155.061.2021351024523/MOD14.A2019001.2155.061.2021351024523.hdf"
+          ]
+        }
+      ]
+    },
+    "aqua": {
+      "label": "MODIS Aqua",
+      "short_name": "MYD14",
+      "configured_version": "061",
+      "versions_found": [
+        {
+          "version_id": "061",
+          "time_start": "2002-07-04T00:00:00.000Z",
+          "title": "MODIS/Aqua Thermal Anomalies/Fire 5-Min L2 Swath 1km V061"
+        },
+        {
+          "version_id": "6.1NRT",
+          "time_start": "2021-02-07T00:00:00.000Z",
+          "title": "MODIS/Aqua Thermal Anomalies/Fire 5-Min L2 Swath 1km NRT"
+        }
+      ],
+      "version_used": "061",
+      "years": {
+        "2013": {
+          "granules_in_bbox": 1407,
+          "temporal": "2013-01-01T00:00:00Z,2013-12-31T23:59:59Z"
+        },
+        "2014": {
+          "granules_in_bbox": 1408,
+          "temporal": "2014-01-01T00:00:00Z,2014-12-31T23:59:59Z"
+        },
+        "2015": {
+          "granules_in_bbox": 1406,
+          "temporal": "2015-01-01T00:00:00Z,2015-12-31T23:59:59Z"
+        },
+        "2016": {
+          "granules_in_bbox": 1386,
+          "temporal": "2016-01-01T00:00:00Z,2016-12-31T23:59:59Z"
+        },
+        "2017": {
+          "granules_in_bbox": 1364,
+          "temporal": "2017-01-01T00:00:00Z,2017-12-31T23:59:59Z"
+        },
+        "2018": {
+          "granules_in_bbox": 1411,
+          "temporal": "2018-01-01T00:00:00Z,2018-12-31T23:59:59Z"
+        },
+        "2019": {
+          "granules_in_bbox": 1377,
+          "temporal": "2019-01-01T00:00:00Z,2019-12-31T23:59:59Z"
+        },
+        "2020": {
+          "granules_in_bbox": 1324,
+          "temporal": "2020-01-01T00:00:00Z,2020-12-31T23:59:59Z"
+        }
+      },
+      "sample_granules_2019": [
+        {
+          "title": "MYD14.A2019001.0000.061.2021351022955",
+          "id": "G2298314835-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MYD14.061/MYD14.A2019001.0000.061.2021351022955/MYD14.A2019001.0000.061.2021351022955.hdf"
+          ]
+        },
+        {
+          "title": "MYD14.A2019001.0005.061.2021351022955",
+          "id": "G2298314640-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MYD14.061/MYD14.A2019001.0005.061.2021351022955/MYD14.A2019001.0005.061.2021351022955.hdf"
+          ]
+        },
+        {
+          "title": "MYD14.A2019001.0140.061.2021351023011",
+          "id": "G2298314790-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/MYD14.061/MYD14.A2019001.0140.061.2021351023011/MYD14.A2019001.0140.061.2021351023011.hdf"
+          ]
+        }
+      ]
+    },
+    "viirs_snpp": {
+      "label": "VIIRS Suomi-NPP 375 m",
+      "short_name": "VNP14IMG",
+      "configured_version": "002",
+      "versions_found": [
+        {
+          "version_id": "002",
+          "time_start": "2012-01-17T00:00:00.000Z",
+          "title": "VIIRS/NPP Active Fires 6-Min L2 Swath 375m V002"
+        }
+      ],
+      "version_used": "002",
+      "years": {
+        "2013": {
+          "granules_in_bbox": 1628,
+          "temporal": "2013-01-01T00:00:00Z,2013-12-31T23:59:59Z"
+        },
+        "2014": {
+          "granules_in_bbox": 1626,
+          "temporal": "2014-01-01T00:00:00Z,2014-12-31T23:59:59Z"
+        },
+        "2015": {
+          "granules_in_bbox": 1634,
+          "temporal": "2015-01-01T00:00:00Z,2015-12-31T23:59:59Z"
+        },
+        "2016": {
+          "granules_in_bbox": 1612,
+          "temporal": "2016-01-01T00:00:00Z,2016-12-31T23:59:59Z"
+        },
+        "2017": {
+          "granules_in_bbox": 1634,
+          "temporal": "2017-01-01T00:00:00Z,2017-12-31T23:59:59Z"
+        },
+        "2018": {
+          "granules_in_bbox": 1637,
+          "temporal": "2018-01-01T00:00:00Z,2018-12-31T23:59:59Z"
+        },
+        "2019": {
+          "granules_in_bbox": 1643,
+          "temporal": "2019-01-01T00:00:00Z,2019-12-31T23:59:59Z"
+        },
+        "2020": {
+          "granules_in_bbox": 1644,
+          "temporal": "2020-01-01T00:00:00Z,2020-12-31T23:59:59Z"
+        }
+      },
+      "sample_granules_2019": [
+        {
+          "title": "VNP14IMG.A2018365.2354.002.2024082201002",
+          "id": "G2923038652-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2018365.2354.002.2024082201002/VNP14IMG.A2018365.2354.002.2024082201002.nc"
+          ]
+        },
+        {
+          "title": "VNP14IMG.A2019001.0130.002.2024086133021",
+          "id": "G2923053584-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019001.0130.002.2024086133021/VNP14IMG.A2019001.0130.002.2024086133021.nc"
+          ]
+        },
+        {
+          "title": "VNP14IMG.A2019001.0136.002.2024086133020",
+          "id": "G2923058964-LPCLOUD",
+          "download_links": [
+            "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/VNP14IMG.002/VNP14IMG.A2019001.0136.002.2024086133020/VNP14IMG.A2019001.0136.002.2024086133020.nc"
+          ]
+        }
+      ]
+    }
+  }
+}

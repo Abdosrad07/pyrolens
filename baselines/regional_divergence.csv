@@ -1,0 +1,7 @@
+pair,region,a_only,b_only,both
+terra__aqua,centre,1549,3823,7878
+terra__aqua,nord,671,1199,1065
+terra__aqua,sud,1368,13080,9813
+aqua__viirs_snpp,centre,140,8267,11585
+aqua__viirs_snpp,nord,88,4361,2174
+aqua__viirs_snpp,sud,903,11817,21968

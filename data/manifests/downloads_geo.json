@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-10-16T11:25:05+00:00",
+  "entry_count": 2,
+  "entries": [
+    {
+      "url": "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.geojson",
+      "dataset": "Natural Earth 110m admin_0_countries",
+      "status": "http_error",
+      "http_status": 403,
+      "acquired": false
+    },
+    {
+      "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson",
+      "dataset": "Natural Earth 110m admin_0_countries (miroir GitHub officiel du jeu natural-earth-vector)",
+      "status": "downloaded",
+      "http_status": 200,
+      "path": "data/raw/geo/ne_110m_admin_0_countries.geojson",
+      "bytes": 838726,
+      "sha256": "6866c877d39cba9c357620878839b336d569f8c662d3cfab4cb1dbe2d39c977f",
+      "acquired": true,
+      "downloaded_at": "2026-10-16T11:25:05+00:00"
+    }
+  ]
+}

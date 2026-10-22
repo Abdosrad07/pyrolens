@@ -1,0 +1,80 @@
+# PyroLens phase 2 - paramètres de traitement versionnés
+# Toute valeur sensible (clés, jetons, mots de passe) vient de l'environnement,
+# jamais de ce fichier.
+
+project:
+  name: PyroLens
+  phase: 2
+  pilot: Cameroun
+
+region:
+  name: Cameroon
+  iso3: CMR
+  # Emprise documentée : polygone administratif Natural Earth (admin_0_countries 110m)
+  # Téléchargé par la commande `pyrolens geo`. La bbox ci-dessous est une boîte
+  # englobante utilisée uniquement pour les requêtes CMR / téléchargements, jamais
+  # présentée comme la frontière du Cameroun.
+  bbox: [8.4, 4.1, 16.4, 13.2]   # [west, south, east, north] - boîte englobante
+  source: "Natural Earth 110m admin_0_countries (ne_110m_admin_0_countries)"
+  source_url: "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
+
+period:
+  start: "2013-01-01"
+  end: "2020-12-31"
+
+sensors:
+  terra:
+    label: "MODIS Terra"
+    kind: modis
+    cmr_short_name: MOD14
+    cmr_version: "061"
+    firms_source: MODIS_SP
+  aqua:
+    label: "MODIS Aqua"
+    kind: modis
+    cmr_short_name: MYD14
+    cmr_version: "061"
+    firms_source: MODIS_SP
+  viirs_snpp:
+    label: "VIIRS Suomi-NPP 375 m"
+    kind: viirs
+    cmr_short_name: VNP14IMG
+    cmr_version: "002"
+    # Source FIRMS « Standard Processing » (science quality) et NON NRT :
+    # l'étude porte sur 2013-2020 ; VIIRS_SNPP_NRT ne couvre que les derniers jours.
+    # Noms de sources validés sur la doc API v4.2.0 (firms.modaps.eosdis.nasa.gov/api/area/).
+    firms_source: VIIRS_SNPP_SP
+
+analysis:
+  grid_sizes_deg: [0.10, 0.25, 0.50]
+  window_days: [1, 4, 8, 16]
+  primary_grid_deg: 0.25
+  primary_window_days: 8
+  # Comparaisons (ordre imposé par le cahier des charges)
+  pairs:
+    - [terra, aqua]
+    - [aqua, viirs_snpp]
+  # Régions de divergence : terciles de latitude de la bbox de l'emprise.
+  n_regions: 3
+
+observability:
+  # Aucun produit de couverture / nuages n'est encore acquis : tant que
+  # coverage_products_acquired est false, l'état par défaut est
+  # "observabilité inconnue" et jamais "pas de feu".
+  coverage_products_acquired: false
+
+paths:
+  raw: data/raw
+  fixture: data/fixture
+  manifests: data/manifests
+  reports: reports
+  anomalies: reports/anomalies
+  logs: reports/logs
+  baselines: baselines
+  figures: figures
+  artifacts: web/public/artifacts
+
+reconstruction:
+  # Aucune règle de reconstruction par défaut. Toute reconstruction doit être
+  # démontrable et déclarée ici (fichier, colonne, motif, justification).
+  rules: []

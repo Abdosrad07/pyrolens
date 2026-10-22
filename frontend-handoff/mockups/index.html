@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PyroLens — maquette des 6 écrans (handoff frontend)</title>
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml" />
+<style>
+  /* Miroir des jetons de web/src/index.css (design-system.md) — maquette autonome. */
+  :root {
+    --bg:#0b0f14; --bg-2:#10161d; --panel:#131b24; --panel-2:#182231;
+    --line:#23303f; --text:#dce6f2; --muted:#8ba0b8;
+    --ember:#ff7a33; --ember-soft:#ffb27a; --teal:#35c8c0; --blue:#5aa7ff;
+    --amber:#f5c542; --red:#ff5f6d; --green:#47d18a;
+    --mono:ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing:border-box; }
+  html,body { height:100%; margin:0; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,122,51,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(53,200,192,.07), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+    font-size:14.5px; line-height:1.55;
+  }
+  .app { display:flex; min-height:100vh; }
+  .sidebar { width:250px; flex-shrink:0; background:linear-gradient(180deg,var(--bg-2),var(--bg));
+    border-right:1px solid var(--line); padding:22px 16px; position:sticky; top:0; height:100vh;
+    display:flex; flex-direction:column; gap:6px; }
+  .brand { display:flex; gap:10px; align-items:center; }
+  .brand img { width:38px; height:38px; }
+  .brand h1 { font-size:21px; margin:0; letter-spacing:.5px;
+    background:linear-gradient(90deg,var(--ember-soft),var(--ember));
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .brand .sub { color:var(--muted); font-size:12px; letter-spacing:1.2px; text-transform:uppercase; }
+  .brand .period { color:var(--muted); font-size:12px; font-family:var(--mono); margin-top:6px; }
+  .nav { display:flex; flex-direction:column; gap:3px; margin-top:14px; }
+  .nav button { text-align:left; background:transparent; border:1px solid transparent; color:var(--muted);
+    padding:9px 12px; border-radius:8px; font-size:14px; cursor:pointer; transition:all .15s ease; }
+  .nav button:hover { color:var(--text); background:rgba(255,255,255,.04); }
+  .nav button.active { color:#fff; border-color:rgba(255,122,51,.45);
+    background:linear-gradient(90deg, rgba(255,122,51,.18), rgba(255,122,51,.05)); }
+  .nav .nav-group { font-size:11px; text-transform:uppercase; letter-spacing:1.4px; color:#5d718a;
+    margin:14px 0 4px 4px; }
+  .sidebar .foot { margin-top:auto; font-size:11.5px; color:var(--muted); border-top:1px solid var(--line);
+    padding-top:12px; font-family:var(--mono); }
+  .main { flex:1; padding:30px 38px 60px; max-width:1280px; min-width:0; }
+  .page-title { font-size:26px; margin:0 0 6px; letter-spacing:.2px; }
+  .page-sub { color:var(--muted); margin:0 0 22px; max-width:78ch; }
+  .banner { border-radius:10px; padding:14px 16px; margin-bottom:22px; border:1px solid; font-size:13.5px; }
+  .banner strong { display:block; margin-bottom:4px; }
+  .banner.info { background:rgba(90,167,255,.07); border-color:rgba(90,167,255,.4); color:#bcd9ff; }
+  .banner.warn { background:rgba(245,197,66,.08); border-color:rgba(245,197,66,.45); color:#ffe19a; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; margin-bottom:26px; }
+  .card { background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--line);
+    border-radius:12px; padding:14px 16px; }
+  .card .k { color:var(--muted); font-size:11.5px; text-transform:uppercase; letter-spacing:1px; }
+  .card .v { font-size:26px; font-weight:650; font-family:var(--mono); margin-top:4px; color:#fff; }
+  .card .v.small { font-size:16px; }
+  .card .d { color:var(--muted); font-size:12px; margin-top:2px; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px; margin-bottom:22px; }
+  .panel h3 { margin:0 0 12px; font-size:15.5px; letter-spacing:.3px; }
+  .panel h3 .hint { color:var(--muted); font-weight:400; font-size:13px; margin-left:8px; }
+  .table-wrap { overflow-x:auto; }
+  table.data { width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums; }
+  table.data th { text-align:left; color:var(--muted); font-weight:600; font-size:11.5px;
+    text-transform:uppercase; letter-spacing:.8px; border-bottom:1px solid var(--line);
+    padding:8px 10px; white-space:nowrap; }
+  table.data td { padding:7px 10px; border-bottom:1px solid rgba(35,48,63,.55); font-family:var(--mono); }
+  table.data td.txt { font-family:inherit; }
+  table.data tr:hover td { background:rgba(255,255,255,.03); }
+  .pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11.5px; font-weight:600;
+    font-family:var(--mono); border:1px solid; }
+  .pill.ok { color:var(--green); border-color:rgba(71,209,138,.5); background:rgba(71,209,138,.1); }
+  .pill.blocked { color:var(--red); border-color:rgba(255,95,109,.5); background:rgba(255,95,109,.1); }
+  .pill.ref { color:var(--amber); border-color:rgba(245,197,66,.5); background:rgba(245,197,66,.1); }
+  .pill.calc { color:var(--teal); border-color:rgba(53,200,192,.5); background:rgba(53,200,192,.1); }
+  .mono { font-family:var(--mono); } .muted { color:var(--muted); } .small { font-size:12.5px; }
+  .blocker { border-left:3px solid var(--red); background:rgba(255,95,109,.06); padding:10px 14px;
+    border-radius:0 8px 8px 0; margin-bottom:10px; }
+  .blocker .what { font-weight:650; color:#ffb9bf; }
+  .blocker .detail,.blocker .action { color:var(--muted); font-size:13px; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; align-items:center; }
+  .controls label { color:var(--muted); font-size:12.5px; text-transform:uppercase; letter-spacing:.8px; }
+  select { background:var(--panel-2); color:var(--text); border:1px solid var(--line);
+    border-radius:8px; padding:7px 10px; font-family:var(--mono); font-size:13px; }
+  .bar-row { display:grid; grid-template-columns:230px 1fr 110px; gap:10px; align-items:center;
+    margin:7px 0; font-size:13px; }
+  .bar { background:var(--panel-2); border:1px solid var(--line); border-radius:6px; overflow:hidden; height:16px; }
+  .bar i { display:block; height:100%; background:linear-gradient(90deg,var(--ember-soft),var(--ember)); }
+  .bar i.teal { background:linear-gradient(90deg,#7fe4df,var(--teal)); }
+  .bar i.blue { background:linear-gradient(90deg,#9ccaff,var(--blue)); }
+  .bar i.amber { background:linear-gradient(90deg,#ffe093,var(--amber)); }
+  .bar i.red { background:linear-gradient(90deg,#ff97a0,var(--red)); }
+  .legend-note { color:var(--muted); font-size:12.5px; margin-top:10px; }
+  .fig-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+  figure.fig { margin:0; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px; }
+  .fig-ph { background:#fff; border-radius:8px; height:170px; display:flex; align-items:center;
+    justify-content:center; color:#8ba0b8; font-family:var(--mono); font-size:12px; }
+  figure.fig figcaption { color:var(--muted); font-size:12.5px; margin-top:8px; font-family:var(--mono); }
+  .md { max-width:92ch; }
+  .md h1 { font-size:24px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+  .md h2 { font-size:19px; margin-top:30px; color:var(--ember-soft); }
+  .md table { border-collapse:collapse; width:100%; margin:12px 0; font-size:13px; }
+  .md th,.md td { border:1px solid var(--line); padding:6px 10px; text-align:left; }
+  .md th { background:var(--panel-2); }
+  .screen { display:none; } .screen.active { display:block; }
+  .note-mock { color:var(--muted); font-size:12px; font-family:var(--mono); margin-bottom:18px; }
+  @media (max-width:900px) {
+    .app { flex-direction:column; }
+    .sidebar { width:100%; height:auto; position:static; }
+    .main { padding:20px 16px 50px; }
+    .bar-row { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="../assets/logo.svg" alt="" />
+      <div>
+        <h1>PyroLens</h1>
+        <div class="sub">Phase 2 · MODIS / VIIRS</div>
+      </div>
+    </div>
+    <div class="period" style="margin-left:48px">2013-01-01 → 2020-12-31</div>
+    <nav class="nav">
+      <div class="nav-group">Rapports</div>
+      <button class="active" data-go="overview">Synthèse d'exécution</button>
+      <button data-go="audit">Audit des données</button>
+      <button data-go="baselines">Baselines de concordance</button>
+      <button data-go="observability">Observabilité (4 états)</button>
+      <button data-go="report">Rapport scientifique</button>
+      <button data-go="figures">Figures</button>
+    </nav>
+    <div class="foot">
+      pipeline v0.2.0<br />artefacts 2026-10-18T12:33<br />artefacts complets
+    </div>
+  </aside>
+
+  <main class="main">
+    <p class="note-mock">Maquette statique — chiffres réels issus de baselines/summary.csv et des artefacts horodatés (D1).</p>
+
+    <!-- ═══ 1. SYNTHÈSE ═══ -->
+    <section class="screen active" id="overview">
+      <h2 class="page-title">Synthèse d'exécution</h2>
+      <p class="page-sub">État réel de la chaîne pyrolens : chaque étape est attestée par un artefact produit ; les blocages d'accès aux données sont listés sans être présentés comme acquis.</p>
+      <div class="banner info"><strong>Origine des données : nasa_firms</strong>
+        Valeurs calculées par le pipeline sur les données listées dans l'inventaire.</div>
+      <div class="cards">
+        <div class="card"><div class="k">Étapes exécutées</div><div class="v">69<span style="font-size:15px;color:var(--muted)"> / 98</span></div><div class="d">statut « ok »</div></div>
+        <div class="card"><div class="k">Blocages documentés</div><div class="v" style="color:var(--red)">23</div><div class="d">accès données réelles</div></div>
+        <div class="card"><div class="k">Période cible</div><div class="v small mono">2013-01-01 → 2020-12-31</div><div class="d">conforme au plan</div></div>
+        <div class="card"><div class="k">Origine des données</div><div class="v small">nasa_firms</div><div class="d">étiqueté dans chaque JSON</div></div>
+        <div class="card"><div class="k">Fichiers téléchargés</div><div class="v">1 170</div><div class="d">manifeste SHA-256</div></div>
+      </div>
+      <div class="panel"><h3>Étapes <span class="hint">extrait — attestées par leur artefact</span></h3>
+        <div class="table-wrap"><table class="data">
+          <tr><th>Étape</th><th>Statut</th><th>Attestation</th></tr>
+          <tr><td class="txt">download (FIRMS, fenêtres 5 j)</td><td><span class="pill ok">ok</span></td><td>manifests/downloads.json</td></tr>
+          <tr><td class="txt">normalize (dédoublonnage)</td><td><span class="pill ok">ok</span></td><td>manifests/normalize.json</td></tr>
+          <tr><td class="txt">audit qualité</td><td><span class="pill ok">ok</span></td><td>audit.json</td></tr>
+          <tr><td class="txt">baselines (24 configurations)</td><td><span class="pill ok">ok</span></td><td>baselines.json</td></tr>
+          <tr><td class="txt">archives Earthdata (granules)</td><td><span class="pill blocked">bloqué</span></td><td>HTTP 302 → Earthdata Login</td></tr>
+        </table></div>
+      </div>
+      <div class="panel"><h3>Blocages documentés <span class="hint">jamais présentés comme résolus</span></h3>
+        <div class="blocker"><div class="what">Archives standard (MOD14/MYD14/VNP14IMG)</div>
+          <div class="detail">Redirection vers Earthdata Login : granule standard non accessible sans identifiants (HTTP 302).</div>
+          <div class="action">Action : fournir EARTHDATA_USER + EARTHDATA_PASSWORD (ou EARTHDATA_TOKEN) dans Settings → Environment.</div></div>
+        <div class="blocker"><div class="what">Produits de couverture / nuages</div>
+          <div class="detail">Non acquis : l'observabilité classe par défaut « observabilité inconnue » — jamais « pas de feu ».</div>
+          <div class="action">Action : mêmes identifiants Earthdata (décision D4).</div></div>
+      </div>
+    </section>
+
+    <!-- ═══ 2. AUDIT ═══ -->
+    <section class="screen" id="audit">
+      <h2 class="page-title">Audit des données</h2>
+      <p class="page-sub">Comptabilité des lignes et qualité — libellés exacts du pipeline, aucune correction appliquée.</p>
+      <div class="banner info"><strong>Origine des données : nasa_firms · artefact audit.json (2026-10-18T12:33)</strong>
+        1 170 fichiers audités ; hors-emprise = ambigu, exclu des ensembles (jamais « invalide »).</div>
+      <div class="cards">
+        <div class="card"><div class="k">Fichiers audités</div><div class="v">1 170</div><div class="d">fenêtres canoniques</div></div>
+        <div class="card"><div class="k">Lignes bien formées</div><div class="v">4 460 288</div><div class="d">comptabilité stricte</div></div>
+        <div class="card"><div class="k">Lignes analysables</div><div class="v">1 825 588</div><div class="d">dans l'emprise, sans anomalie bloquante</div></div>
+        <div class="card"><div class="k">Hors emprise</div><div class="v">2 634 697</div><div class="d">ambigu, exclu des ensembles</div></div>
+        <div class="card"><div class="k">Lignes mal formées</div><div class="v">0</div><div class="d">aucune réparation effectuée</div></div>
+      </div>
+      <div class="panel"><h3>Anomalies par catégorie <span class="hint">2 634 700 classées — aucune corrigée</span></h3>
+        <div class="bar-row"><span>outside_emprise</span><div class="bar"><i style="width:100%"></i></div><span class="mono">2 634 700</span></div>
+        <div class="bar-row"><span>invalid_latitude / valeur</span><div class="bar"><i class="amber" style="width:2%"></i></div><span class="mono">tracées</span></div>
+        <div class="legend-note">Toute anomalie reste tracée avec son numéro de ligne et sa valeur brute — jamais réparée.</div>
+      </div>
+      <div class="panel"><h3>Distributions</h3>
+        <div class="bar-row"><span>FRP (MW) — moyenne</span><div class="bar"><i class="teal" style="width:35%"></i></div><span class="mono">10,709</span></div>
+        <div class="bar-row"><span>FRP (MW) — maximum</span><div class="bar"><i class="teal" style="width:100%"></i></div><span class="mono">2 015,7</span></div>
+        <div class="bar-row"><span>Volumes mensuels (pic)</span><div class="bar"><i class="blue" style="width:78%"></i></div><span class="mono">séries</span></div>
+      </div>
+      <div class="panel"><h3>Jours sans enregistrement <span class="hint">1 272 capteur-jours</span></h3>
+        <p class="small muted">Les jours sans enregistrement sont libellés <span class="mono">aucun_enregistrement</span> côté pipeline :
+        une absence de détection n'est <strong>jamais</strong> présentée comme une absence de feu.
+        Détail : 200 entrées maximum (0 = résumé seul).</p>
+      </div>
+    </section>
+
+    <!-- ═══ 3. BASELINES ═══ -->
+    <section class="screen" id="baselines">
+      <h2 class="page-title">Baselines de concordance</h2>
+      <p class="page-sub">24 configurations (2 paires × 3 grilles × 4 fenêtres) — source unique des chiffres : baselines/summary.csv (D1).</p>
+      <div class="banner info"><strong>Origine des données : nasa_firms · summary.csv (2026-10-18T12:33)</strong>
+        Jaccard = |A ∩ B| / |A ∪ B| calculé par le pipeline ; aucune sélection de configuration par maximisation.</div>
+      <div class="controls">
+        <label>Paire</label>
+        <select><option>Terra – Aqua (MODIS)</option><option>Aqua (MODIS) – VIIRS S-NPP</option></select>
+        <label>Maille</label>
+        <select><option>0,25°</option><option>0,10°</option><option>0,50°</option></select>
+        <label>Fenêtre</label>
+        <select><option>8 j</option><option>1 j</option><option>4 j</option><option>16 j</option></select>
+      </div>
+      <div class="cards">
+        <div class="card"><div class="k">n_a (Terra)</div><div class="v">22 344</div><div class="d">clés (cellule, fenêtre)</div></div>
+        <div class="card"><div class="k">n_b (Aqua)</div><div class="v">36 858</div><div class="d">clés (cellule, fenêtre)</div></div>
+        <div class="card"><div class="k">Intersection</div><div class="v">18 756</div><div class="d">|A ∩ B|</div></div>
+        <div class="card"><div class="k">Union</div><div class="v">40 446</div><div class="d">n_a + n_b − ∩</div></div>
+        <div class="card"><div class="k">Jaccard</div><div class="v">0,463729</div><div class="d">recouvrement, pas précision</div></div>
+      </div>
+      <div class="panel"><h3>Toutes les configurations <span class="hint">extrait — lignes de summary.csv</span></h3>
+        <div class="table-wrap"><table class="data">
+          <tr><th>pair</th><th>maille</th><th>fenêtre</th><th>n_a</th><th>n_b</th><th>∩</th><th>∪</th><th>jaccard</th></tr>
+          <tr><td>terra__aqua</td><td>0.25</td><td>8</td><td>22344</td><td>36858</td><td>18756</td><td>40446</td><td>0,463729</td></tr>
+          <tr><td>aqua__viirs_snpp</td><td>0.25</td><td>8</td><td>36858</td><td>60172</td><td>35727</td><td>61303</td><td>0,582794</td></tr>
+          <tr><td>terra__aqua</td><td>0.10</td><td>1</td><td class="muted">…</td><td class="muted">…</td><td class="muted">…</td><td class="muted">…</td><td>0,102715</td></tr>
+          <tr><td>terra__aqua</td><td>0.50</td><td>16</td><td class="muted">…</td><td class="muted">…</td><td class="muted">…</td><td class="muted">…</td><td>0,650183</td></tr>
+        </table></div>
+        <div class="legend-note">Croissance du Jaccard avec maille/fenêtre = effet mécanique, pas amélioration de la mesure.
+        Rien n'est affiché sans provenance : <span class="pill calc">calculé par le pipeline</span></div>
+      </div>
+      <div class="panel"><h3>Série mensuelle du Jaccard <span class="hint">configuration ci-dessus</span></h3>
+        <div class="bar-row"><span>2013-01 → 2020-12</span><div class="bar"><i class="teal" style="width:62%"></i></div><span class="mono">0 – 1</span></div>
+        <div class="legend-note">Jaccard mensuel par fenêtre glissante ; jours vides labellisés aucun_enregistrement.</div>
+      </div>
+    </section>
+
+    <!-- ═══ 4. OBSERVABILITÉ ═══ -->
+    <section class="screen" id="observability">
+      <h2 class="page-title">Observabilité (4 états)</h2>
+      <p class="page-sub">4 états du pipeline par capteur — aucun état n'affirme une absence de feu.</p>
+      <div class="banner warn"><strong>Produits de couverture/nuages non acquis (coverage_products_acquired = false)</strong>
+        L'état par défaut est « absence d'observation ou observabilité inconnue ». Fournir les identifiants Earthdata (D4) pour lever ce doute.</div>
+      <div class="cards">
+        <div class="card"><div class="k">Terra — détection observée</div><div class="v">39 271</div><div class="d">sur 259 653 cellule-jours</div></div>
+        <div class="card"><div class="k">Terra — observabilité inconnue</div><div class="v">220 382</div><div class="d">aucune observation</div></div>
+        <div class="card"><div class="k">Aqua — détection observée</div><div class="v">84 165</div><div class="d">observabilité inconnue : 175 488</div></div>
+        <div class="card"><div class="k">VIIRS — détection observée</div><div class="v">246 024</div><div class="d">observabilité inconnue : 13 629</div></div>
+      </div>
+      <div class="panel"><h3>Répartition par capteur <span class="hint">détection observée / observabilité inconnue</span></h3>
+        <div class="bar-row"><span>MODIS Terra</span><div class="bar"><i style="width:15%"></i></div><span class="mono">39 271</span></div>
+        <div class="bar-row"><span>MODIS Aqua</span><div class="bar"><i style="width:32%"></i></div><span class="mono">84 165</span></div>
+        <div class="bar-row"><span>VIIRS S-NPP 375 m</span><div class="bar"><i style="width:95%"></i></div><span class="mono">246 024</span></div>
+        <div class="legend-note">États disponibles : détection observée · absence de détection en conditions plausibles ·
+        absence d'observation / observabilité inconnue · situation indéterminée.</div>
+      </div>
+    </section>
+
+    <!-- ═══ 5. RAPPORT ═══ -->
+    <section class="screen" id="report">
+      <h2 class="page-title">Rapport scientifique</h2>
+      <p class="page-sub">reports/scientific_report.md rendu localement (aucune dépendance Markdown externe).</p>
+      <div class="banner info"><strong>Origine des données : nasa_firms · rapport généré 2026-10-18T12:33</strong>
+        Tableau de résumé = baselines/summary.csv (D1) ; aucune valeur de phase 1 republicée.</div>
+      <div class="panel md">
+        <h1>PyroLens — rapport scientifique (extrait de maquette)</h1>
+        <h2>Résumé des comparaisons (configuration primaire 0,25° / 8 j)</h2>
+        <table>
+          <tr><th>paire</th><th>maille</th><th>fenêtre</th><th>|A|</th><th>|B|</th><th>∩</th><th>∪</th><th>Jaccard</th></tr>
+          <tr><td>terra__aqua</td><td>0,25°</td><td>8 j</td><td>22 344</td><td>36 858</td><td>18 756</td><td>40 446</td><td>0,463729</td></tr>
+          <tr><td>aqua__viirs_snpp</td><td>0,25°</td><td>8 j</td><td>36 858</td><td>60 172</td><td>35 727</td><td>61 303</td><td>0,582794</td></tr>
+        </table>
+        <p class="muted">La configuration au Jaccard maximal <strong>n'est pas</strong> retenue : l'agrégation grossière
+        augmente le recouvrement tout en masquant les divergences.</p>
+        <h2>Limites</h2>
+        <ul class="muted">
+          <li>Aucune méthode validée : H4 (seuils de confiance) et H6 (validation externe) non exécutés.</li>
+          <li>Absence de détection ≠ absence de feu (<span class="mono">aucun_enregistrement</span>).</li>
+          <li>Hors-emprise = ambigu exclu des ensembles (filtre bbox + polygon 110 m).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ═══ 6. FIGURES ═══ -->
+    <section class="screen" id="figures">
+      <h2 class="page-title">Figures</h2>
+      <p class="page-sub">PNG produits par <span class="mono">pyrolens figures</span> — fond blanc assumé, légendes fixes.</p>
+      <div class="fig-grid">
+        <figure class="fig"><div class="fig-ph">jaccard_monthly.png</div><figcaption>Évolution mensuelle du Jaccard par paire</figcaption></figure>
+        <figure class="fig"><div class="fig-ph">jaccard_sensitivity.png</div><figcaption>Sensibilité du Jaccard aux grilles et fenêtres — NE PAS retenir le maximum</figcaption></figure>
+        <figure class="fig"><div class="fig-ph">anomalies_by_category.png</div><figcaption>Anomalies par catégorie (aucune corrigée)</figcaption></figure>
+        <figure class="fig"><div class="fig-ph">volumes_by_month.png</div><figcaption>Volumes mensuels par capteur</figcaption></figure>
+        <figure class="fig"><div class="fig-ph">spatial_distribution.png</div><figcaption>Distribution spatiale des cellules actives</figcaption></figure>
+        <figure class="fig"><div class="fig-ph">observability_states.png</div><figcaption>4 états d'observabilité par capteur</figcaption></figure>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll(".nav button[data-go]");
+  const screens = document.querySelectorAll(".screen");
+  buttons.forEach((b) => b.addEventListener("click", () => {
+    buttons.forEach((x) => x.classList.toggle("active", x === b));
+    screens.forEach((s) => s.classList.toggle("active", s.id === b.dataset.go));
+  }));
+</script>
+</body>
+</html>
