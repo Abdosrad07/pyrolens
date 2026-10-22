@@ -14,6 +14,7 @@ livré** et la marche à suivre pour l'étendre sans casser le contrat éditoria
 
 | Fichier | Contenu |
 |---|---|
+| [`hackathon-guide.md`](hackathon-guide.md) | **point d'entrée frontend engineer** : brancher l'API v1 sur l'interface (Mission A) puis livrer la vraie interface web pour le hackathon (Mission B) — étapes, vérifications, contrat éditorial |
 | [`screen-specifications.md`](screen-specifications.md) | les 6 écrans : rôle, structure, données affichées, états (chargement, artefact absent, origine), critères d'acceptation |
 | [`design-system.md`](design-system.md) | jetons de thème, classes CSS existantes, composants réutilisables, typographie, responsive |
 | [`user-flows.md`](user-flows.md) | parcours type : découverte, vérification d'un chiffre, lecture du rapport, gestion d'un blocage |
