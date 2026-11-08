@@ -1,3 +1,343 @@
+    # -- overview (statistiques globales) --------------------------------
+
+    def get_overview_summary(self) -> dict:
+        """Résumé de l'exécution du pipeline (étapes, origine, période)."""
+        exec_data = self.require_json("execution")
+        return {
+            "project_version": exec_data.get("project_version", "unknown"),
+            "period_start": exec_data.get("period_start"),
+            "period_end": exec_data.get("period_end"),
+            "generated_at": exec_data.get("generated_at"),
+            "origin": self.get_overview_origin(),
+            "summary": {
+                "total_files": len(self.list_satellites()),
+                "sources": self.get_sources_summary(),
+            },
+        }
+
+    def get_overview_origin(self) -> str:
+        baselines = self.get_json("baselines")
+        return (baselines or {}).get("data_origin", "unknown")
+
+    def get_overview_statistics(self) -> dict:
+        """Statistiques générales du projet (observations, cellules, FRP)."""
+        inv = self.get_json("inventory")
+        audit = self.get_json("audit")
+        obs = self.get_json("observability")
+        baselines = self.get_json("baselines")
+
+        sensors = {}
+        inv_sensors = (inv or {}).get("sensors", {})
+        for key, s in (inv_sensors or {}).items():
+            sensors[key] = {
+                "label": s.get("label", key),
+                "sensor_id": key,
+    def get_overview_summary(self) -> dict:
+        """Résumé de l'exécution du pipeline (étapes, origine, periode)."""
+        exec_data = self.require_json("execution")
+        return {
+            "project_version": exec_data.get("project_version", "unknown"),
+            "period_start": exec_data.get("period_start"),
+            "period_end": exec_data.get("period_end"),
+            "generated_at": exec_data.get("generated_at"),
+            "origin": self.get_overview_origin(),
+            "summary": {
+                "total_files": len(self.list_satellites()),
+                "sources": self.get_sources_summary(),
+            },
+        }
+
+    def get_overview_origin(self) -> str:
+        baselines = self.get_json("baselines")
+        return (baselines or {}).get("data_origin", "unknown")
+
+    def get_overview_statistics(self) -> dict:
+        """Statistiques generales du projet (observations, cellules, FRP)."""
+        inv = self.get_json("inventory")
+        audit = self.get_json("audit")
+        obs = self.get_json("observability")
+        baselines = self.get_json("baselines")
+
+        sensors = {}
+        inv_sensors = (inv or {}).get("sensors", {})
+        for key, s in (inv_sensors or {}).items():
+            sensors[key] = {
+                "label": s.get("label", key),
+                "sensor_id": key,
+                "total_observations": int(s.get("total_observations", 0)),
+                "period": f"{s.get('period_start')} → {s.get('period_end')}",
+                "primary_version": s.get("primary_version"),
+            }
+
+        # cellules geo actives (top 200 sur la maille primaire)
+        spatial = (baselines or {}).get("spatial", [])
+        top_cells = spatial[:200] if isinstance(spatial, list) else []
+
+        total_observations = sum(
+            int((s or {}).get("total_observations", 0))
+            for s in (inv_sensors or {}).values()
+        )
+
+        return {
+            "data_origin": self.get_overview_origin(),
+            "total_observations": total_observations,
+            "total_files": len(self.list_satellites()),
+            "period": f"{inv.get('period_start')} → {inv.get('period_end')}",
+            "sources": {
+                k: v.get("label") for k, v in (inv_sensors or {}).items()
+            },
+            "sensors": sensors,
+            "coverage_products_acquired": (obs or {}).get("coverage_products_acquired", False),
+            "active_cells_top200": top_cells,
+            "n_satellites": len(self.list_satellites()),
+        }
+
+    def get_overview_hotspots(self) -> dict:
+        """Donnees pour la carte des points chauds : observations filtrees par zone."""
+        bbox = self.get_json("inventory") or {}
+        bbox_bounds = bbox.get("bounds", {}) or {}
+        hotspots = (self.get_json("audit") or {}).get("hotspots", [])
+        if not isinstance(hotspots, list):
+            hotspots = []
+        if bbox_bounds:
+            return {
+                "hotspots": hotspots,
+    # -- overview -----------------------------------------------------------
+
+    def get_overview_statistics(self) -> dict:
+        """Statistiques generales du projet (observations, cellules, FRP)."""
+        inv = self.get_json("inventory")
+        audit = self.get_json("audit")
+        obs = self.get_json("observability")
+        baselines = self.get_json("baselines")
+
+        sensors = {}
+        inv_sensors = (inv or {}).get("sensors", {})
+        for key, s in (inv_sensors or {}).items():
+            sensors[key] = {
+                "label": s.get("label", key),
+                "sensor_id": key,
+                "total_observations": int(s.get("total_observations", 0)),
+                "period": f"{s.get('period_start')} → {s.get('period_end')}",
+                "primary_version": s.get("primary_version"),
+            }
+
+        # cellules geo actives (top 200 sur la maille primaire)
+        spatial = (baselines or {}).get("spatial", [])
+        top_cells = spatial[:200] if isinstance(spatial, list) else []
+
+        total_observations = sum(
+            int((s or {}).get("total_observations", 0))
+            for s in (inv_sensors or {}).values()
+        )
+
+        return {
+            "data_origin": self.get_overview_origin(),
+            "total_observations": total_observations,
+            "total_files": len(self.list_satellites()),
+            "period": f"{inv.get('period_start')} → {inv.get('period_end')}",
+            "sources": {
+                k: v.get("label") for k, v in (inv_sensors or {}).items()
+            },
+            "sensors": sensors,
+            "coverage_products_acquired": (obs or {}).get("coverage_products_acquired", False),
+            "active_cells_top200": top_cells,
+            "n_satellites": len(self.list_satellites()),
+        }
+
+    def get_overview_hotspots(self) -> dict:
+        """Donnees pour la carte des points chauds : observations filtrees par zone."""
+    # -- overview -----------------------------------------------------------
+
+    def get_overview_summary(self) -> dict:
+        """Resume de l'execution du pipeline (etapes, origine, periode)."""
+        exec_data = self.require_json("execution")
+        return {
+            "project_version": exec_data.get("project_version", "unknown"),
+            "period_start": exec_data.get("period_start"),
+            "period_end": exec_data.get("period_end"),
+            "generated_at": exec_data.get("generated_at"),
+            "origin": self.get_overview_origin(),
+            "summary": {
+                "total_files": len(self.list_satellites()),
+                "sources": self.get_sources_summary(),
+            },
+        }
+
+    def get_overview_origin(self) -> str:
+        baselines = self.get_json("baselines")
+        return (baselines or {}).get("data_origin", "unknown")
+
+    def get_overview_statistics(self) -> dict:
+        """Statistiques generale du projet (observations, cellules, FRP)."""
+        inv = self.get_json("inventory")
+        audit = self.get_json("audit")
+        obs = self.get_json("observability")
+        baselines = self.get_json("baselines")
+
+        sensors = {}
+        inv_sensors = (inv or {}).get("sensors", {})
+        for key, s in (inv_sensors or {}).items():
+            sensors[key] = {
+                "label": s.get("label", key),
+                "sensor_id": key,
+                "total_observations": int(s.get("total_observations", 0)),
+                "period": f"{s.get('period_start')} → {s.get('period_end')}",
+                "primary_version": s.get("primary_version"),
+            }
+
+        # cellules geo actives (top 200 sur la maille primaire)
+        spatial = (baselines or {}).get("spatial", [])
+        top_cells = spatial[:200] if isinstance(spatial, list) else []
+
+        total_observations = sum(
+            int((s or {}).get("total_observations", 0))
+            for s in (inv_sensors or {}).values()
+        )
+
+        return {
+            "data_origin": self.get_overview_origin(),
+            "total_observations": total_observations,
+            "total_files": len(self.list_satellites()),
+            "period": f"{inv.get('period_start')} → {inv.get('period_end')}",
+            "sources": {
+                k: v.get("label") for k, v in (inv_sensors or {}).items()
+            },
+            "sensors": sensors,
+            "coverage_products_acquired": (obs or {}).get("coverage_products_acquired", False),
+            "active_cells_top200": top_cells,
+            "n_satellites": len(self.list_satellites()),
+        }
+
+    def get_overview_hotspots(self) -> dict:
+        """Donnees pour la carte des points chauds : observations filtrees par zone."""
+        bbox = self.get_json("inventory") or {}
+        bbox_bounds = bbox.get("bounds", {}) or {}
+        hotspots = (self.get_json("audit") or {}).get("hotspots", [])
+        if not isinstance(hotspots, list):
+            hotspots = []
+        if bbox_bounds:
+            return {
+                "hotspots": hotspots,
+                "bounds": bbox_bounds,
+                "sources": self.get_json("inventory") or {},
+            }
+        return {"hotspots": hotspots}
+
+    def get_sources_summary(self) -> dict:
+        """Resume des sources d'acquisition."""
+        dl = self.get_json("downloads_summary")
+        if dl is None:
+            dl = self.get_json("downloads")
+        counts = {}
+        if dl and isinstance(dl, dict):
+            for status, entry in dl.items():
+                if isinstance(entry, dict):
+                    counts.setdefault(entry.get("status", "unknown"), 0)
+                    counts[entry["status"]] = counts.get(entry["status"], 0) + 1
+        return counts
+        bbox = self.get_json("inventory") or {}
+        bbox_bounds = bbox.get("bounds", {}) or {}
+        hotspots = (self.get_json("audit") or {}).get("hotspots", [])
+        if not isinstance(hotspots, list):
+            hotspots = []
+        if bbox_bounds:
+            return {
+                "hotspots": hotspots,
+                "bounds": bbox_bounds,
+                "sources": self.get_json("inventory") or {},
+            }
+        return {"hotspots": hotspots}
+
+    def get_sources_summary(self) -> dict:
+        """Resume des sources d'acquisition."""
+        dl = self.get_json("downloads_summary")
+        if dl is None:
+            dl = self.get_json("downloads")
+        counts = {}
+        if dl and isinstance(dl, dict):
+            for status, entry in dl.items():
+                if isinstance(entry, dict):
+                    counts.setdefault(entry.get("status", "unknown"), 0)
+                    counts[entry["status"]] = counts.get(entry["status"], 0) + 1
+        return counts
+                "bounds": bbox_bounds,
+                "sources": self.get_json("inventory") or {},
+            }
+        return {"hotspots": hotspots}
+
+    def get_sources_summary(self) -> dict:
+        """Resume des sources d'acquisition."""
+        dl = self.get_json("downloads_summary")
+        if dl is None:
+            dl = self.get_json("downloads")
+        counts = {}
+        if dl and isinstance(dl, dict):
+            for status, entry in dl.items():
+                if isinstance(entry, dict):
+                    counts.setdefault(entry.get("status", "unknown"), 0)
+                    counts[entry["status"]] = counts.get(entry["status"], 0) + 1
+        return counts
+                "total_observations": int(s.get("total_observations", 0)),
+                "period": f"{s.get('period_start')} → {s.get('period_end')}",
+                "primary_version": s.get("primary_version"),
+            }
+
+        # cellules géographiques actives (top 200 sur la maille primaire)
+        spatial = (baselines or {}).get("spatial", [])
+        top_cells = spatial[:200] if isinstance(spatial, list) else []
+
+        # FRP : distribution basique à partir de audit + baselines
+        frp_values = []
+        audit_data = audit or {}
+        frp_values.extend(audit_data.get("frp_values", []))
+
+        total_observations = sum(
+            int((s or {}).get("total_observations", 0))
+            for s in (inv_sensors or {}).values()
+        )
+
+        return {
+            "data_origin": self.get_overview_origin(),
+            "total_observations": total_observations,
+            "total_files": len(self.list_satellites()),
+            "period": f"{exec_data := self.get_json('execution') or {}}.get('period_start')} → {exec_data.get('period_end')}",
+            "sources": {
+                k: v["label"] for k, v in (inv_sensors or {}).items()
+            },
+            "sensors": sensors,
+            "coverage_products_acquired": (obs or {}).get("coverage_products_acquired", False),
+            "active_cells_top200": top_cells,
+            "n_satellites": len(self.list_satellites()),
+        }
+
+    def get_overview_hotspots(self) -> dict:
+        """Données pour la carte des points chauds : observations filtrées par zone."""
+        bbox = self.get_json("inventory") or {}
+        bbox_bounds = bbox.get("bounds", {}) or {}
+        hotspots = (self.get_json("audit") or {}).get("hotspots", [])
+        if not isinstance(hotspots, list):
+            hotspots = []
+        if bbox_bounds:
+            return {
+                "hotspots": hotspots,
+                "bounds": bbox_bounds,
+                "sources": self.get_json("inventory") or {},
+            }
+        return {"hotspots": hotspots}
+
+    def get_sources_summary(self) -> dict:
+        """Résumé des sources d'acquisition."""
+        dl = self.get_json("downloads_summary")
+        if dl is None:
+            dl = self.get_json("downloads")
+        counts = {}
+        if dl and isinstance(dl, dict):
+            for status, entry in dl.items():
+                if isinstance(entry, dict):
+                    counts.setdefault(entry.get("status", "unknown"), 0)
+                    counts[entry["status"]] = counts.get(entry["status"], 0) + 1
+        return counts
 """Accès aux artefacts horodatés du pipeline (lecture seule, cache en mémoire).
 
 Les artefacts sont la source de vérité (``docs/phase2/api_contract.md`` §1).
