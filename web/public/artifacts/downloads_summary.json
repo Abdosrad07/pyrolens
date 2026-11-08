@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-10-18T12:30:45+00:00",
+  "entry_count": 9802,
+  "source_file": "downloads.json",
+  "source_sha256": "014090900C2B692BC84A7B8B4DE4AE9FB77386A8198D8F547DCEBA58B04F4D88",
+  "by_status": [
+    { "status": "already_present", "count": 6590, "acquired": true },
+    { "status": "downloaded", "count": 1288, "acquired": true },
+    { "status": "deferred", "count": 1274, "acquired": false },
+    { "status": "http_error", "count": 621, "acquired": false },
+    { "status": "blocked_earthdata_login", "count": 22, "acquired": false },
+    { "status": "blocked_missing_credential", "count": 3, "acquired": false },
+    { "status": "error", "count": 4, "acquired": false }
+  ],
+  "by_dataset": [
+    { "dataset": "Natural Earth 110m admin_0_countries", "count": 6590, "acquired": true },
+    { "dataset": "FIRMS API — MODIS Terra", "count": 1, "acquired": false },
+    { "dataset": "FIRMS API — MODIS Aqua", "count": 1, "acquired": false },
+    { "dataset": "FIRMS API — VIIRS Suomi-NPP 375 m", "count": 1, "acquired": false },
+    { "dataset": "MOD14.061 granule (traitement scientifique standard)", "count": 22, "acquired": false },
+    { "dataset": "FIRMS API — MODIS_SP (capteurs : terra, aqua)", "count": 1288, "acquired": true },
+    { "dataset": "FIRMS API — VIIRS_SNPP_SP (capteurs : viirs_snpp)", "count": 1274, "acquired": false },
+    { "dataset": "Autres (erreurs, doublons)", "count": 4, "acquired": false }
+  ],
+  "blocked_sample": [
+    {
+      "dataset": "FIRMS API — MODIS Terra",
+      "status": "blocked_missing_credential",
+      "reason": "FIRMS_MAP_KEY absent de l'environnement (clé gratuite : inscription FIRMS)",
+      "acquired": false
+    },
+    {
+      "dataset": "MOD14.061 granule (traitement scientifique standard)",
+      "status": "blocked_earthdata_login",
+      "http_status": 302,
+      "reason": "Redirection vers Earthdata Login : authentification requise (aucun contournement)",
+      "acquired": false,
+      "auth_mode": "none"
+    }
+  ],
+  "coverage_products_acquired": false,
+  "note": "Agrégat pour chargement initial < 2 Mo. Le manifeste complet (entrées détaillées, URLs, SHA-256 par fichier) reste disponible dans downloads.json sur disque. Aucun chemin absolu n'est inclus ici."
+}

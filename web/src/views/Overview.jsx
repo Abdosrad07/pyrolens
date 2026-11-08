@@ -182,47 +182,53 @@ export default function Overview({ data }) {
         </div>
       )}
 
-      {dl && dl.entries?.length > 0 && (
+      {dl && dl.by_status && dl.by_status.length > 0 && (
         <div className="panel">
           <h3>
-            Manifeste de téléchargement
-            <span className="hint">SHA-256 systématique · data/manifests/downloads.json</span>
+            Manifeste de téléchargement (agrégat)
+            <span className="hint">{dl.entry_count} entrées — détail complet dans downloads.json sur disque</span>
           </h3>
           <div className="table-wrap">
             <table className="data">
               <thead>
                 <tr>
-                  <th>Jeu</th>
                   <th>Statut</th>
-                  <th>HTTP</th>
-                  <th>Octets</th>
-                  <th>SHA-256</th>
-                  <th>Acquis le</th>
+                  <th>Entrées</th>
+                  <th>Acquises</th>
+                  <th>Détail</th>
                 </tr>
               </thead>
               <tbody>
-                {dl.entries.slice(0, 25).map((e, i) => (
+                {dl.by_status.map((s, i) => (
                   <tr key={i}>
-                    <td className="txt">{e.dataset}</td>
-                    <td>
-                      <span className={`pill ${e.status === "acquired" ? "ok" : "blocked"}`}>
-                        {e.status}
-                      </span>
+                    <td className="txt">{s.status}</td>
+                    <td>{fmt(s.count)}</td>
+                    <td>{s.acquired ? fmt(s.count) : "0"}</td>
+                    <td className="txt muted">
+                      {s.status === "blocked_earthdata_login"
+                        ? "Clés Earthdata requises (D4)"
+                        : s.status === "blocked_missing_credential"
+                        ? "Clé FIRMS requise"
+                        : s.status === "deferred"
+                        ? "Budget de commande atteint — repris à l'exécution suivante"
+                        : s.status === "already_present"
+                        ? "Déjà présent sur disque"
+                        : s.status === "downloaded"
+                        ? "Téléchargé avec succès"
+                        : s.status === "http_error"
+                        ? "Erreur HTTP — consultez downloads.json"
+                        : s.status === "error"
+                        ? "Erreur de traitement — consultez downloads.json"
+                        : "—"}
                     </td>
-                    <td>{e.http_status ?? "—"}</td>
-                    <td>{fmt(e.bytes)}</td>
-                    <td className="muted">
-                      {e.sha256 ? `${e.sha256.slice(0, 16)}…` : "—"}
-                    </td>
-                    <td className="muted">{(e.downloaded_at || "").slice(0, 19)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          {dl.entries.length > 25 && (
+          {dl.coverage_products_acquired === false && (
             <p className="muted small">
-              {dl.entries.length - 25} entrée(s) supplémentaire(s) dans le manifeste complet.
+              Produits de couverture/nuages non acquis : observabilité par défaut « inconnue ».
             </p>
           )}
         </div>

@@ -20,7 +20,7 @@ export async function loadAll() {
   const jsonNames = [
     "execution",
     "inventory",
-    "downloads",
+    "downloads_summary",
     "audit",
     "baselines",
     "observability",
