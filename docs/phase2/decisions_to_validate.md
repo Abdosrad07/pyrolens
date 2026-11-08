@@ -113,4 +113,4 @@ recommandation, son échéance et l'impact d'un report. **D1 a été tranchée l
 | D6 comptes | public | avant multi-utilisateurs | **validée — public, lecture seule (MVP)** |
 | D7 emprise | conserver 110 m | avant résultats régionaux fins | **validée — conserver 110 m tant qu'aucun écart frontière n'est démontré** |
 | D4 Earthdata | fournir clés si besoin réel | avant S3 | **à valider — identifiants récupérables par l'utilisateur (hors chat)** |
-| D5 références H4/H6 | fournir ou assumer la limite | avant S4 | **à valider — références considérées disponibles, exécuter H4/H6 ou split** |
+| D5 références H4/H6 | fournir ou assumer la limite | avant S4 | **validée — références disponibles, exécuter H4/H6 ou split (lot S4)** |
