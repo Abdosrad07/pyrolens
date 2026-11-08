@@ -107,10 +107,10 @@ recommandation, son échéance et l'impact d'un report. **D1 a été tranchée l
 | Décision | Recommandation | Échéance | Statut |
 |---|---|---|---|
 | D1 chiffres Jaccard | retenir `summary.csv` | immédiate | **validée (21/10) — uniquement `summary.csv`** |
+| D8 statuts H1-H3 | valider la formulation | immédiate | **fait (S0) — aligné sur exécution réelle, à relire** |
 | D2 API | statique pour le MVP | fin S1 | à valider |
 | D3 hébergement | Freebuff natif | avant mise en ligne | à valider |
-| D4 Earthdata | fournir clés si besoin réel | avant S3 | à valider |
-| D5 références H4/H6 | fournir ou assumer la limite | avant S4 | à valider |
 | D6 comptes | public | avant multi-utilisateurs | à valider |
 | D7 emprise | conserver 110 m | avant résultats régionaux fins | à valider |
-| D8 statuts H1-H3 | valider la formulation | immédiate | fait, à relire |
+| D4 Earthdata | fournir clés si besoin réel | avant S3 | **bloqué — identifiants Earthdata absents (contrainte externe)** |
+| D5 références H4/H6 | fournir ou assumer la limite | avant S4 | **bloqué — aucune référence indépendante (contrainte externe)** |
