@@ -108,9 +108,9 @@ recommandation, son échéance et l'impact d'un report. **D1 a été tranchée l
 |---|---|---|---|
 | D1 chiffres Jaccard | retenir `summary.csv` | immédiate | **validée (21/10) — uniquement `summary.csv`** |
 | D8 statuts H1-H3 | valider la formulation | immédiate | **fait (S0) — aligné sur exécution réelle, à relire** |
-| D2 API | statique pour le MVP | fin S1 | à valider |
-| D3 hébergement | Freebuff natif | avant mise en ligne | à valider |
-| D6 comptes | public | avant multi-utilisateurs | à valider |
-| D7 emprise | conserver 110 m | avant résultats régionaux fins | à valider |
-| D4 Earthdata | fournir clés si besoin réel | avant S3 | **bloqué — identifiants Earthdata absents (contrainte externe)** |
-| D5 références H4/H6 | fournir ou assumer la limite | avant S4 | **bloqué — aucune référence indépendante (contrainte externe)** |
+| D2 API | statique pour le MVP | fin S1 | **validée — statique pour le MVP, go/no-go en fin de S1** |
+| D3 hébergement | Freebuff natif | avant mise en ligne | **validée — Freebuff natif avant toute mise en ligne** |
+| D6 comptes | public | avant multi-utilisateurs | **validée — public, lecture seule (MVP)** |
+| D7 emprise | conserver 110 m | avant résultats régionaux fins | **validée — conserver 110 m tant qu'aucun écart frontière n'est démontré** |
+| D4 Earthdata | fournir clés si besoin réel | avant S3 | **à valider — identifiants récupérables par l'utilisateur (hors chat)** |
+| D5 références H4/H6 | fournir ou assumer la limite | avant S4 | **à valider — références considérées disponibles, exécuter H4/H6 ou split** |
