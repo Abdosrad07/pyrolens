@@ -8,6 +8,12 @@ import Baselines from "./views/Baselines.jsx";
 import Observability from "./views/Observability.jsx";
 import Report from "./views/Report.jsx";
 import Figures from "./views/Figures.jsx";
+import HarmonizationList from "./views/HarmonizationList.jsx";
+import HarmonizationNew from "./views/HarmonizationNew.jsx";
+import HarmonizationDetail from "./views/HarmonizationDetail.jsx";
+import DataCatalog from "./views/DataCatalog.jsx";
+import DatasetDetail from "./views/DatasetDetail.jsx";
+import Methodology from "./views/Methodology.jsx";
 
 const VIEWS = [
   { id: "overview", label: "Synthèse d'exécution" },
@@ -16,6 +22,12 @@ const VIEWS = [
   { id: "observability", label: "Observabilité (4 états)" },
   { id: "report", label: "Rapport scientifique" },
   { id: "figures", label: "Figures" },
+];
+
+const NEW_VIEWS = [
+  { id: "harmonization", label: "Harmonization Lab" },
+  { id: "data", label: "Données" },
+  { id: "methodology", label: "Méthodologie" },
 ];
 
 const SESSION_KEY = "pyrolens.session";
@@ -120,6 +132,16 @@ export default function App() {
               {v.label}
             </button>
           ))}
+          <div className="nav-group">Modules</div>
+          {NEW_VIEWS.map((v) => (
+            <button
+              key={v.id}
+              className={view === v.id ? "active" : ""}
+              onClick={() => go(v.id)}
+            >
+              {v.label}
+            </button>
+          ))}
         </nav>
         <div className="foot">
           {authed ? (
@@ -170,6 +192,12 @@ export default function App() {
         {view === "observability" && <Observability data={data} />}
         {view === "report" && <Report data={data} />}
         {view === "figures" && <Figures data={data} />}
+        {view === "harmonization" && <HarmonizationList data={data} />}
+        {view === "harmonization-new" && <HarmonizationNew />}
+        {view.startsWith("harmonization-") && <HarmonizationDetail jobId={view.replace("harmonization-", "")} />}
+        {view === "data" && <DataCatalog data={data} />}
+        {view.startsWith("data-") && <DatasetDetail datasetId={view.replace("data-", "")} />}
+        {view === "methodology" && <Methodology />}
       </main>
     </div>
   );
