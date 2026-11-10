@@ -8,6 +8,7 @@ import LoadingState from "../components/LoadingState.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import MetricCard from "../components/MetricCard.jsx";
 import ResultTable from "../components/ResultTable.jsx";
+import ExportButton from "../components/ExportButton.jsx";
 
 export default function HarmonizationDetail({ jobId }) {
   const [result, setResult] = useState(null);
@@ -43,9 +44,17 @@ export default function HarmonizationDetail({ jobId }) {
             Résultats et métriques de l'expérience <span className="mono">{jobId}</span>.
           </p>
         </div>
-        <button className="btn" onClick={handleBack}>
-          ← Retour
-        </button>
+        <div style={{ display: "flex", gap: "12px" }}>
+          {result && (
+            <>
+              <ExportButton jobId={jobId} format="csv" label="Exporter CSV" />
+              <ExportButton jobId={jobId} format="json" label="Exporter JSON" />
+            </>
+          )}
+          <button className="btn" onClick={handleBack}>
+            ← Retour
+          </button>
+        </div>
       </div>
 
       <ExperimentStatus jobId={jobId} onComplete={handleComplete} />
