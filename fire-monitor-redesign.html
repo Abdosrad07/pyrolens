@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E2A25">
+<meta name="color-scheme" content="light">
+<title>Fire Monitor – Carte des feux actifs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Instrument+Sans:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --canopy:#0E2A25;--canopy-2:#17463E;--ash:#F2F6F4;--glass:color-mix(in srgb,#F7FAF8 92%,transparent);
+  --mist:#D2DCD8;--text:#14231F;--muted:#3E514B;
+  --ember:#F2541B;--ember-ink:#A83305;--sulphur:#FFC83D;--lagoon:#168F80;
+  --ok:#0A5A47;--ok-bg:#DCF2E8;--bad:#A4201B;--bad-bg:#FBE4E1;--warn:#7A5200;--warn-bg:#FFF0C2;--info:#0E3F6B;--info-bg:#DCEBF7;
+  --r-s:.4rem;--r-m:.75rem;--r-l:1.1rem;--hh:4rem;--ring:var(--canopy);
+  --sh:0 1px 2px rgb(14 42 37/.14),0 10px 28px -10px rgb(14 42 37/.45);
+  --ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --display:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font:400 .9375rem/1.45 var(--ui);color:var(--text);background:var(--canopy);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+.sr-only{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.ic{width:1.25rem;height:1.25rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.flip{transform:scaleX(-1)}
+.sp{flex:1}
+.skip-link{position:fixed;left:1rem;top:.75rem;z-index:3000;translate:0 -200%;padding:.7rem 1rem;background:#fff;color:var(--canopy);border-radius:var(--r-s);font-weight:700;text-decoration:none;box-shadow:var(--sh)}
+.skip-link:focus{translate:0 0}
+.ibtn{width:2.5rem;height:2.5rem;display:grid;place-items:center;flex:none;border-radius:.7rem;transition:background .15s}
+.ibtn:hover{background:color-mix(in srgb,var(--mist) 60%,transparent)}
+
+/* Barre du haut */
+#topbar{--ring:var(--sulphur);position:absolute;inset:0 0 auto;height:var(--hh);z-index:1200;display:flex;align-items:center;gap:.4rem;padding:0 max(1rem,env(safe-area-inset-right)) 0 max(1rem,env(safe-area-inset-left));color:#fff;background:var(--canopy)}
+#topbar::after{content:"";position:absolute;inset:auto 0 0;height:3px;background:linear-gradient(90deg,var(--ember),var(--sulphur) 45%,var(--lagoon))}
+#topbar .ibtn{color:#E4EEEA}
+#topbar .ibtn:hover{background:rgb(255 255 255/.12)}
+#topbar .ibtn[aria-expanded=true]{background:#fff;color:var(--canopy)}
+.brand{display:flex;align-items:center;gap:.7rem;min-width:0}
+.mark{width:2.5rem;height:2.5rem;flex:none;display:grid;place-items:center;border-radius:.85rem;color:#fff;background:linear-gradient(145deg,#FF8447,var(--ember) 55%,#C23805);box-shadow:inset 0 1px 0 rgb(255 255 255/.4)}
+.mark .ic{width:1.4rem;height:1.4rem}
+.brand h1{font:700 1.2rem/1.05 var(--display);letter-spacing:-.015em}
+.brand small{display:block;margin-top:.2rem;font-size:.75rem;line-height:1.2;color:#B9CCC6}
+#searchForm{display:flex;align-items:center;gap:.5rem;width:min(22rem,36vw);height:2.5rem;padding:0 .3rem 0 .8rem;color:#E4EEEA;background:rgb(255 255 255/.1);border:1px solid rgb(255 255 255/.22);border-radius:999px;transition:background .15s}
+#searchForm:focus-within{color:var(--canopy);background:#fff;outline:3px solid var(--sulphur);outline-offset:2px}
+#searchForm input{flex:1;min-width:0;background:none;border:0;outline:0}
+#searchForm input::placeholder{color:#B9CCC6;opacity:1}
+#searchForm:focus-within input::placeholder{color:var(--muted)}
+#searchForm button{height:1.9rem;padding:0 .9rem;color:#fff;font-weight:600;font-size:.84rem;background:var(--ember-ink);border-radius:999px}
+#searchForm.busy{opacity:.7;cursor:progress}
+#btnSearch{display:none}
+
+/* Carte et contrôles */
+#map{position:absolute;inset:var(--hh) 0 0;background:#0B2E4A}
+.leaflet-container{font:inherit}
+.leaflet-bar,.leaflet-control-layers{border:0!important;border-radius:var(--r-m)!important;box-shadow:var(--sh)!important;overflow:hidden}
+.leaflet-bar a{width:2.4rem!important;height:2.4rem!important;line-height:2.4rem!important;color:var(--text)!important;background-color:var(--glass)!important;border-color:var(--mist)!important}
+.leaflet-control-layers{background:var(--glass)!important;backdrop-filter:blur(12px)}
+.leaflet-control-layers-toggle{width:2.4rem!important;height:2.4rem!important;background-size:1.3rem!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2314231F' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z'/%3E%3Cpath d='m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65'/%3E%3Cpath d='m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65'/%3E%3C/svg%3E")!important}
+.leaflet-control-layers-list{padding:.3rem .5rem;font-size:.84rem}
+.leaflet-control-attribution{font-size:.65rem!important;background:var(--glass)!important}
+.leaflet-tooltip.hs-tip{padding:.3rem .6rem;color:#fff;background:var(--canopy);border:0;border-radius:.5rem;box-shadow:var(--sh);font-size:.78rem}
+.leaflet-tooltip-top.hs-tip::before{border-top-color:var(--canopy)}
+path.perimeter{cursor:pointer;transition:fill-opacity .2s}
+path.perimeter:hover{fill-opacity:.62}
+.quick{position:absolute;top:calc(var(--hh) + .9rem);left:1rem;z-index:900;display:flex;gap:.15rem;padding:.25rem;background:var(--glass);backdrop-filter:blur(14px) saturate(1.2);border-radius:999px;box-shadow:var(--sh)}
+.quick button{display:flex;align-items:center;gap:.45rem;height:2.4rem;padding:0 .95rem 0 .8rem;border-radius:999px;color:var(--muted);font-weight:600;font-size:.84rem;transition:background .15s,color .15s}
+.quick button:hover{background:var(--mist)}
+.quick button[aria-pressed=true]{color:#fff;background:var(--canopy)}
+.hud{position:absolute;left:1rem;bottom:1rem;z-index:900;max-width:calc(100% - 2rem);display:flex;flex-direction:column;align-items:flex-start;gap:.5rem}
+#legend{width:17.5rem;max-width:100%;background:var(--glass);backdrop-filter:blur(14px);border-radius:var(--r-m);box-shadow:var(--sh);font-size:.78rem}
+#legend summary{min-height:2.6rem;display:flex;align-items:center;justify-content:space-between;padding:.4rem .85rem;font-weight:700;cursor:pointer;list-style:none}
+#legend summary::-webkit-details-marker{display:none}
+#legend summary .ic{transition:transform .2s}
+#legend[open] summary .ic{transform:rotate(180deg)}
+.legend-rows{padding:0 .85rem .7rem}
+#legend .row{display:flex;align-items:center;gap:.6rem;margin:.4rem 0}
+#legend .sw{width:1rem;height:1rem;display:grid;place-items:center;flex:none}
+#legend .sw i{display:block;border-radius:50%}
+#bottombar{display:flex;flex-wrap:wrap;gap:.4rem;font-size:.75rem}
+#bottombar>*{height:2rem;display:inline-flex;align-items:center;gap:.4rem;padding:0 .8rem;color:#E4EEEA;background:var(--canopy);border-radius:999px;box-shadow:var(--sh);white-space:nowrap}
+#bottombar a{color:#fff;text-decoration:none;font-weight:600}
+#bottombar a .ic{width:.9rem;height:.9rem}
+#coords::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--ember);animation:pulse 2.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgb(242 84 27/.7)}70%,100%{box-shadow:0 0 0 .5rem rgb(242 84 27/0)}}
+.toast{position:absolute;left:50%;bottom:5.5rem;translate:-50% 0;z-index:1600;display:none;max-width:min(32rem,calc(100% - 2rem));padding:.8rem 1.1rem;color:#fff;background:var(--canopy);border-radius:var(--r-m);box-shadow:var(--sh);font-size:.875rem}
+
+/* Dock de navigation */
+#dock{--ring:var(--sulphur);position:absolute;left:50%;bottom:max(1rem,env(safe-area-inset-bottom));translate:-50% 0;z-index:1450;display:flex;gap:.2rem;padding:.3rem;background:var(--canopy);border-radius:999px;box-shadow:var(--sh)}
+.navbtn{height:2.8rem;display:flex;align-items:center;gap:.5rem;padding:0 1.1rem;color:#CFE0DA;font-weight:600;font-size:.875rem;border-radius:999px;transition:background .15s,color .15s}
+.navbtn:hover{background:rgb(255 255 255/.12)}
+.navbtn.on{color:var(--canopy);background:#fff}
+
+/* Menu principal */
+#mainMenu{position:absolute;top:calc(var(--hh) + .75rem);right:.75rem;width:min(25rem,calc(100% - 1.5rem));z-index:1400;display:none;padding:1rem;background:var(--ash);border-radius:var(--r-l);box-shadow:var(--sh),0 0 0 1px var(--mist)}
+#mainMenu.open{display:block;animation:pop .18s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(-6px) scale(.98)}}
+.mm-head{display:flex;align-items:center;margin-bottom:.8rem;font:700 1.05rem var(--display)}
+.mm-head .ibtn{margin-left:auto}
+.mm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+.mm-btn{min-height:3.5rem;display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem;text-align:left;font-weight:600;font-size:.84rem;line-height:1.2;background:#fff;border:1.5px solid var(--mist);border-radius:var(--r-m);transition:border-color .15s,background .15s}
+.mm-btn .ic{width:1.5rem;height:1.5rem;color:var(--canopy-2)}
+.mm-btn:hover{border-color:var(--canopy-2)}
+.mm-btn[aria-pressed=true]{color:#fff;background:var(--canopy);border-color:var(--canopy)}
+.mm-btn[aria-pressed=true] .ic{color:var(--sulphur)}
+.mm-btn[aria-disabled=true]{background:transparent;border-style:dashed;color:var(--muted)}
+.mm-btn small{display:block;font-weight:500;font-size:.72rem}
+
+/* Panneau du cluster */
+#panel{position:absolute;top:var(--hh);left:0;bottom:0;width:min(25rem,100%);z-index:1050;display:none;flex-direction:column;background:var(--ash);box-shadow:var(--sh)}
+#panel.open{display:flex;animation:slide .25s cubic-bezier(.2,.8,.2,1)}
+@keyframes slide{from{opacity:0;transform:translateX(-1.5rem)}}
+#panel>header{--ring:var(--sulphur);display:flex;align-items:center;gap:.2rem;padding:.9rem .8rem .9rem 1rem;color:#fff;background:var(--canopy)}
+#panel>header .ic:first-child{color:var(--ember);margin-right:.4rem}
+#panel>header h2{flex:1;font:700 1.05rem/1.2 var(--display)}
+#panel>header .ibtn{color:#fff}
+#panel>header .ibtn:hover{background:rgb(255 255 255/.14)}
+#panel .scroll{flex:1;overflow:auto;overscroll-behavior:contain}
+.acc{border-bottom:1px solid var(--mist)}
+.acc-h{width:100%;min-height:3.5rem;display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;text-align:left;font-weight:700}
+.acc-h:hover{background:color-mix(in srgb,var(--mist) 45%,transparent)}
+.acc-h .ic{color:var(--ember-ink);transition:transform .2s}
+.acc.open .acc-h .ic{transform:rotate(90deg)}
+.acc-b{display:none;padding:.2rem 1rem 1rem;color:var(--muted);font-size:.84rem}
+.acc.open .acc-b{display:block}
+.kv{display:flex;justify-content:space-between;gap:1rem;padding:.6rem 0;border-bottom:1px dashed var(--mist)}
+.kv b{color:var(--text);text-align:right}
+.legend-line{display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.78rem}
+.dot-lg{width:.65rem;height:.65rem;border-radius:50%;background:var(--ember)}
+.dash-lg{width:1.3rem;border-top:3px dashed #C4263F}
+#frp{display:block;width:100%;height:auto;aspect-ratio:620/460}
+
+/* Vues Jobs et Data quality */
+#view{position:absolute;inset:var(--hh) 0 0;z-index:1300;display:none;background:var(--ash)}
+#view.open{display:block}
+#view:has(#dqView.show){background:transparent}
+.vw{position:absolute;inset:0;display:none}
+.vw.show{display:flex}
+.side{width:14.5rem;flex:none;display:flex;flex-direction:column;gap:.3rem;padding:1.2rem .8rem;color:#fff;background:var(--canopy);--ring:var(--sulphur)}
+.sbrand{display:flex;align-items:center;gap:.5rem;padding:.3rem .7rem 1.4rem;font:600 1.3rem var(--display)}
+.sbrand .ic{color:var(--ember)}
+.sbrand b{font-weight:800}
+.side button{display:flex;align-items:center;gap:.7rem;min-height:2.8rem;padding:0 .8rem;color:#E4EEEA;text-align:left;font-weight:600;font-size:.875rem;border-radius:var(--r-m)}
+.side button:hover{background:rgb(255 255 255/.12)}
+.side button.act{color:var(--canopy);background:#fff}
+.main{min-width:0;flex:1;display:flex;flex-direction:column}
+.crumb{min-height:3.8rem;display:flex;align-items:center;gap:.4rem;padding:0 2rem;color:var(--muted);background:#fff;border-bottom:1px solid var(--mist);font-size:.84rem}
+.crumb .ic{width:1rem;height:1rem}
+.crumb button{color:var(--ember-ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.crumb .who{color:var(--text);font-weight:700}
+.content{flex:1;overflow:auto;padding:2rem 2rem 6.5rem}
+.content>h2{font:700 1.6rem/1.15 var(--display);letter-spacing:-.01em}
+.content>small{display:block;max-width:55rem;margin-top:.4rem;color:var(--muted);font-size:.875rem}
+.btn-back{display:inline-flex;align-items:center;gap:.5rem;height:2.6rem;padding:0 1rem;color:#fff;font-weight:600;background:var(--canopy);border-radius:var(--r-m)}
+.btn-back:hover{background:var(--canopy-2)}
+.jtitle{display:flex;align-items:flex-start;margin-top:1.6rem}
+.jtitle h2{font:700 1.3rem var(--display)}
+.jtitle small{display:block;margin-top:.2rem;color:var(--muted);font-size:.8rem}
+.badge{display:inline-flex;align-items:center;gap:.4rem;margin-left:auto;padding:.3rem .75rem;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.02em}
+.badge::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:currentColor}
+.badge.RUNNING{color:var(--ok);background:var(--ok-bg)}
+.badge.RUNNING::before{animation:pulse 2s infinite}
+.badge.COMPLETED{color:var(--info);background:var(--info-bg)}
+.badge.PENDING{color:var(--warn);background:var(--warn-bg)}
+.badge.FAILED{color:var(--bad);background:var(--bad-bg)}
+.jl .badge{margin:0}
+.jgrid{display:grid;grid-template-columns:16rem 1fr;gap:2rem;margin-top:1.4rem}
+.tl .st{position:relative;display:flex;gap:.85rem;min-height:4rem}
+.tl .st .c{z-index:1;width:2rem;height:2rem;flex:none;display:grid;place-items:center;color:#fff;background:#fff;border:2px solid var(--mist);border-radius:50%}
+.tl .st .c .ic{width:1rem;height:1rem;stroke-width:2.5}
+.tl .st:not(:last-child)::after{content:"";position:absolute;left:.95rem;top:2rem;bottom:0;width:2px;background:var(--mist)}
+.tl .st.done .c{background:var(--canopy);border-color:var(--canopy)}
+.tl .st.done:not(:last-child)::after{background:var(--canopy)}
+.tl .st.cur .c{border-color:var(--ember)}
+.tl .st.cur .c::before{content:"";width:.7rem;height:.7rem;background:var(--ember);border-radius:50%;animation:pulse 2s infinite}
+.tl .t b{display:block;color:var(--text);font-size:.84rem}
+.tl .st.pend .t b{color:var(--muted);font-weight:500}
+.tl .t span{color:var(--muted);font-size:.78rem}
+.dt,.jl{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border-radius:var(--r-m);box-shadow:0 0 0 1px var(--mist);font-size:.84rem}
+.dt td{padding:.75rem .8rem;border-bottom:1px solid var(--mist);vertical-align:top}
+.dt td:first-child{width:13rem;color:var(--muted);font-weight:600}
+.dt a{color:var(--ember-ink)}
+.dt code{font:.78rem/1.5 ui-monospace,Menlo,Consolas,monospace;word-break:break-word}
+.jl{margin-top:1.4rem}
+.jl th{padding:.8rem;text-align:left;font-size:.78rem;font-weight:700;color:var(--text);background:#E6EDEA;border-bottom:1px solid var(--mist)}
+.jl th:first-child{border-top-left-radius:var(--r-m)}.jl th:last-child{border-top-right-radius:var(--r-m)}
+.jl td{padding:.85rem .8rem;border-bottom:1px solid var(--mist)}
+.jl tbody tr{cursor:pointer}
+.jl tbody tr:hover{background:#F1F7F4}
+#dqView{align-items:center;justify-content:center;padding:1.2rem 1.2rem 6.5rem;background:rgb(14 42 37/.62);backdrop-filter:blur(6px)}
+.dq-card{width:min(76rem,100%);max-height:100%;display:flex;flex-direction:column;padding:1.4rem;background:var(--ash);border-radius:var(--r-l);box-shadow:var(--sh)}
+.dq-top{display:flex;align-items:center}
+.dq-top h3{font:700 1.3rem var(--display)}
+.dq-top .ibtn{margin-left:auto}
+.dq-meta{margin:.3rem 0 1rem;color:var(--muted);font-size:.78rem}
+.dq-filters{display:flex;align-items:end;flex-wrap:wrap;gap:.5rem}
+.dq-filters input,.dq-filters select{min-height:2.6rem;min-width:8.5rem;padding:0 .7rem;font-size:.84rem;background:#fff;border:1.5px solid var(--mist);border-radius:var(--r-s)}
+.dq-filters .dl{min-height:2.6rem;display:inline-flex;align-items:center;gap:.5rem;margin-left:auto;padding:0 .9rem;color:#fff;font-weight:600;background:var(--canopy);border-radius:var(--r-s)}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 .8rem}
+.chip{display:inline-flex;align-items:center;gap:.4rem;min-height:2.2rem;padding:0 .85rem;font-size:.8rem;font-weight:600;background:#fff;border:1.5px solid var(--mist);border-radius:999px}
+.chip .ic{width:1rem;height:1rem}
+.chip[aria-pressed=true]{color:#fff;background:var(--canopy);border-color:var(--canopy)}
+.dq-sum{margin:.2rem 0 .7rem;color:var(--muted);font-size:.8rem;font-weight:600}
+.dq-scroll{min-height:0;overflow:auto;background:#fff;border-radius:var(--r-m);box-shadow:0 0 0 1px var(--mist)}
+.dq-t{width:100%;border-collapse:collapse;font-size:.8rem}
+.dq-t th{position:sticky;top:0;padding:.7rem .6rem;text-align:left;white-space:nowrap;background:#E6EDEA;border-bottom:1px solid var(--mist)}
+.dq-t th button{font-weight:700}
+.dq-t td{padding:.75rem .6rem;border-bottom:1px solid var(--mist);vertical-align:middle}
+.dq-t tbody tr:hover{background:#F6FAF8}
+.col-cell{display:flex;align-items:center;gap:.5rem;font-weight:700;white-space:nowrap}
+.col-cell i,.byp i{width:1.6rem;height:1.6rem;display:grid;place-items:center;color:var(--canopy-2);background:#E6EDEA;border-radius:var(--r-s)}
+.col-cell i .ic,.byp i .ic{width:.95rem;height:.95rem}
+.col-cell .req{color:var(--bad)}
+.rule-t{max-width:24rem;line-height:1.45}
+.rule-m{margin-top:.2rem;color:var(--muted);font-size:.72rem}
+.bar{width:8rem;height:.5rem;overflow:hidden;background:#E1E9E5;border-radius:999px}
+.bar b{display:block;height:100%;background:var(--bad)}
+.stat-fail{margin-top:.25rem;color:var(--bad);font-size:.72rem;font-weight:600}
+.stat-err,.ok,.stat-none{display:inline-flex;align-items:center;gap:.35rem;font-weight:600;white-space:nowrap}
+.stat-err{color:var(--warn)}.ok{color:var(--ok)}.stat-none{color:var(--muted);font-weight:500}
+.stat-err .ic,.ok .ic,.stat-none .ic{width:1.05rem;height:1.05rem}
+.tag{display:inline-block;margin:.12rem;padding:.18rem .5rem;color:var(--info);background:var(--info-bg);border-radius:var(--r-s);font-size:.68rem;font-weight:700}
+.tag.p{color:#4B2E8A;background:#ECE4FA}
+.sev{width:1.9rem;height:1.9rem;display:grid;place-items:center;border-radius:50%}
+.sev .ic{width:1rem;height:1rem;stroke-width:2.25}
+.sev.s1{color:var(--warn);background:var(--warn-bg)}.sev.s2{color:#8F3200;background:#FDE3D3}.sev.s3{color:var(--bad);background:var(--bad-bg)}
+.byp{display:flex;align-items:center;gap:.5rem}
+.byp .ch{width:2rem;height:2rem;display:grid;place-items:center;color:var(--ember-ink);border-radius:var(--r-s)}
+.byp .ch:hover{background:#E6EDEA}
+.det td{color:var(--muted);background:var(--ash);font-size:.78rem}
+.pager{display:flex;align-items:center;justify-content:center;gap:.45rem;padding-top:.8rem;color:var(--muted);font-size:.8rem}
+.pager button{min-width:2.2rem;min-height:2.2rem;display:grid;place-items:center;background:#fff;border:1.5px solid var(--mist);border-radius:var(--r-s)}
+.pager button .ic{width:1rem;height:1rem}
+.pager button:disabled{opacity:.35;cursor:default}
+.pager input{width:3rem;min-height:2.2rem;text-align:center;border:1.5px solid var(--mist);border-radius:var(--r-s)}
+
+/* Adaptatif */
+@media (pointer:coarse){#coords{display:none}}
+@media (max-width:1279px),(min-width:761px){body.panel-open .hud{bottom:5rem}}
+@media (max-width:1279px){.hud{bottom:5rem}}
+@media (min-width:761px){body.panel-open .hud{left:26rem}body.panel-open .quick{left:26.5rem}body.panel-open #dock{left:calc(50% + 12.5rem)}body.panel-open .leaflet-bottom.leaflet-right{right:0}}
+@media (max-width:900px){
+  #btnSearch{display:grid}
+  #searchForm{display:none;position:absolute;top:calc(var(--hh) + .6rem);left:.75rem;right:.75rem;width:auto;height:3rem;background:var(--canopy);border-color:rgb(255 255 255/.3)}
+  #searchForm.open{display:flex}
+  .jgrid{grid-template-columns:1fr}.side{width:13rem}.dt td:first-child{width:10rem}
+}
+@media (max-width:760px){
+  :root{--hh:3.75rem}
+  .brand small{display:none}.brand h1{font-size:1.05rem}
+  #topbar{gap:.1rem}
+  .quick{left:.75rem;right:.75rem;justify-content:space-between}.quick button{flex:1;justify-content:center;padding:0 .4rem}
+  body.menu-open .quick{display:none}
+  body.menu-open .leaflet-top.leaflet-right{display:none}
+  .leaflet-top.leaflet-right{margin-top:3.7rem}
+  .hud{left:.75rem;max-width:calc(100% - 4.5rem)}
+  #legend{width:15rem}
+  #bottombar>*:not(#modeLabel){display:none}
+  #panel{top:auto;width:100%;height:60dvh;z-index:1500;border-radius:var(--r-l) var(--r-l) 0 0}
+  body.panel-open .hud,body.panel-open #dock{display:none}
+  .navbtn{padding:0 .9rem}
+  .side{display:none}.crumb{padding:0 1rem}.content{padding:1.2rem .9rem 6.5rem}
+  .jl{display:block;overflow-x:auto;white-space:nowrap}
+  .dq-card{padding:1rem}.dq-filters{display:grid;grid-template-columns:1fr 1fr}.dq-filters input{grid-column:1/-1}.dq-filters .dl{margin-left:0}
+  .dq-t{min-width:56rem}
+}
+@media (max-width:560px){#btnAnnounce,#btnChat{display:none}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M14.1 5.55a2 2 0 0 0 1.79 0l3.66-1.83A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.55 2.28a2 2 0 0 1-1.79 0l-4.21-2.1a2 2 0 0 0-1.79 0l-3.66 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9l4.55-2.27a2 2 0 0 1 1.79 0z"/><path d="M15 5.76v15M9 3.24v15"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-chev2" viewBox="0 0 24 24"><path d="m6 17 5-5-5-5M13 17l5-5-5-5"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol>
+<symbol id="i-up2" viewBox="0 0 24 24"><path d="m17 11-5-5-5 5M17 18l-5-5-5 5"/></symbol>
+<symbol id="i-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-checks" viewBox="0 0 24 24"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></symbol>
+<symbol id="i-octagon" viewBox="0 0 24 24"><path d="m15 9-6 6M9 9l6 6"/><path d="M2.59 16.73A2 2 0 0 1 2 15.31V8.69a2 2 0 0 1 .59-1.41l4.69-4.69A2 2 0 0 1 8.69 2h6.62a2 2 0 0 1 1.41.59l4.69 4.69A2 2 0 0 1 22 8.69v6.62a2 2 0 0 1-.59 1.41l-4.69 4.69a2 2 0 0 1-1.41.59H8.69a2 2 0 0 1-1.41-.59z"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></symbol>
+<symbol id="i-wind" viewBox="0 0 24 24"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2M9.6 4.6A2 2 0 1 1 11 8H2M12.6 19.4A2 2 0 1 0 14 16H2"/></symbol>
+<symbol id="i-flask" viewBox="0 0 24 24"><path d="M10 2v7.53a2 2 0 0 1-.21.9L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.07-10.13a2 2 0 0 1-.21-.9V2M8.5 2h7M7 16h10"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M2 14h4M10 8h4M18 16h4"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><path d="M8 2v4M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></symbol>
+<symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
+<symbol id="i-text" viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></symbol>
+<symbol id="i-bypass" viewBox="0 0 24 24"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></symbol>
+</defs></svg>
+
+<a class="skip-link" href="#map">Aller directement à la carte</a>
+
+<header id="topbar">
+  <div class="brand">
+    <span class="mark"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg></span>
+    <div><h1>Fire Monitor</h1><small>Feux actifs · données NASA FIRMS</small></div>
+  </div>
+  <span class="sp"></span>
+  <form id="searchForm" role="search">
+    <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+    <label class="sr-only" for="searchInput">Rechercher un lieu</label>
+    <input id="searchInput" type="search" placeholder="Rechercher un lieu…" autocomplete="off" enterkeyhint="search">
+    <button type="submit">Aller</button>
+  </form>
+  <button class="ibtn" id="btnSearch" type="button" title="Rechercher un lieu" aria-label="Rechercher un lieu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></button>
+  <button class="ibtn" id="btnAnnounce" type="button" title="Annonces" aria-label="Annonces"><svg class="ic" aria-hidden="true"><use href="#i-megaphone"/></svg></button>
+  <button class="ibtn" id="btnChat" type="button" title="Contacter la NASA Earthdata" aria-label="Contact"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg></button>
+  <button class="ibtn" id="burger" type="button" title="Ouvrir le menu principal" aria-label="Ouvrir le menu principal" aria-expanded="false" aria-controls="mainMenu"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
+</header>
+
+<main id="map" role="application" aria-label="Carte interactive des feux actifs" tabindex="-1"></main>
+
+<div class="quick" role="group" aria-label="Vues rapides">
+  <button type="button" data-go="africa" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg>Afrique</button>
+  <button type="button" data-go="wyoming" aria-pressed="false" aria-label="Cluster Wyoming"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg>Wyoming</button>
+  <button type="button" data-go="world" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Monde</button>
+</div>
+
+<div class="hud">
+  <details id="legend" open>
+    <summary>Âge et puissance<svg class="ic" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="legend-rows">
+      <div class="row"><span class="sw"><i style="width:14px;height:14px;background:#ff8a00;border:2px solid #d62500"></i></span>24 h, plus de 750 W</div>
+      <div class="row"><span class="sw"><i style="width:11px;height:11px;background:#ffb000;border:2px solid #d62500"></i></span>24 h, 300–749 W</div>
+      <div class="row"><span class="sw"><i style="width:9px;height:9px;background:#ff5a2a;border:1.5px solid #c1200d"></i></span>24 h, 100–299 W</div>
+      <div class="row"><span class="sw"><i style="width:6px;height:6px;background:#ff3b2f"></i></span>24 h, 10–99 W</div>
+      <div class="row"><span class="sw"><i style="width:4px;height:4px;background:#ff3b2f"></i></span>24 h, 0–9 W</div>
+      <div class="row"><span class="sw"><i style="width:5px;height:5px;background:#e07a5f;opacity:.85"></i></span>Il y a 24 à 48 h</div>
+      <div class="row"><span class="sw"><i style="width:5px;height:5px;background:#c9a39a;opacity:.85"></i></span>Il y a 2 à 7 jours</div>
+    </div>
+  </details>
+  <div id="bottombar">
+    <span id="coords">Lat 0.000 · Lon 0.000 · Feux 24 h</span>
+    <span id="modeLabel">Mode : Basique</span>
+    <span>Imagerie : <span id="baseLabel">Esri World Imagery</span></span>
+    <a href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">NASA FIRMS<svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg></a>
+  </div>
+</div>
+
+<nav id="dock" aria-label="Vues de l’application">
+  <button class="navbtn on" data-view="map" type="button" title="Retour à la carte" aria-current="true"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg><span class="lbl">Carte</span></button>
+  <button class="navbtn" data-view="jobs" type="button" title="Jobs de traitement" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg><span class="lbl">Jobs</span></button>
+  <button class="navbtn" data-view="dq" type="button" title="Rapport de qualité des données" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg><span class="lbl">Qualité</span></button>
+</nav>
+
+<div id="mainMenu" role="dialog" aria-label="Menu principal de la carte">
+  <div class="mm-head"><span>Menu de la carte</span><button class="ibtn" id="mmClose" type="button" aria-label="Fermer le menu"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+  <div class="mm-grid">
+    <button class="mm-btn active" data-mode="basic" type="button"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg><span>Mode basique</span></button>
+    <button class="mm-btn" data-mode="advanced" type="button"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span>Mode avancé</span></button>
+    <button class="mm-btn" data-mode="burned" type="button"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Zones brûlées</span></button>
+    <button class="mm-btn" data-mode="us" type="button"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg><span>États-Unis / Canada</span></button>
+    <button class="mm-btn" data-mode="smoke" type="button"><svg class="ic" aria-hidden="true"><use href="#i-wind"/></svg><span>Fumées et aérosols</span></button>
+    <button class="mm-btn disabled" data-mode="exp" type="button" aria-disabled="true"><svg class="ic" aria-hidden="true"><use href="#i-flask"/></svg><span>Expérimental<small>En cours de développement</small></span></button>
+    <button class="mm-btn" data-mode="alerts" type="button"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg><span>Alertes feux</span></button>
+    <button class="mm-btn" data-mode="downloads" type="button"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span>Téléchargements</span></button>
+  </div>
+</div>
+
+<aside id="panel" aria-label="Détails du cluster">
+  <header>
+    <svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg>
+    <h2 id="clusterTitle">Cluster</h2>
+    <button class="ibtn" id="pBell" type="button" title="Activer l’alerte" aria-label="Activer l’alerte"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg></button>
+    <button class="ibtn" id="pShare" type="button" title="Copier le lien" aria-label="Copier le lien"><svg class="ic" aria-hidden="true"><use href="#i-share"/></svg></button>
+    <button class="ibtn" id="pExport" type="button" title="Exporter en CSV" aria-label="Exporter en CSV"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg></button>
+    <button class="ibtn" id="pClose" type="button" title="Fermer" aria-label="Fermer le panneau"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </header>
+  <div class="scroll">
+    <div class="acc"><button class="acc-h" type="button" aria-expanded="false"><span>Historique et prévisions</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      <div class="acc-b">
+        <div class="kv"><span>Premier hotspot</span><b id="firstHs">15/09 04:12 UTC</b></div>
+        <div class="kv"><span>Dernier hotspot</span><b id="lastHs">20/09 23:40 UTC</b></div>
+        <div class="kv"><span>Prévision météo</span><b>Vent SO 25 km/h</b></div>
+      </div></div>
+    <div class="acc"><button class="acc-h" type="button" aria-expanded="false"><span>Passages satellites LEO</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      <div class="acc-b">
+        <div class="kv"><span>VIIRS SNPP</span><b>13:25 / 01:35</b></div>
+        <div class="kv"><span>VIIRS NOAA-20</span><b>14:10 / 02:20</b></div>
+        <div class="kv"><span>MODIS Terra / Aqua</span><b>10:30 / 13:30</b></div>
+      </div></div>
+    <div class="acc"><button class="acc-h" type="button" aria-expanded="false"><span>Propagation du feu</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      <div class="acc-b">
+        <div class="kv"><span>Superficie du périmètre</span><b id="areaKm">–</b></div>
+        <div class="kv"><span>Direction dominante</span><b>Nord-Est</b></div>
+      </div></div>
+    <div class="acc"><button class="acc-h" type="button" aria-expanded="false"><span>Zones brûlées</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      <div class="acc-b">
+        <div class="kv"><span>Surface brûlée estimée</span><b id="areaKm2">–</b></div>
+        <div class="kv"><span>Source</span><b>VIIRS 375 m</b></div>
+      </div></div>
+    <div class="acc open" id="accFrp"><button class="acc-h" type="button" aria-expanded="true"><span>Puissance radiative (FRP)</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+      <div class="acc-b">
+        <div class="legend-line"><span class="dot-lg"></span>FRP par passage (MW)</div>
+        <div class="legend-line"><span class="dash-lg"></span>Moyenne mobile pondérée (MW)</div>
+        <canvas id="frp" width="620" height="460" role="img" aria-label="Graphique de la puissance radiative du feu en échelle logarithmique du 15 au 20 septembre"></canvas>
+      </div></div>
+  </div>
+</aside>
+
+<div id="view">
+  <section id="jobsView" class="vw" aria-label="Jobs de traitement">
+    <nav class="side" aria-label="Navigation">
+      <div class="sbrand"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Fire<b>·ops</b></span></div>
+      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Carte</button>
+      <button type="button" data-nav="jobs" class="act"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Jobs</button>
+      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Qualité des données</button>
+    </nav>
+    <div class="main">
+      <nav class="crumb" aria-label="Fil d’Ariane"><span>quark</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><button id="crJobs" type="button">Jobs</button><span id="crJob"></span><span class="sp"></span><span class="who">Opérateur</span></nav>
+      <div class="content" id="jobsBody"></div>
+    </div>
+  </section>
+  <section id="dqView" class="vw" aria-label="Rapport de qualité des données">
+    <div class="dq-card" id="dqCard"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
+const TODAY = new Date();
+// GIBS publie avec ~1 jour de retard : on prend la veille (UTC)
+const GIBS_DATE = new Date(TODAY.getTime() - 24*3600*1000).toISOString().slice(0,10);
+
+const VIEWS = {
+  world:   {center:[10, 20],        zoom:3},
+  africa:  {center:[2, 20],         zoom:4},
+  wyoming: {center:[41.33, -106.17],zoom:10},
+  us:      {center:[42, -105],      zoom:4}
+};
+
+/* =========================================================
+   CARTE – fonds satellite haute définition
+   ========================================================= */
+const map = L.map('map', {
+  center: VIEWS.africa.center, zoom: VIEWS.africa.zoom,
+  minZoom: 2, maxZoom: 18, zoomControl: false, worldCopyJump: true
+});
+
+// Fond principal : Esri World Imagery (même rendu que les captures Esri/FIRMS)
+const esriImagery = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 18, attribution: 'Earthstar Geographics | Esri'
+}).addTo(map);
+
+// Fond alternatif : NASA Blue Marble (vue globale de l'image Afrique)
+const blueMarble = L.tileLayer(
+  'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg', {
+  maxNativeZoom: 8, maxZoom: 18, attribution: 'NASA GIBS – Blue Marble'
+});
+
+// Image VIIRS du jour (vraies couleurs)
+const viirsTrueColor = L.tileLayer(
+  `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${GIBS_DATE}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`, {
+  maxNativeZoom: 9, maxZoom: 18, attribution: 'NASA GIBS – VIIRS SNPP'
+});
+
+// Frontières / noms de lieux par-dessus l'imagerie
+const labels = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 18, opacity: .9
+}).addTo(map);
+
+// Points de feu réels (VIIRS 375 m, NASA GIBS – données des dernières 24 h)
+const hotspots = L.tileLayer(
+  `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_SNPP_Thermal_Anomalies_375m_All/default/${GIBS_DATE}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`, {
+  maxNativeZoom: 8, maxZoom: 18, attribution: 'NASA FIRMS / GIBS'
+}).addTo(map);
+
+// Fumées / aérosols (option du menu)
+const aerosols = L.tileLayer(
+  `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_Aerosol/default/${GIBS_DATE}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`, {
+  maxNativeZoom: 6, maxZoom: 18, opacity: .65
+});
+
+/* =========================================================
+   CLUSTER D'INCENDIE (démonstration – Wyoming)
+   Périmètre cyan + remplissage rouge + hotspots par âge/puissance
+   ========================================================= */
+// Générateur pseudo-aléatoire reproductible
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rand = rng(42);
+
+// Périmètre (décalages lat/lon autour du centre)
+const C = VIEWS.wyoming.center;
+const offs = [[.10,-.16],[.12,-.06],[.09,.00],[.07,.10],[.10,.22],[.06,.30],[.02,.32],[-.01,.25],[-.04,.18],
+  [-.07,.13],[-.10,.10],[-.13,.04],[-.16,-.03],[-.17,-.11],[-.14,-.14],[-.10,-.12],[-.07,-.17],[-.04,-.21],[0,-.22],[.05,-.20]];
+const perimeterLL = offs.map(o => [C[0]+o[0], C[1]+o[1]]);
+
+const perimeter = L.polygon(perimeterLL, {
+  color:'#2ee6d0', weight:3, fillColor:'#ff5b2e', fillOpacity:.45, className:'perimeter'
+});
+const hotspotsGroup = L.layerGroup();
+
+function pointInPoly(pt, poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i][1],yi=poly[i][0],xj=poly[j][1],yj=poly[j][0];
+    if(((yi>pt[0])!==(yj>pt[0])) && (pt[1] < (xj-xi)*(pt[0]-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
+}
+function powerStyle(w, ageH){
+  if(ageH>24 && ageH<=48) return {r:3,fill:'#e07a5f',stroke:null,op:.8};
+  if(ageH>48)            return {r:3,fill:'#c9a39a',stroke:null,op:.75};
+  if(w>750)  return {r:8,fill:'#ff8a00',stroke:'#d62500'};
+  if(w>300)  return {r:6.5,fill:'#ffb000',stroke:'#d62500'};
+  if(w>100)  return {r:5,fill:'#ff5a2a',stroke:'#c1200d'};
+  if(w>10)   return {r:3.2,fill:'#ff3b2f',stroke:null};
+  return {r:2.2,fill:'#ff3b2f',stroke:null};
+}
+(function buildHotspots(){
+  const n = 700;
+  for(let i=0;i<n;i++){
+    // 70 % sur le bord du périmètre, 30 % à l'intérieur
+    let ll;
+    if(rand()<.7){
+      const k = Math.floor(rand()*perimeterLL.length);
+      const a = perimeterLL[k], b = perimeterLL[(k+1)%perimeterLL.length], t = rand();
+      ll = [a[0]+(b[0]-a[0])*t + (rand()-.5)*.012, a[1]+(b[1]-a[1])*t + (rand()-.5)*.012];
+    } else {
+      do { ll = [C[0]+(rand()-.5)*.36, C[1]+(rand()-.5)*.6]; } while(!pointInPoly(ll, perimeterLL));
+    }
+    const w = Math.pow(10, rand()*3.2) ;            // 1 → ~1600 W
+    const ageH = rand()<.55 ? rand()*24 : (rand()<.6 ? 24+rand()*24 : 48+rand()*120);
+    const s = powerStyle(w, ageH);
+    L.circleMarker(ll, {radius:s.r, fillColor:s.fill, fillOpacity:s.op??.95, color:s.stroke||'transparent', weight:s.stroke?1.5:0})
+      .bindTooltip(`${Math.round(w)} W · il y a ${Math.round(ageH)} h`, {className:'hs-tip'})
+      .addTo(hotspotsGroup);
+  }
+})();
+
+const cluster = L.layerGroup([perimeter, hotspotsGroup]).addTo(map);
+
+// Surface approximative du polygone (km²)
+function polyAreaKm2(ll){
+  const R=6371, lat0=ll[0][0]*Math.PI/180; let s=0;
+  for(let i=0;i<ll.length;i++){
+    const [y1,x1]=ll[i],[y2,x2]=ll[(i+1)%ll.length];
+    s += (x1*Math.PI/180)*(y2*Math.PI/180) - (x2*Math.PI/180)*(y1*Math.PI/180);
+  }
+  return Math.abs(s)/2 * R*R * Math.cos(lat0);
+}
+const area = Math.round(polyAreaKm2(perimeterLL));
+document.getElementById('areaKm').textContent = area.toLocaleString('fr-FR')+' km²';
+document.getElementById('areaKm2').textContent = Math.round(area*.82).toLocaleString('fr-FR')+' km²';
+
+/* =========================================================
+   GRAPHIQUE FRP (échelle logarithmique, 15-09 → 20-09)
+   ========================================================= */
+function drawFRP(){
+  const cv = document.getElementById('frp'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height, padL=150, padR=20, padT=14, padB=44;
+  ctx.clearRect(0,0,W,H);
+  const t0 = 0, t1 = 5.4;                       // jours depuis le 15/09
+  const yMin=0, yMax=5;                         // 10^0 → 10^5
+  const X = t => padL + (t-t0)/(t1-t0)*(W-padL-padR);
+  const Y = v => padT + (1-(Math.log10(v)-yMin)/(yMax-yMin))*(H-padT-padB);
+
+  // grille + axes
+  ctx.font = '22px "Instrument Sans",system-ui,sans-serif'; ctx.fillStyle='#3E514B'; ctx.strokeStyle='#D2DCD8'; ctx.lineWidth=1.5;
+  const ylab = ['1 MW','10 MW','100 MW','1000 MW','10000 MW','00000 MW'];
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let e=0;e<=5;e++){
+    const y=Y(Math.pow(10,e)); ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    ctx.fillText(e===5?'100000 MW':ylab[e], padL-10, y);
+  }
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let d=0;d<=5;d++){
+    const dd = new Date(2026,8,15+d); const lbl = String(dd.getDate()).padStart(2,'0')+'-'+String(dd.getMonth()+1).padStart(2,'0');
+    ctx.fillText(lbl, X(d+.05), H-padB+10);
+  }
+  // données : montée rapide, pic ~16-17/09, décroissance, queue faible
+  const r = rng(7), pts=[];
+  const env = t => {
+    if(t<.2) return 30;
+    if(t<1.1) return 30*Math.pow(10, (t-.2)/.9*2.6);        // 30 → 12000
+    if(t<2.4) return 12000*Math.exp(-(t-1.1)*.55);
+    if(t<3.6) return 1700*Math.exp(-(t-2.4)*.9);
+    return 500*Math.exp(-(t-3.6)*1.7)+3;
+  };
+  for(let i=0;i<110;i++){
+    const t = Math.min(5.3, Math.pow(r(),1.15)*5.3);
+    pts.push([t, Math.max(1.5, env(t)*Math.pow(10,(r()-.5)*.9))]);
+  }
+  pts.sort((a,b)=>a[0]-b[0]);
+  // moyenne mobile pondérée
+  const avg = pts.map((p,i)=>{let s=0,w=0;for(let j=Math.max(0,i-5);j<=Math.min(pts.length-1,i+5);j++){const k=1/(1+Math.abs(i-j));s+=Math.log10(pts[j][1])*k;w+=k}return [p[0],Math.pow(10,s/w)]});
+  // ligne pointillée
+  ctx.setLineDash([9,6]); ctx.strokeStyle='#C4263F'; ctx.lineWidth=3; ctx.beginPath();
+  avg.forEach((p,i)=> i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))); ctx.stroke(); ctx.setLineDash([]);
+  // points
+  ctx.fillStyle='rgba(242,84,27,.8)';
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(X(p[0]),Y(p[1]),5.2,0,7);ctx.fill()});
+}
+
+/* =========================================================
+   INTERFACE
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const ico = (n, c='') => `<svg class="ic ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const panel = $('#panel'), menu = $('#mainMenu');
+
+function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2600)}
+function openPanel(){panel.classList.add('open');document.body.classList.add('panel-open');setTimeout(()=>{map.invalidateSize();drawFRP()},50)}
+function closePanel(){panel.classList.remove('open');document.body.classList.remove('panel-open');setTimeout(()=>map.invalidateSize(),50)}
+function toggleMenu(force){
+  const o = force ?? !menu.classList.contains('open');
+  menu.classList.toggle('open',o); document.body.classList.toggle('menu-open',o); $('#burger').setAttribute('aria-expanded', String(o));
+}
+function setMode(label){$('#modeLabel').textContent='Mode : '+label}
+function fly(v){map.flyTo(VIEWS[v].center, VIEWS[v].zoom, {duration:1.4}); document.querySelectorAll('.quick button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.go===v)))}
+
+// Coordonnées en direct
+map.on('mousemove', e => $('#coords').innerHTML = `Lat ${e.latlng.lat.toFixed(3)} · Lon ${e.latlng.lng.toFixed(3)} · Feux 24 h`);
+
+// Clic sur le périmètre / les hotspots du cluster => panneau
+perimeter.on('click', openPanel);
+$('#clusterTitle').textContent = 'Cluster de 9 655 hotspots';
+
+// Accordéons
+document.querySelectorAll('.acc-h').forEach(h=>h.addEventListener('click',()=>{
+  const acc=h.parentElement; acc.classList.toggle('open'); h.setAttribute('aria-expanded', String(acc.classList.contains('open'))); if(acc.id==='accFrp') setTimeout(drawFRP,30);
+}));
+document.querySelectorAll('.acc-h').forEach(h=>h.setAttribute('aria-expanded', String(h.parentElement.classList.contains('open'))));
+
+// Barre du haut
+$('#burger').onclick = () => toggleMenu();
+$('#mmClose').onclick = () => toggleMenu(false);
+const sForm = $('#searchForm'), sIn = $('#searchInput');
+sForm.onsubmit = async e => {
+  e.preventDefault(); const q = sIn.value.trim(); if(!q) return;
+  sForm.classList.add('busy');
+  try{
+    const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q));
+    const j = await r.json();
+    if(j[0]){ showView('map'); map.flyTo([+j[0].lat,+j[0].lon], 8); sForm.classList.remove('open'); $('#btnSearch').setAttribute('aria-expanded','false'); }
+    else toast('Lieu introuvable : essayez un nom de ville ou de pays');
+  }catch(err){ toast('Recherche indisponible : vérifiez votre connexion'); }
+  sForm.classList.remove('busy');
+};
+$('#btnSearch').onclick = () => { const o = sForm.classList.toggle('open'); $('#btnSearch').setAttribute('aria-expanded', String(o)); if(o) sIn.focus(); };
+$('#btnAnnounce').onclick = () => toast('Données hotspots : VIIRS 375 m – NASA FIRMS (dernières 24 h)');
+$('#btnChat').onclick = () => window.open('https://earthdata.nasa.gov/contact','_blank');
+
+// Panneau : boutons d'en-tête
+$('#pClose').onclick = closePanel;
+$('#pBell').onclick  = () => toast('Alerte activée pour ce cluster');
+$('#pShare').onclick = async () => {try{await navigator.clipboard.writeText(location.href);toast('Lien copié')}catch(e){toast('Copie impossible')}};
+$('#pExport').onclick= () => {
+  const csv = 'date,frp_mw\n' + Array.from({length:12},(_,i)=>`2026-09-${15+Math.floor(i/2)},${Math.round(Math.pow(10,1+Math.random()*3.5))}`).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='cluster_frp.csv';a.click();
+};
+
+// Raccourcis de vue
+document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{
+  const v=b.dataset.go; fly(v); if(v==='wyoming') setTimeout(openPanel,1500);
+});
+
+// Boutons du menu principal
+const layerState = {burned:true, smoke:false};
+document.querySelectorAll('.mm-btn').forEach(b=>b.addEventListener('click',()=>{
+  const m=b.dataset.mode;
+  switch(m){
+    case 'basic':
+      document.querySelectorAll('[data-mode=basic],[data-mode=advanced]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); closePanel(); setMode('Basique');
+      map.hasLayer(esriImagery)||esriImagery.addTo(map); break;
+    case 'advanced':
+      document.querySelectorAll('[data-mode=basic],[data-mode=advanced]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); setMode('Avancé'); fly('wyoming'); setTimeout(openPanel,1500); break;
+    case 'burned':
+      layerState.burned=!layerState.burned; b.classList.toggle('active',layerState.burned);
+      layerState.burned? cluster.addTo(map): map.removeLayer(cluster); break;
+    case 'us': fly('us'); break;
+    case 'smoke':
+      layerState.smoke=!layerState.smoke; b.classList.toggle('active',layerState.smoke);
+      layerState.smoke? aerosols.addTo(map): map.removeLayer(aerosols); break;
+    case 'alerts': toast('Alertes : choisissez une zone sur la carte (démo)'); break;
+    case 'downloads': window.open('https://firms.modaps.eosdis.nasa.gov/download/','_blank'); break;
+    case 'exp': toast('Fonctionnalité expérimentale en cours de développement'); break;
+  }
+}));
+// l'état "burned area" est actif au départ
+document.querySelector('[data-mode=burned]').classList.add('active');
+
+// Sélecteur de fond de carte & couches (en haut à gauche, sous les boutons de zoom)
+L.control.layers({
+  'Esri World Imagery (haute définition)': esriImagery,
+  'NASA VIIRS vraies couleurs (veille)': viirsTrueColor,
+  'NASA Blue Marble': blueMarble
+},{
+  'Frontières & lieux': labels,
+  'Hotspots VIIRS 375 m (24 h)': hotspots,
+  'Cluster / périmètre (démo)': cluster,
+  'Fumées / aérosols': aerosols
+},{position:'topright', collapsed:true}).addTo(map);
+L.control.zoom({position:'bottomright', zoomInTitle:'Zoom avant', zoomOutTitle:'Zoom arrière'}).addTo(map);
+
+map.on('baselayerchange', e => $('#baseLabel').textContent = e.name.split(' (')[0]);
+
+// Échelle
+L.control.scale({position:'bottomright', imperial:false, metric:true}).addTo(map);
+
+// Légende Esri visible uniquement en zoom rapproché (comme sur la carte Wyoming)
+function syncLegend(){ $('#legend').style.display = map.getZoom()>=7 ? 'block':'none'; }
+map.on('zoomend', syncLegend); syncLegend();
+
+/* =========================================================
+   VUES SUPPLÉMENTAIRES : JOBS (type Slurm-web) & DATA QUALITY
+   ========================================================= */
+const view = $('#view');
+let jobTimer = null;
+
+function showView(name){
+  if(name==='map'){ closeView(); return; }
+  toggleMenu(false);
+  view.classList.add('open');
+  $('#jobsView').classList.toggle('show', name==='jobs');
+  $('#dqView').classList.toggle('show', name==='dq');
+  document.querySelectorAll('.navbtn').forEach(b=>{const on=b.dataset.view===name; b.classList.toggle('on', on); b.setAttribute('aria-current', String(on))});
+  if(name==='jobs') renderJobsList();
+  if(name==='dq') renderDQ();
+}
+function closeView(){
+  view.classList.remove('open'); clearInterval(jobTimer);
+  document.querySelectorAll('.navbtn').forEach(b=>{const on=b.dataset.view==='map'; b.classList.toggle('on', on); b.setAttribute('aria-current', String(on))});
+  setTimeout(()=>map.invalidateSize(),50);
+}
+document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+document.querySelectorAll('[data-nav]').forEach(a=>a.onclick=()=>showView(a.dataset.nav));
+document.querySelector('.navbtn[data-view=map]').classList.add('on');
+$('#crJobs').onclick = () => showView('jobs');
+
+/* ---------- JOBS ---------- */
+const NOW0 = Date.now();
+const p2 = n => String(n).padStart(2,'0');
+const fdt = ms => { const d=new Date(ms); return `${p2(d.getDate())}/${p2(d.getMonth()+1)}/${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`; };
+const JOBS = [
+  {id:18282, name:'frp_timeseries_export', user:'fireops', state:'PENDING',   start:null,                elapsed:0,    limit:60,  prio:410, exit:'–',
+   cmd:'sbatch --qos normal --job-name frp_timeseries_export --partition cpu --time 60 --output /dev/null --wrap "/usr/bin/python3 export_frp.py --cluster 9655"', part:'cpu', nodes:'(Resources)', gpu:false},
+  {id:18281, name:'firms_cluster_detect',  user:'fireops', state:'RUNNING',   start:NOW0-259e3,          elapsed:259,  limit:120, prio:545, exit:'SUCCESS (0)',
+   cmd:'sbatch --qos normal --job-name firms_cluster_detect --partition gpu --time 120 --output /dev/null --wrap "/usr/bin/python3 detect_clusters.py --sensor VIIRS --days 7" --gres gpu:h100:4', part:'gpu', nodes:'gpu1', gpu:true},
+  {id:18280, name:'viirs_hotspot_ingest',  user:'fireops', state:'COMPLETED', start:NOW0-4*3600e3,       elapsed:5400, limit:120, prio:520, exit:'SUCCESS (0)',
+   cmd:'sbatch --qos normal --job-name viirs_hotspot_ingest --partition cpu --time 120 --output /dev/null --wrap "/usr/bin/python3 ingest_firms.py --source VIIRS_SNPP_NRT"', part:'cpu', nodes:'cpu3', gpu:false},
+  {id:18279, name:'burned_area_mask',      user:'gisteam', state:'FAILED',    start:NOW0-2*3600e3,       elapsed:840,  limit:90,  prio:480, exit:'FAILED (1:0)',
+   cmd:'sbatch --qos low --job-name burned_area_mask --partition gpu --time 90 --output /dev/null --wrap "/usr/bin/python3 burned_area.py --tile 31UDQ"', part:'gpu', nodes:'gpu2', gpu:true}
+];
+
+function renderJobsList(){
+  clearInterval(jobTimer);
+  $('#crJob').textContent = '';
+  $('#jobsBody').innerHTML = `
+    <h2>Jobs</h2><small>Traitements de données incendie (ingestion VIIRS/MODIS, détection de clusters, exports FRP)</small>
+    <table class="jl"><thead><tr><th>Job ID</th><th>Nom</th><th>Utilisateur</th><th>Partition</th><th>Priorité</th><th>État</th></tr></thead><tbody>
+    ${JOBS.map(j=>`<tr data-job="${j.id}" tabindex="0" aria-label="Ouvrir le job ${j.id}"><td>${j.id}</td><td>${j.name}</td><td>${j.user}</td><td>${j.part}</td><td>${j.prio}</td><td><span class="badge ${j.state}">${j.state}</span></td></tr>`).join('')}
+    </tbody></table>`;
+  document.querySelectorAll('#jobsBody tr[data-job]').forEach(tr=>{tr.onclick=()=>openJob(+tr.dataset.job); tr.onkeydown=e=>{if(e.key==='Enter')openJob(+tr.dataset.job)}});
+}
+
+function openJob(id){
+  clearInterval(jobTimer);
+  const j = JOBS.find(x=>x.id===id); if(!j) return;
+  $('#crJob').textContent = ' › Job '+id;
+  const sub = (j.start ?? NOW0) - 175e3, st = j.start;
+  const dash = '–';
+  let steps;
+  if(j.state==='RUNNING')        steps=[['Submitted',fdt(sub),'done'],['Eligible',fdt(sub),'done'],['Scheduling',fdt(st),'done'],['Running','<span id="elapsedTxt">'+j.elapsed+' seconds elapsed</span>','cur'],['Completing','Limite '+fdt(st+j.limit*60e3),'pend'],['Terminated','','pend']];
+  else if(j.state==='COMPLETED') steps=[['Submitted',fdt(sub),'done'],['Eligible',fdt(sub),'done'],['Scheduling',fdt(st),'done'],['Running',j.elapsed+' seconds','done'],['Completing',fdt(st+j.elapsed*1e3),'done'],['Terminated',fdt(st+j.elapsed*1e3+4e3),'done']];
+  else if(j.state==='FAILED')    steps=[['Submitted',fdt(sub),'done'],['Eligible',fdt(sub),'done'],['Scheduling',fdt(st),'done'],['Running',j.elapsed+' seconds','done'],['Completing',fdt(st+j.elapsed*1e3),'done'],['Terminated','Échec – '+fdt(st+j.elapsed*1e3+3e3),'done']];
+  else                           steps=[['Submitted',fdt(sub),'done'],['Eligible',fdt(sub),'done'],['Scheduling','En attente de ressources','cur'],['Running','','pend'],['Completing','','pend'],['Terminated','','pend']];
+
+  const rows = [
+    ['User',`<a>${j.user}</a>`],['Group','scientists'],['Account','<a>fire-monitoring</a>'],['Wckeys',''],
+    ['Priority',j.prio],['Name',j.name],['Comments',''],['Submit line',`<code>${j.cmd}</code>`],['Script',''],
+    ['Working directory',`/home/${j.user}`],['Exit Code',j.exit],['Nodes',j.nodes],['Partition',j.part],['QOS',j.state==='FAILED'?'low':'normal'],
+    ['Requested',`Nodes : 1<br>CPU : 1<br>Memory : 512 MB${j.gpu?'<br>GPU : h100 × 4':''}`]
+  ];
+  $('#jobsBody').innerHTML = `
+    <button class="btn-back" id="backJobs">${ico('back')}Retour aux jobs</button>
+    <div class="jtitle"><div><h2>Job ${j.id}</h2><small>All job settings</small></div><span class="badge ${j.state}">${j.state}</span></div>
+    <div class="jgrid">
+      <div class="tl">${steps.map(s=>`<div class="st ${s[2]}"><div class="c">${s[2]==='done'?ico('check'):''}</div><div class="t"><b>${s[0]}</b><span>${s[1]||''}</span></div></div>`).join('')}</div>
+      <table class="dt"><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]===''?'':r[1]}</td></tr>`).join('')}</tbody></table>
+    </div>`;
+  $('#backJobs').onclick = renderJobsList;
+  if(j.state==='RUNNING'){
+    const t0 = Date.now();
+    jobTimer = setInterval(()=>{ const el=$('#elapsedTxt'); if(el) el.textContent = (j.elapsed+Math.floor((Date.now()-t0)/1000))+' seconds elapsed'; },1000);
+  }
+}
+
+/* ---------- DATA QUALITY REPORT ---------- */
+const DQ_CAT = {ACQ_DATE:'Temporal',ACQ_TIME:'Temporal',LATITUDE:'Spatial',LONGITUDE:'Spatial',COUNTRY:'Spatial',
+  FRP:'Measurement',BRIGHT_TI4:'Measurement',SCAN:'Measurement',TRACK:'Measurement',CONFIDENCE:'Measurement',DAYNIGHT:'Measurement',
+  SATELLITE:'Metadata',INSTRUMENT:'Metadata',VERSION:'Metadata',CLUSTER_ID:'Metadata'};
+// [colonne, type, règle, dimension, périmètre, statut(% échec | 'pass' | 'err' | 'none'), entités, sévérité]
+const DQ_BASE = [
+  ['ACQ_DATE','D','Hotspot acquisition date must NOT be greater than current date and must be on or after the sensor start date','Plausibility','All hotspots',55,['ALL HOTSPOTS','VIIRS'],2],
+  ['LATITUDE','N','Latitude must be a number between -90 and 90 and should never be blank or NULL','Validity','All hotspots',36,['ALL HOTSPOTS','CLUSTERS','FIRE ALERTS'],3],
+  ['LONGITUDE','N','Longitude must be a number between -180 and 180 and should never be blank or NULL','Validity','All hotspots',19,['ALL HOTSPOTS','CLUSTERS'],3],
+  ['FRP','N','Fire radiative power (MW) must be non-negative and should not be missing for VIIRS and MODIS hotspots','Completeness','VIIRS, MODIS','err',['FIRE ALERTS','VIIRS','MODIS'],2],
+  ['CONFIDENCE','A','Confidence must be low, nominal or high (VIIRS) or a value between 0 and 100 (MODIS)','Validity','All hotspots','pass',['ALL HOTSPOTS','VIIRS','MODIS'],1],
+  ['SATELLITE','A','Satellite code must be populated and match a known platform (N, N20, N21, Terra, Aqua)','Consistency','All hotspots','pass',['ALL HOTSPOTS','MODIS'],1],
+  ['INSTRUMENT','A','Instrument must be populated and equal to VIIRS or MODIS','Validity','All hotspots','pass',['ALL HOTSPOTS'],1],
+  ['BRIGHT_TI4','N','Brightness temperature I-4 must be between 200 K and 500 K','Plausibility','VIIRS',8,['VIIRS','FIRE ALERTS'],2],
+  ['DAYNIGHT','A','Day / night flag must be D or N','Validity','All hotspots','pass',['ALL HOTSPOTS'],1],
+  ['SCAN','N','Scan size must be positive and must not exceed the sensor swath limit','Plausibility','All hotspots',3,['ALL HOTSPOTS','MODIS'],1],
+  ['TRACK','N','Track size must be positive and must not exceed the sensor swath limit','Plausibility','All hotspots',12,['ALL HOTSPOTS','VIIRS'],2],
+  ['ACQ_TIME','D','Acquisition time must be a 4-digit HHMM value between 0000 and 2359','Validity','All hotspots','err',['ALL HOTSPOTS','FIRE ALERTS'],2],
+  ['VERSION','A','Product version must be populated for every hotspot','Completeness','All hotspots','pass',['ALL HOTSPOTS'],1],
+  ['CLUSTER_ID','A','Cluster ID must not be missing for hotspots attached to a fire event','Completeness','Clusters',23,['CLUSTERS','FIRE ALERTS'],3],
+  ['COUNTRY','A','Country code should be populated for hotspots located on land','Completeness','All hotspots','none',['ALL HOTSPOTS'],1],
+  ['CLUSTER_ID','A','Cluster ID must be unique across cluster polygons','Uniqueness','Clusters','pass',['CLUSTERS'],1]
+];
+const DQ_RULES = [];
+for(let p=0;p<3;p++) DQ_BASE.forEach((r,i)=>{
+  let status = r[5];
+  if(typeof status==='number') status = Math.max(1, Math.min(96, status + p*4 - 4 + i%3));
+  DQ_RULES.push({id:'FIR-'+p2(p*16+i+1), col:r[0], ty:r[1], txt:r[2], dim:r[3], scope:r[4], status, ents:r[6], sev:r[7], cat:DQ_CAT[r[0]]});
+});
+const kindOf = r => typeof r.status==='number' ? 'fail' : r.status;
+const keyOf  = r => typeof r.status==='number' ? r.status : (r.status==='pass'?0 : r.status==='err'?-1 : -2);
+const dqs = {q:'', cat:'', ent:'', dim:'', col:'', chips:new Set(), sort:0, page:1, open:new Set()};
+const PAGE = 10;
+const uniq = a => [...new Set(a)].sort();
+const opts = (label, arr) => `<option value="">${label}</option>` + arr.map(x=>`<option>${x}</option>`).join('');
+
+function buildDQ(){
+  $('#dqCard').innerHTML = `
+    <div class="dq-top"><h3>Rapport de qualité des données</h3><button class="ibtn" id="dqX" type="button" aria-label="Fermer le rapport">${ico('x')}</button></div>
+    <div class="dq-meta" id="dqMeta"></div>
+    <div class="dq-filters">
+      <label class="sr-only" for="dqQ">Rechercher une colonne</label><input id="dqQ" type="search" placeholder="Rechercher une colonne">
+      <select id="dqCat">${opts('Toutes les catégories', uniq(DQ_RULES.map(r=>r.cat)))}</select>
+      <select id="dqEnt">${opts('Toutes les entités', uniq(DQ_RULES.flatMap(r=>r.ents)))}</select>
+      <select id="dqDim">${opts('Toutes les dimensions', uniq(DQ_RULES.map(r=>r.dim)))}</select>
+      <select id="dqCol">${opts('Toutes les colonnes', uniq(DQ_RULES.map(r=>r.col)))}</select>
+      <button class="dl" id="dqDl" type="button" title="Exporter en CSV">${ico('download')}CSV</button>
+    </div>
+    <div class="chips">
+      <button type="button" class="chip" data-k="fail" aria-pressed="false">${ico('octagon')}En échec</button>
+      <button type="button" class="chip" data-k="pass" aria-pressed="false">${ico('shield')}Réussies</button>
+      <button type="button" class="chip" data-k="none" aria-pressed="false">${ico('ban')}Non exécutées</button>
+      <button type="button" class="chip" data-k="err" aria-pressed="false">${ico('alert')}Erreur d’exécution</button>
+    </div>
+    <div class="dq-sum" id="dqSum"></div>
+    <div class="dq-scroll"><table class="dq-t"><thead><tr>
+      <th>Colonne</th><th>Règle</th><th class="sortable" id="dqSort"><button type="button">Statut <span id="sortArrow">↓</span></button></th><th>Entités concernées</th><th>Sév.</th><th>Bypass</th>
+    </tr></thead><tbody id="dqBody"></tbody></table></div>
+    <div class="pager">
+      <button id="pFirst" type="button" aria-label="Première page">${ico('chev2','flip')}</button><button id="pPrev" type="button" aria-label="Page précédente">${ico('chev','flip')}</button>
+      <input id="pNum" value="1" inputmode="numeric" aria-label="Numéro de page"> <span id="pTot">sur 1 pages</span>
+      <button id="pNext" type="button" aria-label="Page suivante">${ico('chev')}</button><button id="pLast" type="button" aria-label="Dernière page">${ico('chev2')}</button>
+    </div>`;
+  $('#dqX').onclick = closeView;
+  $('#dqView').onclick = e => { if(e.target.id==='dqView') closeView(); };
+  $('#dqQ').oninput  = e => {dqs.q=e.target.value.trim().toLowerCase(); dqs.page=1; dqRows();};
+  [['dqCat','cat'],['dqEnt','ent'],['dqDim','dim'],['dqCol','col']].forEach(([id,k])=>$('#'+id).onchange=e=>{dqs[k]=e.target.value; dqs.page=1; dqRows();});
+  document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+    const k=c.dataset.k; dqs.chips.has(k)?dqs.chips.delete(k):dqs.chips.add(k); c.setAttribute('aria-pressed', String(c.classList.toggle('on'))); dqs.page=1; dqRows();
+  });
+  $('#dqSort').onclick = () => { dqs.sort = dqs.sort===1 ? -1 : 1; $('#sortArrow').textContent = dqs.sort===1?'↓':'↑'; dqRows(); };
+  $('#pFirst').onclick=()=>{dqs.page=1;dqRows()}; $('#pPrev').onclick=()=>{dqs.page--;dqRows()};
+  $('#pNext').onclick=()=>{dqs.page++;dqRows()}; $('#pLast').onclick=()=>{dqs.page=1e9;dqRows()};
+  $('#pNum').onchange = e => {dqs.page=parseInt(e.target.value)||1; dqRows()};
+  $('#dqDl').onclick = () => {
+    const rows = dqFiltered();
+    const csv = 'id,column,rule,dimension,status,severity\n' + rows.map(r=>[r.id,r.col,'"'+r.txt+'"',r.dim,typeof r.status==='number'?r.status+'% failed':r.status,r.sev].join(',')).join('\n');
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='data_quality_report.csv'; a.click();
+  };
+}
+function dqFiltered(){
+  let a = DQ_RULES.filter(r =>
+    (!dqs.q || r.col.toLowerCase().includes(dqs.q)) && (!dqs.cat || r.cat===dqs.cat) && (!dqs.ent || r.ents.includes(dqs.ent)) &&
+    (!dqs.dim || r.dim===dqs.dim) && (!dqs.col || r.col===dqs.col) && (!dqs.chips.size || dqs.chips.has(kindOf(r))));
+  if(dqs.sort) a = a.slice().sort((x,y)=>dqs.sort*(keyOf(y)-keyOf(x)));
+  return a;
+}
+const tagCls = n => ['VIIRS','MODIS','GOES','LANDSAT'].includes(n) ? 'p' : 'g';
+const typeIco = t => ico(t==='D' ? 'cal' : t==='N' ? 'hash' : 'text');
+function statusCell(r){
+  if(typeof r.status==='number') return `<div class="bar"><b style="width:${r.status}%"></b></div><div class="stat-fail">${r.status}% d’enregistrements en échec</div>`;
+  if(r.status==='pass') return `<span class="ok">${ico('shield')}Conforme</span>`;
+  if(r.status==='err')  return `<span class="stat-err">${ico('alert')}Erreur d’exécution</span>`;
+  return `<span class="stat-none">${ico('ban')}Non exécutée</span>`;
+}
+function dqRows(){
+  const all = dqFiltered(), pages = Math.max(1, Math.ceil(all.length/PAGE));
+  dqs.page = Math.min(Math.max(1,dqs.page), pages);
+  const from = (dqs.page-1)*PAGE, slice = all.slice(from, from+PAGE);
+  $('#dqSum').textContent = all.length ? `${from+1}–${from+slice.length} sur ${all.length} règles exécutées sur les hotspots` : 'Aucune règle ne correspond aux filtres';
+  $('#dqBody').innerHTML = slice.map(r=>`
+    <tr>
+      <td><div class="col-cell"><i>${typeIco(r.ty)}</i>${r.col}<span class="req" title="Colonne obligatoire">*</span></div></td>
+      <td><div class="rule-t">${r.txt}</div><div class="rule-m">${r.id} · ${r.dim} · ${r.scope}</div></td>
+      <td>${statusCell(r)}</td>
+      <td>${r.ents.map(e=>`<span class="tag ${tagCls(e)}">${e}</span>`).join('')}</td>
+      <td><div class="sev s${r.sev}" role="img" aria-label="Sévérité ${r.sev} sur 3" title="Sévérité ${r.sev}/3">${ico(r.sev>1?'up2':'up')}</div></td>
+      <td><div class="byp"><i>${ico('bypass')}</i><button class="ch" type="button" data-id="${r.id}" aria-expanded="${dqs.open.has(r.id)}" aria-label="Détails de la règle ${r.id}">${ico(dqs.open.has(r.id)?'up':'down')}</button></div></td>
+    </tr>
+    ${dqs.open.has(r.id)?`<tr class="det"><td colspan="6"><b>${r.id}</b> — colonne <b>${r.col}</b> · catégorie ${r.cat} · dernière exécution ${new Date().toLocaleString('fr-FR')} · bypass : non</td></tr>`:''}`).join('');
+  document.querySelectorAll('.byp .ch').forEach(c=>c.onclick=()=>{ const id=c.dataset.id; dqs.open.has(id)?dqs.open.delete(id):dqs.open.add(id); dqRows(); });
+  $('#pNum').value = dqs.page; $('#pTot').textContent = `sur ${pages} pages`;
+  $('#pFirst').disabled = $('#pPrev').disabled = dqs.page<=1;
+  $('#pNext').disabled = $('#pLast').disabled = dqs.page>=pages;
+}
+function renderDQ(){
+  if(!$('#dqCard').children.length) buildDQ();
+  $('#dqMeta').textContent = `Destination table – firms_hotspots (L2) | Execution ID – 1531 | Generated on ${new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}`;
+  dqRows();
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape'){
+    if(menu.classList.contains('open')) toggleMenu(false);
+    else if(panel.classList.contains('open')) closePanel();
+    else if(view.classList.contains('open')) closeView();
+  }
+});
+document.addEventListener('click', e => {
+  if(menu.classList.contains('open') && !menu.contains(e.target) && !$('#burger').contains(e.target)) toggleMenu(false);
+});
+
+
+document.querySelectorAll('.mm-btn').forEach(b=>{
+  const s = () => b.setAttribute('aria-pressed', String(b.classList.contains('active')));
+  s(); new MutationObserver(s).observe(b, {attributes:true, attributeFilter:['class']});
+});
+if(matchMedia('(max-width:760px)').matches) $('#legend').open = false;
+drawFRP();
+window.addEventListener('resize', ()=>{map.invalidateSize(); drawFRP()});
+</script>
+</body>
+</html>
