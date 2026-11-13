@@ -1,49 +1,104 @@
-"""Data & Methodology — documentation scientifique et technique exposée en API.
+"""Data & Methodology — documentation scientifique exposée en API.
 
-Endpoints :
-- GET /api/v1/methodology
-- GET /api/v1/methodology/satellites
-- GET /api/v1/methodology/processing-steps
+Endpoints (montés sous ``/api/v1``) :
+- GET /methodology                 → ``text/markdown`` (docs/methodology.md)
+- GET /methodology/satellites      → capteurs de l'inventaire (inventory.json)
+- GET /methodology/processing-steps → étapes méthodologiques (titres du document)
 
-Tous les réponses sont issues des fichiers de documentation versionnés
-(``docs/methodology.md``, ``docs/references.md``, ``config/pipeline.yaml``)
-ou des artefacts métier (``config/pipeline.yaml`` → catalogue des capteurs).
+Le contenu Markdown est lu depuis ``docs/methodology.md`` à la racine du projet
+(même fichier que ``web/public/methodology.md`` servi en mode statique).
 """
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Request
+import re
+from pathlib import Path
+from typing import Any
 
-from api.routers.deps import apply_cache_headers, cache_guard, get_store
+from fastapi import APIRouter, Request
+from fastapi.responses import Response
+
+from api import PROJECT_ROOT
+from api.errors import ApiError
+from api.routers.deps import get_store
 from api.store import ArtifactStore
 
-router = APIRouter(prefix="/api/v1/methodology", tags=["Methodology"])
+router = APIRouter(tags=["Methodology"])
 
-# ---------- aide -----------------------------------------------------------
+_METHODOLOGY_DOC = PROJECT_ROOT / "docs" / "methodology.md"
+_METHODOLOGY_FALLBACK = PROJECT_ROOT / "web" / "public" / "methodology.md"
 
-
-def _first_lines(text: str, n: int = 12) -> str:
-    lines = [line for line in text.splitlines() if line.strip()]
-    return "\n".join(lines[:n]) or "(document vide)"
+_STEP_RE = re.compile(r"^##\s+(\d+)\.\s+(.+?)\s*$", re.MULTILINE)
 
 
-# ---------- méthodologie --------------------------------------------------
+def _methodology_text() -> str:
+    for candidate in (_METHODOLOGY_DOC, _METHODOLOGY_FALLBACK):
+        try:
+            return candidate.read_text(encoding="utf-8")
+        except OSError:
+            continue
+    raise ApiError(404, "Documentation méthodologique indisponible.")
+
+
+# ---------- méthodologie ----------------------------------------------------
+
 
 @router.get(
     "/methodology",
-    summary="Résumé de la méthode scientifique",
+    summary="Documentation méthodologique complète",
     description=(
-        "Retourne un condensé de la documentation méthodologique (docs/methodology.md), "
-        "avec les questions de recherche, les non-objectifs et les étapes principales."
+        "Le document ``docs/methodology.md`` en Markdown brut (``text/markdown``), "
+        "identique au fichier servi en mode statique."
     ),
-    responses={
-        200: {"description": "Résumé de la méthode."},
-        404: {"description": "Fichier de documentation manquant."},
-    },
+    responses={200: {"content": {"text/markdown": {}}, "description": "Document méthodologique."}},
 )
-def methodology(request: Request) -> dict:
+def methodology() -> Response:
+    return Response(
+        content=_methodology_text(),
+        media_type="text/markdown; charset=utf-8",
+        headers={"Cache-Control": "public, max-age=300"},
+    )
+
+
+@router.get(
+    "/methodology/satellites",
+    summary="Capteurs couverts par l'étude",
+    description=(
+        "Liste des capteurs de l'inventaire (MODIS Terra, MODIS Aqua, VIIRS S-NPP) "
+        "avec libellé, nom court et version retenue."
+    ),
+)
+def satellites(request: Request) -> dict[str, Any]:
     store: ArtifactStore = get_store(request)
-    text = store.get_text("docs/methodology.md")
-    if text is None:
-        raise store.get_json("methodology.md") is None and {}
-    return {"generated_at": store.get_json("methodology.md") or {}, "summary": _first_lines(text)}
+    inventory = store.get_json("inventory.json") or {}
+    sensors = inventory.get("sensors", {}) or {}
+    return {
+        "generated_at": inventory.get("generated_at"),
+        "data_origin": None,
+        "satellites": [
+            {
+                "id": key,
+                "label": sensor.get("label", key),
+                "short_name": sensor.get("short_name"),
+                "version_used": sensor.get("version_used") or sensor.get("configured_version"),
+            }
+            for key, sensor in sensors.items()
+        ],
+    }
+
+
+@router.get(
+    "/methodology/processing-steps",
+    summary="Étapes de la méthode (titres du document)",
+    description=(
+        "Sections numérotées de ``docs/methodology.md`` extraites dynamiquement : "
+        "aucune liste codée en dur, le document fait foi."
+    ),
+)
+def processing_steps() -> dict[str, Any]:
+    text = _methodology_text()
+    steps = [
+        {"order": int(order), "title": title}
+        for order, title in _STEP_RE.findall(text)
+    ]
+    return {"steps": steps, "source": "docs/methodology.md"}

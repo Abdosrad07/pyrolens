@@ -1,443 +1,347 @@
 """Fire Calendar — agrégations temporelles quotidiennes, hebdomadaires et mensuelles.
 
-Endpoints :
-- GET /api/v1/fire-calendar/daily
-- GET /api/v1/fire-calendar/weekly
-- GET /api/v1/fire-calendar/monthly
-- GET /api/v1/fire-calendar/timeseries
+Endpoints (montés sous ``/api/v1``) :
+- GET /fire-calendar/daily
+- GET /fire-calendar/weekly
+- GET /fire-calendar/monthly
+- GET /fire-calendar/timeseries
 
-Toutes les séries sont calculées à partir des artefacts ``baselines.json`` et
-``inventory.json`` produits par le pipeline. Les périodes de date/temps sont
-toujours UTC (``YYYY-MM-DD`` / ``YYYY-MM``).
+Les séries sont calculées à partir de l'artefact ``baselines.json`` (configuration
+primaire : ``primary.grid_deg`` / ``primary.window_days``). Les lignes quotidiennes
+et mensuelles sont publiées **par paire** (``terra__aqua``, ``aqua__viirs_snpp``) ;
+il n'existe pas de découpage par capteur individuel dans l'artefact. Les périodes
+sont en UTC (``YYYY-MM-DD`` / ``YYYY-MM`` / ``YYYY-Www``).
 """
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, Response
 
-from api.routers.deps import apply_cache_headers, cache_guard, get_store
+from api.routers.deps import (
+    apply_cache_headers,
+    cache_guard,
+    get_store,
+    reject_unknown_params,
+)
 from api.store import ArtifactStore
 
-router = APIRouter(prefix="/api/v1/fire-calendar", tags=["Fire Calendar"])
+router = APIRouter(tags=["Fire Calendar"])
+
 
 # ---------- aide -----------------------------------------------------------
 
-def _safe_int(value: Any | None, default: int) -> int:
+
+def _in_range(day: str, start: str | None, end: str | None) -> bool:
+    """Filtre de période tolérant : ``start``/``end`` en YYYY-MM-DD ou YYYY-MM."""
+    if not start and not end:
+        return True
+    if start:
+        lo = start if len(start) == 10 else f"{start}-01"
+        if day < lo:
+            return False
+    if end:
+        hi = end if len(end) == 10 else f"{end}-31"
+        if day > hi:
+            return False
+    return True
+
+
+def _iso_week(day: str) -> str | None:
+    """Semaine ISO ``YYYY-Www`` d'une date ``YYYY-MM-DD`` (None si invalide)."""
     try:
-        if value is None:
-            return default
-        ivalue = int(value)
-        return ivalue if ivalue >= 1 else default
-    except (TypeError, ValueError):
-        return default
+        y, w, _ = date.fromisoformat(day).isocalendar()
+    except ValueError:
+        return None
+    return f"{y}-W{w:02d}"
+
+
+def _recent(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    """Conserve les ``limit`` lignes les plus récentes (ordre chronologique gardé)."""
+    return rows[-limit:] if len(rows) > limit else rows
+
+
+def _base_payload(baselines: dict, **extra: Any) -> dict[str, Any]:
+    return {
+        "generated_at": baselines.get("generated_at") or "",
+        "data_origin": baselines.get("data_origin") or "unknown",
+        "key_definitions": baselines.get("key_definitions"),
+        **extra,
+    }
 
 
 # ---------- daily ----------------------------------------------------------
 
+
 @router.get(
-    "/daily",
-    summary="Série quotidienne (observations, FRP, comptages) par capteur et paire",
+    "/fire-calendar/daily",
+    summary="Série quotidienne de divergence par paire",
     description=(
-        "Retourne une série quotidienne agrégée par capteur et paire pour la "
-        "configuration primaire. Chaque point contient le nombre d'observations et "
-        "la somme de la FRP. Les dates sont en UTC (``YYYY-MM-DD``)."
+        "Comptages quotidiens ``a_only`` / ``b_only`` / ``both`` par paire de capteurs "
+        "(configuration primaire). ``total`` = a_only + b_only ; les dates sont en UTC."
     ),
-    responses={
-        200: {"description": "Série quotidienne (jours avec données fixe)."},
-        404: {"description": "Artefact `baselines.json` absent (pipeline non exécuté)."},
-    },
+    dependencies=[Depends(reject_unknown_params({"pair", "start", "end", "limit"}))],
 )
 def daily(
     request: Request,
-    sensor: str | None = Query(
-        default=None,
-        description="Capteur à filtrer : terra | aqua | viirs_snpp. Aucun filtre = toutes.",
-    ),
-    pair: str | None = Query(
-        default=None,
-# ---------- weekly ----------------------------------------------------------
+    response: Response,
+    pair: str | None = Query(default=None, description="terra__aqua | aqua__viirs_snpp"),
+    start: str | None = Query(default=None, description="Début YYYY-MM-DD ou YYYY-MM (UTC)."),
+    end: str | None = Query(default=None, description="Fin YYYY-MM-DD ou YYYY-MM (UTC)."),
+    limit: int = Query(default=4000, ge=1, le=20000, description="Jours les plus récents retournés."),
+) -> dict:
+    guard = cache_guard(request, "baselines.json")
+    if guard is not None:
+        return guard
+    store: ArtifactStore = get_store(request)
+    baselines = store.require_json("baselines.json")
+
+    rows = []
+    for item in baselines.get("daily", []) or []:
+        if pair and item.get("pair") != pair:
+            continue
+        day = item.get("date", "")
+        if not _in_range(day, start, end):
+            continue
+        a_only = item.get("a_only", 0)
+        b_only = item.get("b_only", 0)
+        rows.append(
+            {
+                "pair": item.get("pair", ""),
+                "date": day,
+                "a_only": a_only,
+                "b_only": b_only,
+                "both": item.get("both", 0),
+                "total": a_only + b_only,
+            }
+        )
+    rows.sort(key=lambda r: (r["date"], r["pair"]))
+    apply_cache_headers(request, response, "baselines.json")
+    return _base_payload(
+        baselines,
+        pair=pair,
+        start=start or "",
+        end=end or "",
+        rows=_recent(rows, limit),
+    )
+
+
+# ---------- weekly ---------------------------------------------------------
+
 
 @router.get(
-    "/weekly",
-    summary="Série hebdomadaire (observations, FRP) par capteur et paire",
+    "/fire-calendar/weekly",
+    summary="Série hebdomadaire (semaines ISO) par paire",
     description=(
-        "Agrège les observations quotidiennes en semaines selon l'epoch. "
-        "Retourne une série par semaine (1..n) avec le nombre d'observations et "
-        "la somme de la FRP."
+        "Agrège les comptages quotidiens en semaines ISO ``YYYY-Www``. "
+        "``total`` = a_only + b_only sur la semaine."
     ),
-    responses={
-        200: {"description": "Série hebdomadaire."},
-        404: {"description": "Artefact `baselines.json` absent."},
-    },
+    dependencies=[Depends(reject_unknown_params({"pair", "start", "end", "limit"}))],
 )
 def weekly(
     request: Request,
-    sensor: str | None = Query(
-        default=None,
-        description="Capteur à filtrer : terra | aqua | viirs_snpp.",
-    ),
-    pair: str | None = Query(
-        default=None,
-        description="Paire de capteurs : terra__aqua | aqua__viirs_snpp.",
-    ),
-    limit: int = Query(
-        default=90,
-        ge=1,
-        le=365,
-        description="Nombre maximum de semaines retournées.",
-    ),
-):
+    response: Response,
+    pair: str | None = Query(default=None, description="terra__aqua | aqua__viirs_snpp"),
+    start: str | None = Query(default=None, description="Début YYYY-MM-DD ou YYYY-MM (UTC)."),
+    end: str | None = Query(default=None, description="Fin YYYY-MM-DD ou YYYY-MM (UTC)."),
+    limit: int = Query(default=400, ge=1, le=2000, description="Semaines les plus récentes retournées."),
+) -> dict:
+    guard = cache_guard(request, "baselines.json")
+    if guard is not None:
+        return guard
     store: ArtifactStore = get_store(request)
     baselines = store.require_json("baselines.json")
-    inv = store.get_json("inventory") or {}
 
-    rows = []
-    for item in (baselines.get("weekly", []) or []):
+    buckets: dict[tuple[str, str], dict[str, int]] = {}
+    for item in baselines.get("daily", []) or []:
         if pair and item.get("pair") != pair:
             continue
-        if sensor:
-            s = (inv.get("sensors", {}) or {}).get(sensor)
-            if not s:
-                continue
-        rows.append(
-            {
-                "sensor": item.get("sensor", ""),
-                "week": item.get("week", ""),
-                "obs_a_only": item.get("a_only", 0),
-                "obs_b_only": item.get("b_only", 0),
-                "obs_both": item.get("both", 0),
-                "count": item.get("a_only", 0) + item.get("b_only", 0),
-                "frp": item.get("frp", 0),
-            }
-        )
-# ---------- monthly ---------------------------------------------------------
+        week = _iso_week(item.get("date", ""))
+        if week is None or not _in_range(item.get("date", ""), start, end):
+            continue
+        key = (item.get("pair", ""), week)
+        bucket = buckets.setdefault(key, {"a_only": 0, "b_only": 0, "both": 0})
+        for field in ("a_only", "b_only", "both"):
+            bucket[field] += int(item.get(field, 0) or 0)
+
+    rows = [
+        {
+            "pair": p,
+            "week": w,
+            "a_only": b["a_only"],
+            "b_only": b["b_only"],
+            "both": b["both"],
+            "total": b["a_only"] + b["b_only"],
+        }
+        for (p, w), b in buckets.items()
+    ]
+    rows.sort(key=lambda r: (r["week"], r["pair"]))
+    apply_cache_headers(request, response, "baselines.json")
+    return _base_payload(
+        baselines,
+        pair=pair,
+        start=start or "",
+        end=end or "",
+        rows=_recent(rows, limit),
+    )
+
+
+# ---------- monthly --------------------------------------------------------
+
 
 @router.get(
-    "/monthly",
-    summary="Série mensuelle (observations, FRP, séries de divergence)",
+    "/fire-calendar/monthly",
+    summary="Séries mensuelles de divergence et de Jaccard",
     description=(
-        "Retourne les agrégations mensuelles : observations par capteur, "
-        "séries de divergence (a_only / b_only / both), et jaccard mensuel. "
-        "Les dates sont en UTC (``YYYY-MM``)."
+        "Comptages mensuels ``a_only`` / ``b_only`` / ``both`` par paire, plus la série "
+        "de Jaccard de la configuration primaire (``grid_deg`` / ``window_days``)."
     ),
-    responses={
-        200: {"description": "Série mensuelle et divergences."},
-        404: {"description": "Artefact `baselines.json` absent."},
-    },
+    dependencies=[Depends(reject_unknown_params({"pair", "limit"}))],
 )
 def monthly(
     request: Request,
-    sensor: str | None = Query(
-        default=None,
-        description="Capteur à filtrer : terra | aqua | viirs_snpp.",
-    ),
-    pair: str | None = Query(
-        default=None,
-        description="Paire de capteurs : terra__aqua | aqua__viirs_snpp.",
-    ),
-    limit: int = Query(
-        default=24,
-        ge=1,
-        le=36,
-        description="Nombre maximum de mois retournés.",
-    ),
-):
+    response: Response,
+    pair: str | None = Query(default=None, description="terra__aqua | aqua__viirs_snpp"),
+    limit: int = Query(default=120, ge=1, le=600, description="Mois les plus récents retournés."),
+) -> dict:
+    guard = cache_guard(request, "baselines.json")
+    if guard is not None:
+        return guard
     store: ArtifactStore = get_store(request)
     baselines = store.require_json("baselines.json")
-    inv = store.get_json("inventory") or {}
-
-    monthly_rows = (baselines.get("monthly", []) or [])
-    monthly_jaccard = (baselines.get("jaccard_monthly", []) or [])
-    regions = (baselines.get("regions", []) or [])
-    daily = (baselines.get("daily", []) or [])
 
     rows = []
-    jaccard_rows = []
-
-    for item in monthly_rows:
+    for item in baselines.get("monthly", []) or []:
         if pair and item.get("pair") != pair:
             continue
-        if sensor:
-            s = (inv.get("sensors", {}) or {}).get(sensor)
-            if not s:
-                continue
+        a_only = item.get("a_only", 0)
+        b_only = item.get("b_only", 0)
         rows.append(
             {
-                "sensor": item.get("sensor", ""),
+                "pair": item.get("pair", ""),
                 "month": item.get("month", ""),
-# ---------- timeseries -----------------------------------------------------
-
-@router.get(
-    "/timeseries",
-    summary="Série temporelle multi-dimensionnelle (FRP, comptages, jaccard)",
-    description=(
-        "Retourne les données de séries temporelles nécessaires au graphique du "
-        "calendrier : observations, FRP, jaccard et divergences, filtrables par "
-        "période, capteur et configuration primaire."
-    ),
-    responses={
-        200: {"description": "Série temporelle complète."},
-        404: {"description": "Artefact `baselines.json` absent."},
-    },
-)
-def timeseries(
-    request: Request,
-    start: str | None = Query(
-        default=None,
-        description="Date de début (ISO-8601 UTC, YYYY-MM-DD ou YYYY-MM).",
-    ),
-    end: str | None = Query(
-        default=None,
-        description="Date de fin (ISO-8601 UTC, YYYY-MM-DD ou YYYY-MM).",
-    ),
-    sensor: str | None = Query(
-        default=None,
-        description="Capteur : terra | aqua | viirs_snpp.",
-    ),
-    pair: str | None = Query(
-        default=None,
-        description="Paire : terra__aqua | aqua__viirs_snpp.",
-    ),
-    metric: str | None = Query(
-        default="observation",
-        description="Métrique : observation | jaccard | frp | divergence.",
-    ),
-):
-    store: ArtifactStore = get_store(request)
-    baselines = store.require_json("baselines.json")
-    inv = store.get_json("inventory") or {}
-
-    daily_rows = (baselines.get("daily", []) or [])
-    monthly_rows = (baselines.get("monthly", []) or [])
-    jaccard_rows = (baselines.get("jaccard_monthly", []) or [])
-
-    sensor = sensor or (list(inv.get("sensors", {}) or {}).keys())[0] if inv.get("sensors") else None
-    pair = pair or (list((baselines.get("primary", {}) or {}).get("pairs", {}) or {}).keys())[0]
-
-    # tolerance de date (YYYY-MM renvoie à tous les JJ du mois)
-    def _in_range(date: str) -> bool:
-        if not start and not end:
-            return True
-        try:
-            y, m, d = date.split("-")
-        except ValueError:
-            return False
-        if start and (y, m) < (start[:4], start[5:7]):
-            return False
-        if end and (y, m) > (end[:4], end[5:7]):
-            return False
-        return True
-
-    rows = []
-
-    # observations, grâce à `daily`
-    if metric in ("observation", "frp"):
-        for item in daily_rows:
-            if pair and item.get("pair") != pair:
-                continue
-            if sensor and item.get("sensor") != sensor:
-                continue
-            if not _in_range(item.get("date", "")):
-                continue
-            rows.append(
-                {
-                    "sensor": item.get("sensor", ""),
-                    "date": item.get("date", ""),
-                    "metric": "observation",
-                    "count": item.get("a_only", 0) + item.get("b_only", 0),
-                    "frp": item.get("frp", 0),
-                    "a_only": item.get("a_only", 0),
-                    "b_only": item.get("b_only", 0),
-                    "both": item.get("both", 0),
-                }
-            )
-
-    # jaccard
-    if metric in ("jaccard", "observation"):
-        for item in jaccard_rows:
-            if pair and item.get("pair") != pair:
-                continue
-            if sensor and item.get("sensor") != sensor:
-                continue
-            if not _in_range(item.get("month", "")):
-                continue
-            rows.append(
-                {
-                    "sensor": item.get("sensor", ""),
-                    "month": item.get("month", ""),
-                    "metric": "jaccard",
-                    "jaccard": item.get("jaccard"),
-                    "a_only": item.get("a_only", 0),
-                    "b_only": item.get("b_only", 0),
-                    "both": item.get("both", 0),
-                    "total_jaccard": item.get("total_jaccard"),
-                }
-            )
-
-    return {
-        "generated_at": (baselines.get("generated_at") or ""),
-        "data_origin": (baselines.get("data_origin") or "unknown"),
-        "start": start or "",
-        "end": end or "",
-        "sensor": sensor,
-        "pair": pair,
-        "metric": metric,
-        "rows": rows[:250],
-    }
-                "a_only": item.get("a_only", 0),
-                "b_only": item.get("b_only", 0),
+                "a_only": a_only,
+                "b_only": b_only,
                 "both": item.get("both", 0),
-                "total": item.get("a_only", 0)
-                + item.get("b_only", 0)
-                + item.get("both", 0),
+                "total": a_only + b_only,
             }
         )
+    rows.sort(key=lambda r: (r["month"], r["pair"]))
 
-    for item in monthly_jaccard:
+    primary = baselines.get("primary", {}) or {}
+    jaccard_rows = []
+    for item in baselines.get("jaccard_monthly", []) or []:
         if pair and item.get("pair") != pair:
+            continue
+        if item.get("grid_deg") != primary.get("grid_deg"):
+            continue
+        if item.get("window_days") != primary.get("window_days"):
             continue
         jaccard_rows.append(
             {
-                "sensor": item.get("sensor", ""),
+                "pair": item.get("pair", ""),
                 "month": item.get("month", ""),
                 "jaccard": item.get("jaccard"),
+                "total_jaccard": item.get("total_jaccard"),
                 "a_only": item.get("a_only", 0),
                 "b_only": item.get("b_only", 0),
                 "both": item.get("both", 0),
-                "total_jaccard": item.get("total_jaccard"),
             }
         )
+    jaccard_rows.sort(key=lambda r: (r["month"], r["pair"]))
 
-    return {
-        "generated_at": (baselines.get("generated_at") or ""),
-        "data_origin": (baselines.get("data_origin") or "unknown"),
-        "grid_deg": baselines.get("primary", {}).get("grid_deg", 0.25),
-        "window_days": baselines.get("primary", {}).get("window_days", 8),
-        "monthly": rows[:limit],
-        "jaccard_monthly": jaccard_rows[:limit],
-    }
+    apply_cache_headers(request, response, "baselines.json")
+    return _base_payload(
+        baselines,
+        pair=pair,
+        grid_deg=primary.get("grid_deg"),
+        window_days=primary.get("window_days"),
+        monthly=_recent(rows, limit),
+        jaccard_monthly=_recent(jaccard_rows, limit),
+    )
 
 
-    return {
-        "generated_at": (baselines.get("generated_at") or ""),
-        "data_origin": (baselines.get("data_origin") or "unknown"),
-        "grid_deg": baselines.get("primary", {}).get("grid_deg", 0.25),
-        "window_days": baselines.get("primary", {}).get("window_days", 8),
-        "rows": rows[:limit],
-    }
+# ---------- timeseries -----------------------------------------------------
 
-# ---------- weekly ----------------------------------------------------------
 
 @router.get(
-    "/weekly",
-    summary="Série hebdomadaire (observations, FRP) par capteur et paire",
+    "/fire-calendar/timeseries",
+    summary="Série temporelle pour graphiques (observations, Jaccard, divergence)",
     description=(
-        "Agrège les observations quotidiennes en semaines selon l'epoch. "
-        "Retourne une série par semaine (1..n) avec le nombre d'observations et "
-        "la somme de la FRP."
+        "``metric=observation`` : séries quotidiennes par paire. "
+        "``metric=jaccard`` : Jaccard mensuel de la configuration primaire. "
+        "``metric=monthly`` : comptages mensuels de divergence par paire."
     ),
-    responses={
-        200: {"description": "Série hebdomadaire."},
-        404: {"description": "Artefact `baselines.json` absent."},
-    },
+    dependencies=[
+        Depends(
+            reject_unknown_params({"start", "end", "pair", "metric", "limit"})
+        )
+    ],
 )
-def weekly(
+def timeseries(
     request: Request,
-    sensor: str | None = Query(
-        default=None,
-        description="Capteur à filtrer : terra | aqua | viirs_snpp.",
+    response: Response,
+    start: str | None = Query(default=None, description="Début YYYY-MM-DD ou YYYY-MM (UTC)."),
+    end: str | None = Query(default=None, description="Fin YYYY-MM-DD ou YYYY-MM (UTC)."),
+    pair: str | None = Query(default=None, description="terra__aqua | aqua__viirs_snpp"),
+    metric: str = Query(
+        default="observation",
+        description="observation | jaccard | monthly",
     ),
-    pair: str | None = Query(
-        default=None,
-        description="Paire de capteurs : terra__aqua | aqua__viirs_snpp.",
-    ),
-    limit: int = Query(
-        default=90,
-        ge=1,
-        le=365,
-        description="Nombre maximum de semaines retournées.",
-    ),
-):
+    limit: int = Query(default=4000, ge=1, le=20000),
+) -> dict:
+    guard = cache_guard(request, "baselines.json")
+    if guard is not None:
+        return guard
     store: ArtifactStore = get_store(request)
     baselines = store.require_json("baselines.json")
-    inv = store.get_json("inventory") or {}
 
-    rows = []
-    for item in (baselines.get("weekly", []) or []):
-        if pair and item.get("pair") != pair:
-            continue
-        if sensor:
-            s = (inv.get("sensors", {}) or {}).get(sensor)
-            if not s:
-                continue
-        rows.append(
-            {
-                "sensor": item.get("sensor", ""),
-                "week": item.get("week", ""),
-                "obs_a_only": item.get("a_only", 0),
-                "obs_b_only": item.get("b_only", 0),
-                "obs_both": item.get("both", 0),
-                "count": item.get("a_only", 0) + item.get("b_only", 0),
-                "frp": item.get("frp", 0),
-            }
-        )
+    if metric not in ("observation", "jaccard", "monthly"):
+        from api.errors import ApiError
 
-    return {
-        "generated_at": (baselines.get("generated_at") or ""),
-        "data_origin": (baselines.get("data_origin") or "unknown"),
-        "grid_deg": baselines.get("primary", {}).get("grid_deg", 0.25),
-        "window_days": baselines.get("primary", {}).get("window_days", 8),
-        "rows": rows[:limit],
-    }
+        raise ApiError(400, "Métrique inconnue : observation | jaccard | monthly.")
 
-        description="Paire de capteurs : terra__aqua | aqua__viirs_snpp.",
-    ),
-    limit: int = Query(
-        default=90,
-        ge=1,
-        le=365,
-        description="Nombre maximum de jours retournés (décroissant).",
-    ),
-):
-    store: ArtifactStore = get_store(request)
-    baselines = store.require_json("baselines.json")
-    inv = store.get_json("inventory") or {}
     primary = baselines.get("primary", {}) or {}
-    grid_deg = primary.get("grid_deg", 0.25)
-    window_days = primary.get("window_days", 8)
+    rows: list[dict[str, Any]] = []
 
-    rows = []
-    for item in (baselines.get("daily", []) or []):
+    if metric == "observation":
+        source = baselines.get("daily", []) or []
+        date_key = "date"
+    elif metric == "jaccard":
+        source = [
+            item
+            for item in (baselines.get("jaccard_monthly", []) or [])
+            if item.get("grid_deg") == primary.get("grid_deg")
+            and item.get("window_days") == primary.get("window_days")
+        ]
+        date_key = "month"
+    else:
+        source = baselines.get("monthly", []) or []
+        date_key = "month"
+
+    for item in source:
         if pair and item.get("pair") != pair:
             continue
-        if sensor:
-            s = (inv.get("sensors", {}) or {}).get(sensor)
-            if not s:
-                continue
-        rows.append(
-            {
-                "sensor": (inv.get("sensors", {}) or {}).get(item.get("pair", ""), {}).get(
-                    "label", item.get("pair", "")
-                ),
-                "date": item.get("date", ""),
-                "obs_a_only": item.get("a_only", 0),
-                "obs_b_only": item.get("b_only", 0),
-                "obs_both": item.get("both", 0),
-                "count": item.get("a_only", 0) + item.get("b_only", 0),
-                "frp": item.get("frp", 0),
-                "grid_deg": grid_deg,
-                "window_days": window_days,
-            }
-        )
+        period = item.get(date_key, "")
+        # les mois (YYYY-MM) sont comparés sur 7 caractères, les jours sur 10
+        if not _in_range(period if len(period) == 10 else f"{period}-01", start, end):
+            continue
+        row = {"pair": item.get("pair", ""), date_key: period}
+        for field in ("a_only", "b_only", "both", "jaccard", "total_jaccard"):
+            if field in item:
+                row[field] = item[field]
+        row["total"] = int(item.get("a_only", 0) or 0) + int(item.get("b_only", 0) or 0)
+        rows.append(row)
 
-    return {
-        "generated_at": (baselines.get("generated_at") or ""),
-        "data_origin": (baselines.get("data_origin") or "unknown"),
-        "period": f"{primary.get('start', '')} → {primary.get('end', '')}",
-        "grid_deg": grid_deg,
-        "window_days": window_days,
-        "rows": rows[:limit],
-    }
-
+    rows.sort(key=lambda r: (r[date_key], r["pair"]))
+    apply_cache_headers(request, response, "baselines.json")
+    return _base_payload(
+        baselines,
+        start=start or "",
+        end=end or "",
+        pair=pair,
+        metric=metric,
+        rows=_recent(rows, limit),
+    )

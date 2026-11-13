@@ -26,6 +26,8 @@ from api.routers import audit as audit_router
 from api.routers import baselines as baselines_router
 from api.routers import catalog as catalog_router
 from api.routers import experiments as experiments_router
+from api.routers import fire_calendar as fire_calendar_router
+from api.routers import methodology as methodology_router
 from api.routers import system as system_router
 from api.routers import validation as validation_router
 from api.settings import Settings
@@ -51,6 +53,8 @@ ROUTERS = (
     (catalog_router.router, "catalogue"),
     (audit_router.router, "audit"),
     (baselines_router.router, "comparaisons"),
+    (fire_calendar_router.router, "calendrier des feux"),
+    (methodology_router.router, "méthodologie"),
     (validation_router.router, "validation"),
     (experiments_router.router, "expériences"),
 )
@@ -113,7 +117,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.add_middleware(
             CORSMiddleware,
             allow_origins=list(settings.cors_origins),
-            allow_methods=["GET"],
+            allow_methods=["GET", "POST"],
             allow_headers=["*"],
         )
 
