@@ -8,6 +8,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useMemo } from "react";
+import Pagination, { usePaged } from "../components/Pagination.jsx";
 import { fmt } from "../data.js";
 
 const CAT_LABELS = {
@@ -32,8 +34,27 @@ function pick(obj, base) {
 }
 
 export default function Audit({ data }) {
-  const a = data.audit;
-  if (!a) return <div className="loading">Artefact audit.json indisponible.</div>;
+  const a = data.audit || {};
+  const filesPage = usePaged(a.files || [], 50);
+  const volRows = useMemo(
+    () =>
+      Object.entries(a.volumes_by_month || {})
+        .map(([k, v]) => {
+          const [sensor, month] = k.split("|");
+          return { sensor, month, value: v };
+        })
+        .sort((x, y) =>
+          x.month === y.month
+            ? x.sensor.localeCompare(y.sensor)
+            : x.month < y.month
+              ? -1
+              : 1
+        ),
+    [a]
+  );
+  const volPage = usePaged(volRows, 50);
+  if (!data.audit)
+    return <div className="loading">Artefact audit.json indisponible.</div>;
 
   const cats = Object.entries(a.anomalies_by_category || {})
     .map(([k, v]) => ({ name: CAT_LABELS[k] || k, value: v }))
@@ -210,7 +231,7 @@ export default function Audit({ data }) {
               </tr>
             </thead>
             <tbody>
-              {(a.files || []).map((f, i) => (
+              {filesPage.pageItems.map((f, i) => (
                 <tr key={i}>
                   <td className="txt">{f.file}</td>
                   <td>{f.sensor}</td>
@@ -228,6 +249,13 @@ export default function Audit({ data }) {
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={filesPage.page}
+          totalPages={filesPage.totalPages}
+          total={filesPage.total}
+          pageSize={filesPage.pageSize}
+          onPageChange={filesPage.setPage}
+        />
       </div>
 
       {a.temporal_gaps?.n_entries > 0 && (
@@ -285,19 +313,23 @@ export default function Audit({ data }) {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(a.volumes_by_month).map(([k, v], i) => {
-                  const [sensor, month] = k.split("|");
-                  return (
-                    <tr key={i}>
-                      <td>{sensor}</td>
-                      <td>{month}</td>
-                      <td>{fmt(v)}</td>
-                    </tr>
-                  );
-                })}
+                {volPage.pageItems.map((r, i) => (
+                  <tr key={i}>
+                    <td>{r.sensor}</td>
+                    <td>{r.month}</td>
+                    <td>{fmt(r.value)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={volPage.page}
+            totalPages={volPage.totalPages}
+            total={volPage.total}
+            pageSize={volPage.pageSize}
+            onPageChange={volPage.setPage}
+          />
         </div>
       )}
 

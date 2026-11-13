@@ -2,6 +2,7 @@
  * DatasetDetail - View for dataset details
  */
 import { useState, useEffect } from "react";
+import Pagination, { usePaged } from "../components/Pagination.jsx";
 import { loadDatasetDetail, fmt } from "../data.js";
 import LoadingState from "../components/LoadingState.jsx";
 import ErrorState from "../components/ErrorState.jsx";
@@ -10,6 +11,7 @@ export default function DatasetDetail({ datasetId }) {
   const [dataset, setDataset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const filesPage = usePaged(dataset?.files || [], 25);
 
   useEffect(() => {
     let alive = true;
@@ -132,7 +134,7 @@ export default function DatasetDetail({ datasetId }) {
                 </tr>
               </thead>
               <tbody>
-                {dataset.files.map((file, i) => (
+                {filesPage.pageItems.map((file, i) => (
                   <tr key={i}>
                     <td className="mono small">{file.name}</td>
                     <td>{fmt(file.n_records)}</td>
@@ -146,6 +148,13 @@ export default function DatasetDetail({ datasetId }) {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={filesPage.page}
+            totalPages={filesPage.totalPages}
+            total={filesPage.total}
+            pageSize={filesPage.pageSize}
+            onPageChange={filesPage.setPage}
+          />
         </div>
       )}
 

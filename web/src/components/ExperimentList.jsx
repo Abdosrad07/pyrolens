@@ -7,6 +7,7 @@
  * @param {function} onCreate - Callback to create new experiment
  */
 import { fmt, PAIR_LABELS } from "../data.js";
+import Pagination, { usePaged } from "./Pagination.jsx";
 
 function statusPill(status) {
   if (status === "succeeded") return <span className="pill ok">succès</span>;
@@ -17,6 +18,8 @@ function statusPill(status) {
 }
 
 export default function ExperimentList({ experiments = [], onSelect, onCreate }) {
+  const expPage = usePaged(experiments, 10);
+
   if (experiments.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "40px 20px" }}>
@@ -53,7 +56,7 @@ export default function ExperimentList({ experiments = [], onSelect, onCreate })
             </tr>
           </thead>
           <tbody>
-            {experiments.map((exp) => (
+            {expPage.pageItems.map((exp) => (
               <tr key={exp.job_id}>
                 <td className="mono small">{exp.job_id?.slice(0, 8)}…</td>
                 <td className="txt">{PAIR_LABELS[exp.params?.pair] || exp.params?.pair}</td>
@@ -74,6 +77,13 @@ export default function ExperimentList({ experiments = [], onSelect, onCreate })
           </tbody>
         </table>
       </div>
+      <Pagination
+        page={expPage.page}
+        totalPages={expPage.totalPages}
+        total={expPage.total}
+        pageSize={expPage.pageSize}
+        onPageChange={expPage.setPage}
+      />
     </div>
   );
 }
