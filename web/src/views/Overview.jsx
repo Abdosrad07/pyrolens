@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import StatCard from "../components/StatCard.jsx";
+import DateRangeFilter from "../components/DateRangeFilter.jsx";
 import { fmt } from "../data.js";
 
 const SENSOR_KIND_LABELS = {
@@ -138,13 +139,42 @@ export default function Overview({ data }) {
   const nOk = steps.filter((s) => s.status === "ok").length;
   const origin = audit.data_origin || "—";
 
-  // ---------- statistiques d'exploration (artefacts) ----------
+  // ---------- filtres (specs-aurel §1.2) ----------
+  const [sensorSel, setSensorSel] = useState(() => new Set()); // vide = tous
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const allFiles = audit.files || [];
+  const dateBounds = useMemo(() => {
+    let min = "";
+    let max = "";
+    for (const f of allFiles) {
+      if (f.date_min && (!min || f.date_min < min)) min = f.date_min;
+      if (f.date_max && (!max || f.date_max > max)) max = f.date_max;
+    }
+    return { min, max };
+  }, [allFiles]);
+
+  useEffect(() => {
+    if (dateBounds.min && !startDate) setStartDate(dateBounds.min);
+    if (dateBounds.max && !endDate) setEndDate(dateBounds.max);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateBounds]);
+
+  const filteredFiles = useMemo(() => {
+    return allFiles.filter((f) => {
+      if (sensorSel.size && !sensorSel.has(f.sensor)) return false;
+      if (startDate && (f.date_max || "") < startDate) return false;
+      if (endDate && (f.date_min || "") > endDate) return false;
+      return true;
+    });
+  }, [allFiles, sensorSel, startDate, endDate]);
+
   const fileStats = useMemo(() => {
-    const files = audit.files || [];
     const bySensor = {};
     let nRecords = 0;
     let nAnalysable = 0;
-    for (const f of files) {
+    for (const f of filteredFiles) {
       const s = (bySensor[f.sensor] ||= { files: 0, n_records: 0, n_rows_analysable: 0 });
       s.files += 1;
       s.n_records += f.n_records || 0;
@@ -152,8 +182,8 @@ export default function Overview({ data }) {
       nRecords += f.n_records || 0;
       nAnalysable += f.n_rows_analysable || 0;
     }
-    return { bySensor, nRecords, nAnalysable, nFiles: files.length };
-  }, [audit]);
+    return { bySensor, nRecords, nAnalysable, nFiles: filteredFiles.length };
+  }, [filteredFiles]);
 
   const spatialCells = useMemo(() => {
     const primary = baselines.primary || {};
@@ -164,10 +194,15 @@ export default function Overview({ data }) {
 
   const volumeSeries = useMemo(() => {
     const vm = audit.volumes_by_month || {};
+    const monthStart = startDate ? startDate.slice(0, 7) : "";
+    const monthEnd = endDate ? endDate.slice(0, 7) : "";
     const sensors = new Set();
     const map = new Map();
     for (const [key, value] of Object.entries(vm)) {
       const [sensor, month] = key.split("|");
+      if (sensorSel.size && !sensorSel.has(sensor)) continue;
+      if (monthStart && month < monthStart) continue;
+      if (monthEnd && month > monthEnd) continue;
       sensors.add(sensor);
       const cur = map.get(month) || { month };
       cur[sensor] = (cur[sensor] || 0) + value;
@@ -177,7 +212,7 @@ export default function Overview({ data }) {
       rows: [...map.values()].sort((a, b) => (a.month < b.month ? -1 : 1)),
       sensors: [...sensors].sort(),
     };
-  }, [audit]);
+  }, [audit, sensorSel, startDate, endDate]);
 
   const period =
     exec.period_start && exec.period_end
@@ -200,13 +235,46 @@ export default function Overview({ data }) {
 
       <OriginBanner origin={origin} generatedAt={audit.generated_at} />
 
+      {/* ---------- filtres ---------- */}
+      <div className="controls">
+        <label>Capteur</label>
+        {Object.keys(
+          allFiles.reduce((acc, f) => ({ ...acc, [f.sensor]: true }), {})
+        ).map((s) => (
+          <label
+            key={s}
+            style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13 }}
+          >
+            <input
+              type="checkbox"
+              checked={sensorSel.has(s)}
+              onChange={(e) => {
+                const next = new Set(sensorSel);
+                if (e.target.checked) next.add(s);
+                else next.delete(s);
+                setSensorSel(next);
+              }}
+            />
+            {SENSOR_KIND_LABELS[s] || s}
+          </label>
+        ))}
+        <DateRangeFilter
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+          minDate={dateBounds.min || undefined}
+          maxDate={dateBounds.max || undefined}
+        />
+      </div>
+
       {/* ---------- indicateurs d'exploration ---------- */}
       <div className="cards">
         <StatCard
           title="Lignes analysables"
           value={fileStats.nAnalysable}
           unit="observations"
-          description="dans l'emprise, hors ambiguës"
+          description="filtre courant, dans l'emprise"
         />
         <StatCard
           title="Fichiers audités"
@@ -214,25 +282,25 @@ export default function Overview({ data }) {
           unit="fichiers"
           description={Object.keys(fileStats.bySensor)
             .map((s) => SENSOR_KIND_LABELS[s] || s)
-            .join(" + ")}
+            .join(" + ") || "filtre courant"}
         />
         <StatCard
           title="Jours avec enregistrements"
           value={audit.n_distinct_days_with_records ?? "—"}
           unit="jours"
-          description="capteur-jours distincts"
+          description="agrégat complet — non filtré"
         />
         <StatCard
           title="Cellules actives"
           value={spatialCells.length || "—"}
           unit="cellules"
-          description="configuration primaire (0,25° × 8 j)"
+          description="agrégat complet (0,25° × 8 j)"
         />
         <StatCard
           title="FRP moyen / max"
           value={frp.mean != null ? `${fmt(frp.mean, 1)} / ${fmt(frp.max, 1)}` : "—"}
           unit="MW"
-          description="puissance radiative, artefact audit"
+          description="agrégat complet, artefact audit"
         />
       </div>
 

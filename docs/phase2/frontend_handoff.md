@@ -93,7 +93,22 @@ web/
 - [ ] phrases d'avertissement d'interprétation intactes
 - [ ] si `data.js` modifié : `api_contract.md` §1 mis à jour en même temps
 
-## 6. Passage à une API (si D2 validée)
+## 6. Blocages de données connus (modules specs-aurel)
+
+Écarts specs ↔ données publiées, assumés en mode dégradé — à traiter côté
+pipeline Python si un lot ultérieur les lève :
+
+| Spec | Manque | État actuel |
+|---|---|---|
+| `MapView` (P0, Overview + Harmo) | `baselines.spatial` ne publie que des **indices de cellules** (`cell_i`/`cell_j`), pas de lat/lon ; pas d'endpoint `/observations` | heatmap SVG des indices de cellules, mention « pas une carte géographique » ; aucune position inventée |
+| Comparaison par satellite (§1.1.D) | `audit.files` agrège Terra+Aqua en `modis` | comparaison MODIS vs VIIRS (capteur), pas par satellite — séparer exige un recomptage de l'audit |
+| Graphiques Fire Calendar « cellules actives » / « FRP » (§2.1.D) | ces séries temporelles ne sont pas dans les artefacts | non affichées — aucune valeur codée en dur ni estimée |
+| `GET /observations` (specs-aurel §TRAVAIL COMMUN) | endpoint inexistant | écran concerné reste en mode dégradé documenté |
+
+Règle : un manque de donnée se documente dans l'écran (message explicite) et
+ici — jamais comblé par une valeur inventée.
+
+## 7. Passage à une API (si D2 validée)
 
 Remplacer l'implémentation de `getJSON`/`getText` dans `data.js` par des appels `/api/v1/*`
 (**§2 de `api_contract.md`**) en conservant les mêmes noms d'objets exposés aux vues :
