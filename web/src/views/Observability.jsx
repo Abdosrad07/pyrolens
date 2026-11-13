@@ -37,6 +37,11 @@ export default function Observability({ data }) {
       </p>
 
       <div className="banner info">
+        <strong>
+          Origine : {o.data_origin || "—"}
+          {o.generated_at ? ` · artefacts du ${o.generated_at.slice(0, 10)}` : ""}
+        </strong>
+        {" — "}
         <strong>Produits de couverture d'observation acquis : {o.coverage_products_acquired ? "oui" : "non"}</strong>
         {o.note}
       </div>

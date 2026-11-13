@@ -76,3 +76,9 @@ détection (jamais de filtre « feu absent »), aucun secret ni chemin local en 
 Si D2 est validée : `web/src/data.js` devient la seule couche à remplacer (mêmes noms de
 données en retour), les composants de vues ne changent pas — voir `frontend_handoff.md` §4.
 Tant que D2 n'est pas tranchée, **le contrat v1 est le contrat**.
+
+**État au 13/11/2026** : `data.js` supporte les deux modes — statique par défaut,
+API v1 quand `VITE_API_BASE` est défini (mode dev via proxy Vite `/api`,
+`web/vite.config.js`). Les modules Harmonization / Data / Methodology /
+Fire Calendar consomment les endpoints v1 ; les écrans de rapport restent sur
+les artefacts (voir `frontend-handoff/api-integration.md`).

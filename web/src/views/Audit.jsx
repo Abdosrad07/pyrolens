@@ -52,7 +52,10 @@ export default function Audit({ data }) {
       </p>
 
       <div className="banner warn">
-        <strong>Origine : {a.data_origin}</strong>
+        <strong>
+          Origine : {a.data_origin}
+          {a.generated_at ? ` · artefacts du ${a.generated_at.slice(0, 10)}` : ""}
+        </strong>
         {a.data_origin === "synthetic_fixture"
           ? "Échantillon synthétique de démonstration : les anomalies détectées attestent le fonctionnement du contrôle, elles ne caractérisent pas les fichiers NASA du pilote."
           : "Valeurs calculées par le pipeline sur les fichiers listés dans l'inventaire."}

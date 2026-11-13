@@ -120,6 +120,11 @@ export default function Report({ data }) {
         DOCX). Chaque chiffre y est soit calculé par le pipeline, soit explicitement étiqueté
         comme valeur de référence antérieure.
       </p>
+      <div className="muted small" style={{ marginBottom: 10 }}>
+        Artefacts générés le{" "}
+        {(data.baselines?.generated_at || data.audit?.generated_at || "").slice(0, 10) || "—"}
+        {" · "}source : reports/scientific_report.md
+      </div>
       {origin === "synthetic_fixture" && (
         <div className="banner warn">
           <strong>Origine des données : échantillon synthétique de démonstration</strong>
