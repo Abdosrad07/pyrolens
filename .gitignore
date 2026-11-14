@@ -21,6 +21,7 @@ web/.vite/
 # ── Données d'acquisition volumineuses (reproductibles via `pyrolens download`) ──
 data/raw/firms/
 data/raw/earthdata/
+data/raw/archive/
 
 # ── Sorties d'exécution régénérables (pas des artefacts publiés) ──
 reports/anomalies/
