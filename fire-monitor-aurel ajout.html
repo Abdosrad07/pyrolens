@@ -281,9 +281,6 @@ path.perimeter:hover{fill-opacity:.62}
   .chart-box canvas{height:220px}
   .cal-cell{min-height:3.4rem;padding:.25rem}
 }
-@media (max-width:760px){
-  #dock{max-width:calc(100% - 1rem);flex-wrap:wrap;justify-content:center}
-}
 
 /* Adaptatif */
 @media (pointer:coarse){#coords{display:none}}
@@ -316,7 +313,216 @@ path.perimeter:hover{fill-opacity:.62}
   .dq-t{min-width:56rem}
 }
 @media (max-width:560px){#btnAnnounce,#btnChat{display:none}}
+/* ---- Couche risque (F1-F5) ---- */
+#riskSphere{position:absolute;bottom:6.5rem;left:max(1rem,env(safe-area-inset-left));z-index:900;width:3.2rem;height:3.2rem;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#FF8447,var(--ember) 55%,#C23805);color:#fff;box-shadow:var(--sh),inset 0 1px 0 rgb(255 255 255/.35);cursor:pointer;transition:transform .2s,box-shadow .2s}
+#riskSphere:hover{transform:scale(1.08);box-shadow:var(--sh),0 0 0 6px rgb(242 84 27/.18),inset 0 1px 0 rgb(255 255 255/.35)}
+#riskSphere .ic{width:1.5rem;height:1.5rem}
+#riskSphere .pulse-dot{position:absolute;top:.25rem;right:.25rem;width:.55rem;height:.55rem;border-radius:50%;background:#FFC83D;box-shadow:0 0 0 3px rgb(14 42 37/.5)}
+#riskSphere.has-data .pulse-dot{animation:riskPulse 2.2s infinite}
+@keyframes riskPulse{0%{box-shadow:0 0 0 0 rgb(255 200 61/.7)}70%,100%{box-shadow:0 0 0 .5rem rgb(255 200 61/0)}}
+.risk-cell{cursor:pointer;transition:fill-opacity .15s}
+.risk-cell:hover{fill-opacity:.85 !important}
+.risk-legend{margin-top:.5rem}
+.risk-legend .rl-title{font-weight:700;font-size:.78rem;margin-bottom:.3rem;color:var(--text)}
+.risk-scale{display:flex;height:.55rem;border-radius:999px;overflow:hidden;margin:.25rem 0 .35rem}
+.risk-scale span{flex:1}
+.risk-labels{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted)}
+.risk-meta{font-size:.72rem;color:var(--muted);margin-top:.25rem}
+.rp-status{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .65rem;border-radius:999px;font-size:.72rem;font-weight:700}
+.rp-status.ok{color:var(--ok);background:var(--ok-bg)}.rp-status.warn{color:var(--warn);background:var(--warn-bg)}.rp-status.err{color:var(--bad);background:var(--bad-bg)}.rp-status.none{color:var(--muted);background:#E6EDEA}
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:.5rem}
+.metric-card{padding:.6rem .7rem;background:var(--ash);border-radius:var(--r-s);text-align:center}
+.metric-card .mk{font-size:.75rem;font-weight:600;color:var(--muted)}
+.metric-card .mv{font:700 1.2rem var(--display);color:var(--text);font-variant-numeric:tabular-nums}
+/* Panneau latéral risque (slide depuis la gauche, comme le panel cluster) */
+#riskPanel{position:absolute;top:var(--hh);left:0;bottom:0;width:min(25rem,100%);z-index:1060;display:none;flex-direction:column;background:var(--ash);box-shadow:var(--sh)}
+#riskPanel.open{display:flex;animation:slide .25s cubic-bezier(.2,.8,.2,1)}
+.rp-head{--ring:var(--sulphur);display:flex;align-items:center;gap:.5rem;padding:.9rem .8rem .9rem 1rem;color:#fff;background:var(--canopy)}
+.rp-head .ic{color:var(--ember);flex:none}
+.rp-head h2{flex:1;font:700 1.05rem/1.2 var(--display)}
+.rp-head .ibtn{color:#fff}.rp-head .ibtn:hover{background:rgb(255 255 255/.14)}
+.rp-head h2{min-width:0}
+.rp-head .rp-status{white-space:nowrap}
+.rp-scroll{flex:1;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:.9rem;padding:1rem;scrollbar-width:thin;scrollbar-color:var(--mist) transparent}
+.rp-section{padding:1rem 1.1rem 1.1rem;background:#fff;border-radius:var(--r-m);box-shadow:0 0 0 1px var(--mist)}
+.rp-section h3{margin-bottom:.8rem;font:700 1rem/1.2 var(--display);color:var(--text)}
+.rp-toggle{display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px dashed var(--mist)}
+.rp-toggle label{font-size:.875rem;font-weight:600;color:var(--text);cursor:pointer}
+.rp-toggle input[type=checkbox]{appearance:none;position:relative;flex:none;width:2.4rem;height:1.4rem;border-radius:999px;background:#A9B8B3;cursor:pointer;transition:background .15s}
+.rp-toggle input[type=checkbox]::after{content:"";position:absolute;top:.2rem;left:.2rem;width:1rem;height:1rem;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgb(0 0 0/.3);transition:transform .15s}
+.rp-toggle input[type=checkbox]:checked{background:var(--canopy)}
+.rp-toggle input[type=checkbox]:checked::after{transform:translateX(1rem)}
+.rp-row{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .7rem;margin-bottom:.95rem}
+.rp-row>label{flex:1 1 100%;display:block;font-size:.84rem;font-weight:600;color:var(--text)}
+.rp-row select,.rp-row input[type=date]{flex:1 1 100%;width:100%;min-height:2.6rem;padding:0 .75rem;font-size:.875rem;background:#fff;border:1.5px solid var(--mist);border-radius:var(--r-s);transition:border-color .15s}
+.rp-row select:hover,.rp-row input[type=date]:hover{border-color:var(--canopy-2)}
+.rp-row input[type=range]{flex:1;min-width:0;height:1.6rem;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer}
+.rp-row input[type=range]::-webkit-slider-runnable-track{height:.45rem;border-radius:999px;background:linear-gradient(90deg,#FFC83D,#FF8A00 30%,#F2541B 60%,#A4201B 80%)}
+.rp-row input[type=range]::-moz-range-track{height:.45rem;border-radius:999px;background:linear-gradient(90deg,#FFC83D,#FF8A00 30%,#F2541B 60%,#A4201B 80%)}
+.rp-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:1.3rem;height:1.3rem;margin-top:-.43rem;border-radius:50%;background:#fff;border:3px solid var(--canopy);box-shadow:var(--sh)}
+.rp-row input[type=range]::-moz-range-thumb{width:1rem;height:1rem;border-radius:50%;background:#fff;border:3px solid var(--canopy);box-shadow:var(--sh)}
+.thr-val{min-width:2.8rem;text-align:right;font:700 1.05rem var(--display);color:var(--ember-ink)}
+.rp-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.1rem}
+.rp-btn{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.7rem;padding:0 1rem;color:#fff;font-weight:600;font-size:.875rem;background:var(--canopy);border-radius:var(--r-s);transition:background .15s}
+.rp-btn:hover{background:var(--canopy-2)}
+.rp-btn .ic{width:1.1rem;height:1.1rem}
+.rp-btn-secondary{color:var(--text);background:#fff;border:1.5px solid var(--mist)}
+.rp-btn-secondary:hover{background:#E6EDEA}
+.honesty{padding:.8rem .95rem;border-radius:var(--r-m);font-size:.875rem;line-height:1.45;color:var(--info);background:var(--info-bg)}
+.honesty b{font-weight:700}
+.honesty small{display:block;margin-top:.3rem;color:var(--muted);font-size:.78rem}
+.risk-log{max-height:12rem;overflow:auto;padding:.8rem .9rem;font:.78rem/1.55 ui-monospace,Menlo,Consolas,monospace;color:#CFE0DA;background:var(--canopy);border-radius:var(--r-s);white-space:pre-wrap;overflow-wrap:anywhere}
+/* Shift hud/dock when risk panel is open (desktop ≥761px) */
+@media (min-width:761px){
+  body:is(.risk-open,.ai-open) .hud{left:26rem}
+  body:is(.risk-open,.ai-open) .quick{left:26.5rem}
+  body:is(.risk-open,.ai-open) #dock{left:calc(50% + 12.5rem)}
+  body:is(.risk-open,.ai-open) .leaflet-bottom.leaflet-right{right:0}
+}
+@media (max-width:760px){
+  #riskSphere{bottom:5.5rem;left:.75rem}
+  #riskPanel{top:auto;left:0;right:0;bottom:0;width:100%;height:60dvh;z-index:1500;border-radius:var(--r-l) var(--r-l) 0 0}
+}
+/* ---- Assistant IA ---- */
+#aiPanel{position:absolute;top:var(--hh);left:0;bottom:0;width:min(25rem,100%);z-index:1060;display:none;flex-direction:column;background:var(--ash);box-shadow:var(--sh)}
+#aiPanel.open{display:flex;animation:slide .25s cubic-bezier(.2,.8,.2,1)}
+#aiPanel .rp-head .rp-status{white-space:nowrap}
+.ai-log{flex:1;min-height:0;display:flex;flex-direction:column;gap:.7rem;padding:1rem;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--mist) transparent}
+.ai-msg{max-width:88%;padding:.7rem .9rem;font-size:.9rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:var(--r-m)}
+.ai-msg.bot{align-self:flex-start;background:#fff;box-shadow:0 0 0 1px var(--mist);border-bottom-left-radius:.25rem}
+.ai-msg.user{align-self:flex-end;color:#fff;background:var(--canopy);border-bottom-right-radius:.25rem}
+.ai-msg.err{color:var(--bad);background:var(--bad-bg);box-shadow:none}
+.ai-msg.typing{animation:riskPulse 1.2s infinite;color:var(--muted)}
+.ai-suggest{display:flex;flex-wrap:wrap;gap:.4rem;padding:0 1rem .8rem}
+.ai-suggest[hidden]{display:none}
+.ai-suggest button{min-height:2.3rem;padding:0 .85rem;font-size:.82rem;font-weight:600;background:#fff;border:1.5px solid var(--mist);border-radius:999px;transition:border-color .15s}
+.ai-suggest button:hover{border-color:var(--canopy-2)}
+.ai-form{display:flex;align-items:flex-end;gap:.5rem;padding:.7rem 1rem;background:#fff;border-top:1px solid var(--mist)}
+.ai-form textarea{flex:1;height:2.7rem;min-height:2.7rem;min-width:0;max-height:7.5rem;padding:.6rem .8rem;font:inherit;font-size:.9rem;line-height:1.4;resize:none;background:var(--ash);border:1.5px solid var(--mist);border-radius:var(--r-m)}
+.ai-form textarea:focus-visible{outline-offset:0}
+.ai-send{width:2.7rem;height:2.7rem;flex:none;display:grid;place-items:center;color:#fff;background:var(--ember-ink);border-radius:50%;transition:background .15s}
+.ai-send:hover{background:#8C2A04}
+.ai-send:disabled{opacity:.45;cursor:default}
+.ai-note{padding:0 1rem calc(.7rem + env(safe-area-inset-bottom));font-size:.72rem;color:var(--muted);background:#fff}
+@media (pointer:coarse){input,select,textarea{font-size:16px!important}}
+/* ===== Responsive complet ===== */
+:root{--tab-h:3.7rem}
+html{-webkit-text-size-adjust:100%}
+.content :where(img,canvas,svg,video){max-width:100%;height:auto}
+.content :where(pre,code){max-width:100%;overflow-x:auto}
+.content,.main,.dq-card,.rp-scroll{min-width:0}
+.legend-rows{max-height:max(8rem,calc(100dvh - 19rem));overflow:auto;overscroll-behavior:contain}
+#mainMenu{max-height:calc(100dvh - var(--hh) - 1.5rem);overflow:auto}
+.mm-link{display:none;min-height:3.5rem;align-items:center;gap:.7rem;padding:.6rem .8rem;text-align:left;font-weight:600;font-size:.84rem;line-height:1.2;background:#fff;border:1.5px solid var(--mist);border-radius:var(--r-m)}
+.mm-link .ic{width:1.5rem;height:1.5rem;color:var(--canopy-2)}
+#panel .scroll,.rp-scroll{padding-bottom:max(1rem,env(safe-area-inset-bottom))}
+.crumb{overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+.crumb::-webkit-scrollbar{display:none}
+.crumb>*{flex:none}
+
+/* Grands écrans : contenu centré, lisible */
+@media (min-width:1500px){.content{padding-inline:max(2rem,calc((100% - 84rem)/2))}}
+
+/* Petits desktops et tablettes : le dock n'affiche que l'étiquette de la vue active */
+@media (min-width:761px) and (max-width:1180px){
+  .navbtn:not(.on) .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  .navbtn{padding:0 .85rem}
+}
+@media (min-width:761px) and (max-width:900px){
+  body.panel-open .quick,body:is(.risk-open,.ai-open) .quick{top:calc(var(--hh) + 4.2rem)}
+}
+
+/* Mobile : barre d'onglets pleine largeur, six destinations */
+@media (max-width:760px){
+  #dock{left:0;right:0;bottom:0;translate:none;width:100%;max-width:none;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;padding:.3rem .35rem calc(.3rem + env(safe-area-inset-bottom));border-radius:var(--r-l) var(--r-l) 0 0}
+  .navbtn{height:3.1rem;flex-direction:column;justify-content:center;gap:.15rem;padding:0 .1rem;font-size:.625rem;line-height:1;letter-spacing:-.01em;border-radius:var(--r-m)}
+  .navbtn .ic{width:1.3rem;height:1.3rem}
+  .leaflet-bottom{bottom:var(--tab-h)}
+  .hud{bottom:calc(var(--tab-h) + .5rem);max-width:calc(100% - 4.5rem)}
+  #riskSphere{top:calc(var(--hh) + 6.8rem);bottom:auto;left:auto;right:.75rem}
+  .toast{bottom:calc(var(--tab-h) + 1rem)}
+  body.panel-open #dock,body:is(.risk-open,.ai-open) #dock,body:is(.risk-open,.ai-open) .hud{display:none}
+  #dqView{padding:.6rem .6rem calc(var(--tab-h) + .6rem)}
+  .content{padding-bottom:calc(var(--tab-h) + 1.5rem)}
+  .dq-filters select,.dq-filters input{min-width:0}
+  #mainMenu{max-height:calc(100dvh - var(--hh) - var(--tab-h) - 1rem)}
+}
+@media (max-width:560px){
+  .mm-link{display:flex}
+  .crumb .who{display:none}
+  .cal-grid{gap:.2rem}.cal-cell{min-height:2.8rem;padding:.2rem;font-size:.62rem}
+  .dt,.dt tbody,.dt tr,.dt td{display:block;width:100%}
+  .dt td:first-child{width:100%;padding-bottom:0;border-bottom:0;font-size:.75rem}
+  .jtitle{flex-wrap:wrap;gap:.5rem}
+}
+@media (max-width:360px){
+  .brand h1{font-size:.95rem}.mark{width:2.2rem;height:2.2rem}
+  .quick button{font-size:.78rem;gap:.3rem}.quick button .ic{width:1.05rem;height:1.05rem}
+  .rp-actions .rp-btn{flex:1 1 100%}
+}
+
+/* Paysage court (téléphone couché) : panneaux latéraux, étiquettes masquées */
+@media (max-width:760px) and (max-height:480px){
+  #panel,#riskPanel{top:var(--hh);right:auto;bottom:0;width:min(25rem,100%);height:auto;border-radius:0}
+  .navbtn{height:2.6rem}.navbtn .lbl{display:none}
+  :root{--tab-h:3.2rem}
+  .quick{top:calc(var(--hh) + .5rem)}
+  .brand small{display:none}
+}
+
+/* Écrans tactiles : cibles ≥ 44 px, champs ≥ 16 px (pas de zoom iOS) */
+@media (pointer:coarse){
+  .ibtn{width:2.75rem;height:2.75rem}
+  .quick button{height:2.75rem}
+  .chip,.pager button,.pager input,.dq-filters input,.dq-filters select,.rp-row select,.rp-row input[type=date],.rp-btn{min-height:2.75rem}
+  .rp-row input[type=range]{height:2.4rem}
+  .crumb button,.acc-h,.side button{min-height:2.75rem}
+  .rp-toggle input[type=checkbox]{width:2.75rem;height:1.6rem}
+  .rp-toggle input[type=checkbox]::after{top:.25rem;left:.25rem;width:1.1rem;height:1.1rem}
+  .rp-toggle input[type=checkbox]:checked::after{transform:translateX(1.15rem)}
+  input:not([type=range]):not([type=checkbox]),select{font-size:1rem!important}
+}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+
+/* ---- Responsive : correctifs d'audit ---- */
+.hud{max-width:calc(100% - 5rem)}
+@media (min-width:761px){
+  .hud{bottom:5rem}
+  #riskSphere{top:calc(var(--hh) + 4.2rem);bottom:auto;left:auto;right:1rem}
+}
+@media (min-width:761px) and (max-width:1180px){
+  .leaflet-control-zoom{margin-bottom:4.6rem!important}
+}
+@media (min-width:1181px) and (max-width:1500px){
+  body:is(.panel-open,.risk-open,.ai-open) .leaflet-control-zoom{margin-bottom:4.6rem!important}
+}
+@media (min-width:761px){
+  body:is(.panel-open,.risk-open,.ai-open) .hud{max-width:calc(100% - 31.5rem)}
+}
+@media (min-width:761px) and (max-width:900px){
+  body:is(.panel-open,.risk-open,.ai-open) #riskSphere{top:calc(var(--hh) + 8.2rem)}
+}
+@media (max-width:760px){
+  .leaflet-top.leaflet-right{margin-top:4.3rem}
+  #riskSphere{top:calc(var(--hh) + 8.1rem)}
+  .hud{max-width:calc(100% - 4.5rem);bottom:calc(var(--tab-h) + 1.9rem)}
+  #aiPanel{top:auto;left:0;right:0;bottom:0;width:100%;height:min(78dvh,calc(100dvh - var(--hh) - .5rem));z-index:1500;border-radius:var(--r-l) var(--r-l) 0 0}
+  #riskPanel,#panel{height:min(70dvh,calc(100dvh - var(--hh) - .5rem))}
+}
+@media (max-width:560px){.leaflet-control-scale{display:none}}
+@media (max-width:360px){
+  .brand h1{font-size:.95rem}.mark{width:2.2rem;height:2.2rem}
+  .quick button{font-size:.78rem;gap:.3rem}.quick button .ic{width:1.05rem;height:1.05rem}
+  .navbtn{font-size:.58rem}
+}
+@media (max-height:480px) and (min-width:761px){
+  :root{--hh:3.25rem}
+  .hud #legend{display:none!important}
+  #riskSphere{top:calc(var(--hh) + 3.6rem)}
+}
+@media (max-height:480px){
+  #aiPanel,#riskPanel,#panel{height:auto;top:var(--hh);border-radius:0}
+}
 </style>
 </head>
 <body>
@@ -355,6 +561,9 @@ path.perimeter:hover{fill-opacity:.62}
 <symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
 <symbol id="i-text" viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></symbol>
 <symbol id="i-bypass" viewBox="0 0 24 24"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
 </defs></svg>
 
 <a class="skip-link" href="#map">Aller directement à la carte</a>
@@ -377,7 +586,95 @@ path.perimeter:hover{fill-opacity:.62}
   <button class="ibtn" id="burger" type="button" title="Ouvrir le menu principal" aria-label="Ouvrir le menu principal" aria-expanded="false" aria-controls="mainMenu"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
 </header>
 
-<main id="map" role="application" aria-label="Carte interactive des feux actifs" tabindex="-1"></main>
+<main id="map" role="application" aria-label="Carte interactive des feux actifs" tabindex="-1"></main><div id="riskSphere" role="button" tabindex="0" title="Assistant IA" aria-label="Ouvrir l’assistant IA" aria-expanded="false" aria-controls="aiPanel">
+  <svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg>
+  <span class="pulse-dot"></span>
+</div>
+
+<aside id="riskPanel" aria-label="Analyse de risque de feu" aria-hidden="true">
+  <div class="rp-head">
+    <svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg>
+    <h2>Analyse de risque de feu</h2>
+    <span class="rp-status none" id="rpStatus">En attente</span>
+    <button class="ibtn" id="rpClose" type="button" title="Fermer" aria-label="Fermer le panneau risque"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="rp-scroll">
+    <div class="rp-section">
+      <h3>Configuration</h3>
+      <div class="rp-toggle">
+        <input type="checkbox" id="rpToggle" role="switch" checked>
+        <label for="rpToggle">Afficher la couche risque</label>
+      </div>
+      <div class="rp-row">
+        <label for="rpGrid">Grille (°)</label>
+        <select id="rpGrid">
+          <option value="0.10">0.10°</option>
+          <option value="0.25" selected>0.25°</option>
+          <option value="0.50">0.50°</option>
+        </select>
+      </div>
+      <div class="rp-row">
+        <label for="rpWindow">Fenêtre (jours)</label>
+        <select id="rpWindow">
+          <option value="1">1 jour</option>
+          <option value="4">4 jours</option>
+          <option value="8" selected>8 jours</option>
+          <option value="16">16 jours</option>
+        </select>
+      </div>
+      <div class="rp-row">
+        <label for="rpDate">Date de référence</label>
+        <input type="date" id="rpDate">
+      </div>
+      <div class="rp-row">
+        <label for="rpThreshold">Seuil d'affichage</label>
+        <input type="range" id="rpThreshold" min="0" max="100" value="0" step="1">
+        <span class="thr-val" id="rpThVal">0%</span>
+      </div>
+      <div class="rp-actions">
+        <button class="rp-btn" id="rpRun"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Exécuter prédiction</button>
+        <button class="rp-btn rp-btn-secondary" id="rpLoad"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg>Charger artefact</button>
+      </div>
+    </div>
+    <div class="rp-section">
+      <h3>Bandeau honnêteté</h3>
+      <div class="honesty" id="rpHonesty">
+        <b>Estimation du risque d'activité de feu détectée</b> — pas une alerte incendie
+        <small id="rpHonestyMeta">Module de prédiction en attente de données</small>
+      </div>
+    </div>
+    <div class="rp-section" id="rpMetricsSection" style="display:none">
+      <h3>Métriques du modèle</h3>
+      <div class="metrics-grid" id="rpMetricsGrid"></div>
+    </div>
+    <div class="rp-section" id="rpLogSection" style="display:none">
+      <h3>Journal d'exécution</h3>
+      <div class="risk-log" id="rpLog"></div>
+    </div>
+  </div>
+</aside>
+
+<aside id="aiPanel" aria-label="Assistant IA" aria-hidden="true">
+  <div class="rp-head">
+    <svg class="ic" aria-hidden="true"><use href="#i-spark"/></svg>
+    <h2>Assistant IA</h2>
+    <span class="rp-status none" id="aiStatus">En attente</span>
+    <button class="ibtn" id="aiNew" type="button" title="Nouvelle conversation" aria-label="Nouvelle conversation"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg></button>
+    <button class="ibtn" id="aiClose" type="button" title="Fermer" aria-label="Fermer l’assistant"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="ai-log" id="aiLog" role="log" aria-live="polite" aria-relevant="additions"></div>
+  <div class="ai-suggest" id="aiSuggest">
+    <button type="button" data-q="Résume la zone affichée sur la carte.">Résumer la zone</button>
+    <button type="button" data-q="Que signifient les niveaux de risque et les couleurs ?">Lire les couleurs</button>
+    <button type="button" data-q="Quelle est la différence entre MODIS et VIIRS ?">MODIS ou VIIRS ?</button>
+  </div>
+  <form class="ai-form" id="aiForm">
+    <label class="sr-only" for="aiInput">Votre question</label>
+    <textarea id="aiInput" rows="1" placeholder="Posez votre question…" enterkeyhint="send" autocomplete="off"></textarea>
+    <button class="ai-send" id="aiSend" type="submit" aria-label="Envoyer"><svg class="ic" aria-hidden="true"><use href="#i-send"/></svg></button>
+  </form>
+  <p class="ai-note">Réponses générées par IA, à vérifier. Ce n’est pas une alerte incendie.</p>
+</aside>
 
 <div class="quick" role="group" aria-label="Vues rapides">
   <button type="button" data-go="africa" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg>Afrique</button>
@@ -396,6 +693,30 @@ path.perimeter:hover{fill-opacity:.62}
       <div class="row"><span class="sw"><i style="width:4px;height:4px;background:#ff3b2f"></i></span>24 h, 0–9 W</div>
       <div class="row"><span class="sw"><i style="width:5px;height:5px;background:#e07a5f;opacity:.85"></i></span>Il y a 24 à 48 h</div>
       <div class="row"><span class="sw"><i style="width:5px;height:5px;background:#c9a39a;opacity:.85"></i></span>Il y a 2 à 7 jours</div>
+      <!-- F3 : Bandeau honnêteté -->
+      <div class="row" style="margin-top:.6rem;padding-top:.5rem;border-top:1px dashed var(--mist)">
+        <span class="rp-status none" id="riskStatus">En attente</span>
+      </div>
+      <div class="row">
+        <div style="font-size:.72rem;color:var(--muted);width:100%">
+          <b>Risque d'activité de feu détectée</b><br>
+          <small id="honestyMeta">Chargement de l'artéfact…</small>
+        </div>
+      </div>
+      <!-- F4 : Slider de seuil -->
+      <div class="row">
+        <div style="width:100%">
+          <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-bottom:.15rem">
+            <span>Seuil</span><span id="riskThVal">0%</span>
+          </div>
+          <input type="range" id="riskThreshold" min="0" max="100" value="0" step="1" style="width:100%;accent-color:var(--canopy)">
+        </div>
+      </div>
+      <!-- F5 : Métriques -->
+      <div class="row" style="margin-top:.4rem">
+        <div class="metrics-grid" id="riskMetricsGrid" style="display:none;grid-template-columns:repeat(3,1fr);gap:.3rem"></div>
+      </div>
+      <div class="row" style="font-size:.72rem;color:var(--muted)" id="riskCellsMeta"></div>
     </div>
   </details>
   <div id="bottombar">
@@ -412,6 +733,7 @@ path.perimeter:hover{fill-opacity:.62}
   <button class="navbtn" data-view="calendar" type="button" title="Calendrier des feux" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg><span class="lbl">Calendrier</span></button>
   <button class="navbtn" data-view="jobs" type="button" title="Jobs de traitement" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg><span class="lbl">Jobs</span></button>
   <button class="navbtn" data-view="dq" type="button" title="Rapport de qualité des données" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg><span class="lbl">Qualité</span></button>
+  <button class="navbtn" data-view="risk" type="button" title="Couche risque de feu" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span class="lbl">Risque</span></button>
 </nav>
 
 <div id="mainMenu" role="dialog" aria-label="Menu principal de la carte">
@@ -425,6 +747,8 @@ path.perimeter:hover{fill-opacity:.62}
     <button class="mm-btn disabled" data-mode="exp" type="button" aria-disabled="true"><svg class="ic" aria-hidden="true"><use href="#i-flask"/></svg><span>Expérimental<small>En cours de développement</small></span></button>
     <button class="mm-btn" data-mode="alerts" type="button"><svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg><span>Alertes feux</span></button>
     <button class="mm-btn" data-mode="downloads" type="button"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span>Téléchargements</span></button>
+    <button class="mm-link" type="button" data-fwd="btnAnnounce"><svg class="ic" aria-hidden="true"><use href="#i-megaphone"/></svg><span>Annonces</span></button>
+    <button class="mm-link" type="button" data-fwd="btnChat"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg><span>Contact</span></button>
   </div>
 </div>
 
@@ -709,7 +1033,7 @@ const ico = (n, c='') => `<svg class="ic ${c}" aria-hidden="true"><use href="#i-
 const panel = $('#panel'), menu = $('#mainMenu');
 
 function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2600)}
-function openPanel(){panel.classList.add('open');document.body.classList.add('panel-open');setTimeout(()=>{map.invalidateSize();drawFRP()},50)}
+function openPanel(){closeAiPanel();panel.classList.add('open');document.body.classList.add('panel-open');setTimeout(()=>{map.invalidateSize();drawFRP()},50)}
 function closePanel(){panel.classList.remove('open');document.body.classList.remove('panel-open');setTimeout(()=>map.invalidateSize(),50)}
 function toggleMenu(force){
   const o = force ?? !menu.classList.contains('open');
@@ -820,6 +1144,18 @@ const view = $('#view');
 let jobTimer = null;
 
 function showView(name){
+  if(name==='risk'){
+    // Basculer la couche risque depuis n'importe quel endroit
+    if(view.classList.contains('open')){
+      // Si on est dans une vue (jobs, dq, etc.), revenir à la carte puis activer risque
+      closeView();
+      setTimeout(function(){ toggleRiskFromNav(); }, 100);
+    } else {
+      // On est déjà sur la carte, toggle la couche
+      toggleRiskFromNav();
+    }
+    return;
+  }
   if(name==='map'){ closeView(); return; }
   toggleMenu(false);
   view.classList.add('open');
@@ -831,8 +1167,23 @@ function showView(name){
   document.querySelectorAll('.side button[data-nav]').forEach(b=>b.classList.toggle('act', b.dataset.nav===name));
   if(name==='jobs') renderJobsList();
   if(name==='dq') renderDQ();
-  if(name==='overview') renderOverview();
-  if(name==='calendar') renderCalendar();
+  if(name==='overview' && typeof renderOverview==='function') renderOverview();
+  if(name==='calendar' && typeof renderCalendar==='function') renderCalendar();
+}
+function toggleRiskFromNav(){
+  // Le bouton dock « Risque » ouvre le panneau latéral
+  openRiskPanel();
+  // Mettre à jour le bouton dock (état actif tant que le panneau est ouvert)
+  const btn = document.querySelector('.navbtn[data-view=risk]');
+  if(btn){ btn.classList.add('on'); btn.setAttribute('aria-current','true'); }
+  // Supprimer le class quand le panneau se ferme
+  const obs = new MutationObserver(function(){
+    if(!document.getElementById('riskPanel').classList.contains('open')){
+      const b = document.querySelector('.navbtn[data-view=risk]');
+      if(b){ b.classList.remove('on'); b.setAttribute('aria-current','false'); }
+    }
+  });
+  obs.observe(document.getElementById('riskPanel'), {attributes:true, attributeFilter:['class']});
 }
 function closeView(){
   view.classList.remove('open'); clearInterval(jobTimer);
@@ -1042,6 +1393,251 @@ document.querySelectorAll('.mm-btn').forEach(b=>{
 if(matchMedia('(max-width:760px)').matches) $('#legend').open = false;
 drawFRP();
 window.addEventListener('resize', ()=>{map.invalidateSize(); drawFRP()});
+
+
+/* =========================================================
+   COUCHE RISQUE DE FEU (F1-F5)
+   - Lecture seule de fire_risk.json ou /api/v1/fire-risk
+   - Aucun calcul côté client
+   ========================================================= */
+const RISK_GRID = 0.25;
+const CAM_BBOX = [8.4, 4.1, 16.4, 13.2];      // emprise
+const RISK_LEVELS = [
+  {min:0.0, label:'Faible',   color:'#FFC83D'},
+  {min:0.3, label:'Modéré',   color:'#FF8A00'},
+  {min:0.6, label:'Élevé',    color:'#F2541B'},
+  {min:0.8, label:'Critique', color:'#A4201B'}
+];
+let riskData = null, riskLayer = null, riskVisible = true, riskThreshold = 0;
+
+function riskLabel(p){ for(let i=RISK_LEVELS.length-1;i>=0;i--) if(p>=RISK_LEVELS[i].min) return RISK_LEVELS[i].label; return RISK_LEVELS[0].label; }
+function riskColor(p){ for(let i=RISK_LEVELS.length-1;i>=0;i--) if(p>=RISK_LEVELS[i].min) return RISK_LEVELS[i].color; return RISK_LEVELS[0].color; }
+function fmtDate(iso){ try{ return new Date(iso).toLocaleDateString('fr-FR'); }catch(e){ return '?'; } }
+
+/* F1 : cellules colorées bornées à l'emprise */
+function buildRiskRects(){
+  if(!riskData || !riskData.cells) return [];
+  const b = map.getBounds(), out = [];
+  for(const c of riskData.cells){
+    if(c.prob < riskThreshold) continue;
+    let lat = c.lat, lon = c.lon;
+    if(lat == null) lat = CAM_BBOX[1] + c.cell_j * RISK_GRID + RISK_GRID / 2;
+    if(lon == null) lon = CAM_BBOX[0] + c.cell_i * RISK_GRID + RISK_GRID / 2;
+    if(lat < CAM_BBOX[1] || lat > CAM_BBOX[3] || lon < CAM_BBOX[0] || lon > CAM_BBOX[2]) continue;
+    if(!b.contains([lat, lon])) continue;
+    out.push({
+      i:c.cell_i, j:c.cell_j, lat, lon, prob:c.prob,
+      bounds:[[lat - RISK_GRID/2, lon - RISK_GRID/2],[lat + RISK_GRID/2, lon + RISK_GRID/2]]
+    });
+  }
+  return out;
+}
+function applyRiskLayer(){
+  if(riskLayer){ map.removeLayer(riskLayer); riskLayer = null; }
+  if(!riskData || !riskVisible) return;
+  const lg = L.layerGroup();
+  for(const r of buildRiskRects()){
+    L.rectangle(r.bounds, {
+      color:'transparent', weight:0,
+      fillColor:riskColor(r.prob), fillOpacity:.55,
+      className:'risk-cell', interactive:true
+    }).bindPopup(
+      '<b>Cellule ('+r.i+', '+r.j+')</b><br>'
+      +'Probabilité : '+(r.prob*100).toFixed(1)+'%<br>'
+      +'Niveau : '+riskLabel(r.prob)+'<br>'
+      +'<small>'+(riskData.data_origin||'provenance ?')+' · généré le '+fmtDate(riskData.generated_at)+'</small>'
+    ).addTo(lg);
+  }
+  lg.addTo(map);
+  riskLayer = lg;
+}
+
+/* F3+F5 : bandeau honnêteté + métriques */
+function renderRiskBanner(){
+  const status = document.getElementById('riskStatus');
+  const meta = document.getElementById('honestyMeta');
+  if(!riskData){
+    if(status){ status.textContent='Indisponible'; status.className='rp-status err'; }
+    if(meta) meta.textContent='Artéfact fire_risk.json introuvable — couche masquée';
+    return;
+  }
+  const m = riskData.metrics || {};
+  if(status){ status.textContent='Données chargées'; status.className='rp-status ok'; }
+  const origin = riskData.data_origin || 'inconnue';
+  const gen = fmtDate(riskData.generated_at);
+  let txt = 'données '+origin+' · généré le '+gen;
+  if(m.pr_auc != null) txt += ' · PR-AUC '+m.pr_auc.toFixed(3);
+  if(m.f1 != null) txt += ' · F1 '+m.f1.toFixed(3);
+  if(m.baseline_pr_auc != null) txt += ' · baseline '+m.baseline_pr_auc.toFixed(3);
+  if(meta) meta.textContent = txt;
+
+  // métriques
+  const grid = document.getElementById('riskMetricsGrid');
+  const cells = riskData.cells || [];
+  if(grid && (m.pr_auc != null || m.f1 != null)){
+    grid.style.display = '';
+    grid.innerHTML = [
+      {k:'PR-AUC', v:m.pr_auc}, {k:'F1', v:m.f1}, {k:'Baseline', v:m.baseline_pr_auc}
+    ].map(x => '<div class="metric-card"><div class="mk">'+x.k+'</div><div class="mv">'+(x.v!=null?x.v.toFixed(3):'—')+'</div></div>').join('');
+  }
+  const cm = document.getElementById('riskCellsMeta');
+  if(cm){
+    const high = cells.filter(c=>c.prob>=0.6).length;
+    cm.innerHTML = '<b>'+cells.length+'</b> cellules · <b>'+high+'</b> ≥ 60% · grille '+RISK_GRID+'°';
+  }
+  document.getElementById('riskSphere').classList.add('has-data');
+}
+
+/* Chargement (règle 3.2) */
+async function loadRiskData(){
+  const status = document.getElementById('riskStatus');
+  if(status){ status.textContent='Chargement…'; status.className='rp-status warn'; }
+  const urls = ['/artifacts/fire_risk.json', '/api/v1/fire-risk'];
+  for(const url of urls){
+    try{
+      const r = await fetch(url);
+      if(!r.ok) continue;
+      riskData = await r.json();
+      renderRiskBanner();
+      applyRiskLayer();
+      return;
+    }catch(e){}
+  }
+  if(status){ status.textContent='Indisponible'; status.className='rp-status err'; }
+}
+
+/* F2 : légende dans le HUD */
+(function addRiskLegend(){
+  const leg = document.getElementById('legend');
+  if(!leg) return;
+  const div = document.createElement('div');
+  div.className = 'risk-legend';
+  div.innerHTML = '<div class="rl-title">Risque détecté (probabilité)</div>'
+    + '<div class="risk-scale">'+RISK_LEVELS.map(l=>'<span style="background:'+l.color+'"></span>').join('')+'</div>'
+    + '<div class="risk-labels">'+RISK_LEVELS.map(l=>'<span>'+l.label+'</span>').join('')+'</div>';
+  leg.querySelector('.legend-rows').appendChild(div);
+})();
+
+/* ===== Panneau latéral risque ===== */
+function openRiskPanel(){
+  closeAiPanel();
+  const p = document.getElementById('riskPanel');
+  p.classList.add('open');
+  p.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('risk-open');
+  setTimeout(function(){ map.invalidateSize(); applyRiskLayer(); }, 80);
+  if(!riskData) loadRiskData();
+}
+function closeRiskPanel(){
+  const p = document.getElementById('riskPanel');
+  p.classList.remove('open');
+  p.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('risk-open');
+  setTimeout(function(){ map.invalidateSize(); applyRiskLayer(); }, 80);
+}
+
+/* ===== Assistant IA (fenêtre gauche, distincte du panneau risque) ===== */
+const AI_URLS = ['/api/v1/chat'];
+const aiPanel = document.getElementById('aiPanel'), aiLog = document.getElementById('aiLog'), aiInput = document.getElementById('aiInput'),
+  aiForm = document.getElementById('aiForm'), aiSend = document.getElementById('aiSend'), aiStatus = document.getElementById('aiStatus'),
+  aiSuggest = document.getElementById('aiSuggest'), sphere = document.getElementById('riskSphere');
+let aiHistory = [], aiBusy = false;
+function aiSet(t, c){ aiStatus.textContent = t; aiStatus.className = 'rp-status ' + c; }
+function aiAdd(role, text, cls){
+  const d = document.createElement('div'); d.className = 'ai-msg ' + role + (cls ? ' ' + cls : ''); d.textContent = text;
+  aiLog.appendChild(d); aiLog.scrollTop = aiLog.scrollHeight; return d;
+}
+function aiContext(){
+  const c = map.getCenter();
+  return {view:{lat:+c.lat.toFixed(3), lon:+c.lng.toFixed(3), zoom:map.getZoom()},
+    risk: riskData ? {origin:riskData.data_origin, generated_at:riskData.generated_at, cells:(riskData.cells||[]).length, threshold:riskThreshold, visible:riskVisible} : null};
+}
+function aiReset(){
+  aiHistory = []; aiLog.innerHTML = ''; aiSuggest.hidden = false;
+  aiAdd('bot', 'Bonjour, je peux vous aider à lire la carte, comprendre les niveaux de risque et les données FIRMS. Que souhaitez-vous savoir ?');
+}
+async function aiAsk(q){
+  if(aiBusy || !q) return;
+  aiBusy = true; aiSend.disabled = true; aiSuggest.hidden = true;
+  aiAdd('user', q); aiHistory.push({role:'user', content:q});
+  const wait = aiAdd('bot', 'Réflexion en cours…', 'typing'); aiSet('Réflexion…', 'warn');
+  let reply = null;
+  for(const u of AI_URLS){
+    try{
+      const res = await fetch(u, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({messages:aiHistory, context:aiContext()})});
+      if(!res.ok) continue;
+      const j = await res.json();
+      reply = j.reply || j.message || j.content || (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || null;
+      if(reply) break;
+    }catch(e){}
+  }
+  wait.remove();
+  if(reply){ aiAdd('bot', String(reply)); aiHistory.push({role:'assistant', content:String(reply)}); aiSet('Connecté', 'ok'); }
+  else { aiAdd('bot', 'Assistant non connecté : le backend /api/v1/chat (modèle d’IA) est requis pour répondre.', 'err'); aiHistory.pop(); aiSet('Backend requis', 'warn'); }
+  aiBusy = false; aiSend.disabled = false; aiInput.focus();
+}
+function openAiPanel(){
+  closeRiskPanel(); closePanel();
+  aiPanel.classList.add('open'); aiPanel.setAttribute('aria-hidden', 'false'); document.body.classList.add('ai-open');
+  sphere.setAttribute('aria-expanded', 'true');
+  setTimeout(()=>{ map.invalidateSize(); aiInput.focus(); }, 80);
+}
+function closeAiPanel(){
+  if(!aiPanel.classList.contains('open')) return;
+  aiPanel.classList.remove('open'); aiPanel.setAttribute('aria-hidden', 'true'); document.body.classList.remove('ai-open');
+  sphere.setAttribute('aria-expanded', 'false');
+  setTimeout(()=>map.invalidateSize(), 80);
+}
+sphere.onclick = () => aiPanel.classList.contains('open') ? closeAiPanel() : openAiPanel();
+sphere.onkeydown = e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); sphere.click(); } };
+document.getElementById('aiClose').onclick = closeAiPanel;
+document.getElementById('aiNew').onclick = aiReset;
+aiSuggest.onclick = e => { const b = e.target.closest('button[data-q]'); if(b) aiAsk(b.dataset.q); };
+aiForm.onsubmit = e => { e.preventDefault(); const q = aiInput.value.trim(); aiInput.value = ''; aiInput.style.height = 'auto'; aiAsk(q); };
+aiInput.addEventListener('input', () => { aiInput.style.height = 'auto'; aiInput.style.height = Math.min(aiInput.scrollHeight, 120) + 'px'; });
+aiInput.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); aiForm.requestSubmit(); } });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeAiPanel(); });
+aiReset();
+
+document.getElementById('rpClose').onclick = closeRiskPanel;
+document.getElementById('rpToggle').onchange = function(e){
+  riskVisible = e.target.checked;
+  applyRiskLayer();
+};
+document.getElementById('rpThreshold').oninput = function(e){
+  riskThreshold = +e.target.value / 100;
+  document.getElementById('rpThVal').textContent = e.target.value+'%';
+  applyRiskLayer();
+};
+document.getElementById('rpRun').onclick = function(){
+  const log = document.getElementById('rpLog');
+  const sec = document.getElementById('rpLogSection');
+  if(sec) sec.style.display = '';
+  const grid = document.getElementById('rpGrid').value;
+  const win = document.getElementById('rpWindow').value;
+  const status = document.getElementById('rpStatus');
+  status.textContent = 'Backend requis';
+  status.className = 'rp-status warn';
+  if(log) log.textContent = 'Le module src/pyrolens/prediction.py sera connecté ici.\nEn attente de l\'implémentation backend.\n\nCommande attendue :\n  PYTHONPATH=src python3 -m pyrolens.cli predict\n    --grid '+grid+'\n    --window '+win;
+  toast('Module prediction.py requis');
+};
+document.getElementById('rpLoad').onclick = async function(){
+  const log = document.getElementById('rpLog');
+  const sec = document.getElementById('rpLogSection');
+  if(sec) sec.style.display = '';
+  if(log) log.textContent = 'Chargement de fire_risk.json…';
+  await loadRiskData();
+  if(log && riskData) log.textContent = '✓ Chargé : '+(riskData.cells?riskData.cells.length:0)+' cellules\nSource: '+riskData.data_origin+'\nGénéré: '+(riskData.generated_at||'?');
+};
+
+/* Échap pour fermer */
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && document.getElementById('riskPanel').classList.contains('open')){
+    closeRiskPanel();
+  }
+});
+
+document.querySelectorAll('[data-fwd]').forEach(b=>b.addEventListener('click',()=>{toggleMenu(false);document.getElementById(b.dataset.fwd).click()}));
 </script>
 </body>
 </html>
