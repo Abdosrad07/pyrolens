@@ -162,16 +162,20 @@ def ensure_country_file(
 
     Renvoie un dict de traçabilité : pays, slug, chemin, statut, octets.
     """
-    slug, url = resolve_country_file(sensor_key, year, hit)
     base = {"country": hit.name, "iso3": hit.iso3, "sensor": sensor_key,
-            "year": year, "slug": slug}
+            "year": year, "slug": None}
+    # cache d'abord : un fichier déjà présent ne doit jamais dépendre du réseau
+    for slug in hit.variants:
+        cached = archive_path(archive_dir, sensor_key, year, slug)
+        if cached.exists() and cached.stat().st_size > 0:
+            return {**base, "slug": slug, "status": "cached", "path": str(cached),
+                    "bytes": cached.stat().st_size}
+    slug, url = resolve_country_file(sensor_key, year, hit)
+    base["slug"] = slug
     if slug is None:
         return {**base, "status": "unresolved", "path": None,
                 "reason": "aucun nom de fichier FIRMS ne correspond (404 sur toutes les variantes)"}
     target = archive_path(archive_dir, sensor_key, year, slug)
-    if target.exists() and target.stat().st_size > 0:
-        return {**base, "status": "cached", "path": str(target),
-                "bytes": target.stat().st_size}
     target.parent.mkdir(parents=True, exist_ok=True)
     tmp = target.with_suffix(".part")
     last_exc: Exception | None = None
