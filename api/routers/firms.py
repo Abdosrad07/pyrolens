@@ -14,9 +14,16 @@ from fastapi import APIRouter, Depends, Request, Response
 from api.errors import ApiError
 from api.jobs import JOB_ID_PATTERN, Job, JobManager
 from api.routers.deps import get_jobs, get_settings
-from api.schemas import ExperimentResultResponse, JobListView, JobView, ZoneAnalysisRequest
+from api.schemas import (
+    ExperimentResultResponse,
+    JobListView,
+    JobView,
+    ZoneAnalysisRequest,
+    ZoneHistoryRequest,
+)
 from api.security import require_token_if_configured
 from api.services.firms_analysis import run_zone_analysis
+from api.services.zone_history import run_zone_history
 from api.settings import Settings
 
 router = APIRouter()
@@ -109,6 +116,98 @@ def get_zone_analysis(job_id: str, request: Request) -> JobView:
 )
 def get_zone_analysis_result(job_id: str, request: Request) -> ExperimentResultResponse:
     job = _get_zone_job(job_id, request)
+    if job.status == "failed":
+        raise ApiError(409, f"Tâche échouée : {job.error or 'erreur inconnue'}.")
+    if job.result is None:
+        raise ApiError(409, f"Tâche non terminée (statut : {job.status}).")
+    view = job.view()
+    return ExperimentResultResponse(
+        job_id=job.id,
+        kind=job.kind,
+        params=view["params"],
+        status=job.status,
+        created_at=job.created_at,
+        result=job.result,
+    )
+
+
+# ---------------------------------------------------------------- historique
+@router.post(
+    "/firms/history",
+    response_model=JobView,
+    status_code=202,
+    summary="Historique FIRMS d'une zone (archive annuelle par pays)",
+    description=(
+        "Lance une tâche de fond : résolution des pays intersectés, téléchargement "
+        "des CSV annuels `/data/country/` (ouverts, sans clé, cache local), "
+        "filtre bbox, agrégation cellule/jour VIIRS vs MODIS → série "
+        "chronologique + Jaccard. Fenêtre par années (défaut 2019→actuel)."
+    ),
+    dependencies=[Depends(require_token_if_configured)],
+)
+def create_zone_history(
+    body: ZoneHistoryRequest,
+    request: Request,
+    response: Response,
+) -> JobView:
+    settings: Settings = get_settings(request)
+    jobs: JobManager = get_jobs(request)
+    bbox = _valid_bbox(body.bbox)
+    if body.start_year > body.end_year:
+        raise ApiError(400, "start_year doit être ≤ end_year.")
+    params = {
+        "bbox": bbox,
+        "start_year": body.start_year,
+        "end_year": body.end_year,
+        "grid_deg": body.grid_deg,
+    }
+    job = jobs.submit(
+        params,
+        lambda report: run_zone_history(params, settings, report),
+        kind="firms_history",
+    )
+    response.headers["Location"] = f"/api/v1/firms/history/{job.id}"
+    return JobView(**job.view())
+
+
+@router.get(
+    "/firms/history",
+    response_model=JobListView,
+    summary="Lister les historiques de zone",
+)
+def list_zone_histories(request: Request) -> JobListView:
+    jobs: JobManager = get_jobs(request)
+    items = [JobView(**j.view()) for j in jobs.list() if j.kind == "firms_history"]
+    return JobListView(count=len(items), items=items)
+
+
+def _get_history_job(job_id: str, request: Request) -> Job:
+    jobs: JobManager = get_jobs(request)
+    if not _JOB_ID_RE.match(job_id):
+        raise ApiError(404, "Tâche inconnue.")
+    job = jobs.get(job_id)
+    if job is None or job.kind != "firms_history":
+        raise ApiError(404, "Tâche inconnue.")
+    return job
+
+
+@router.get(
+    "/firms/history/{job_id}",
+    response_model=JobView,
+    summary="Suivi d'un historique de zone",
+)
+def get_zone_history(job_id: str, request: Request) -> JobView:
+    job = _get_history_job(job_id, request)
+    return JobView(**job.view())
+
+
+@router.get(
+    "/firms/history/{job_id}/result",
+    response_model=ExperimentResultResponse,
+    summary="Résultat d'un historique de zone",
+)
+def get_zone_history_result(job_id: str, request: Request) -> ExperimentResultResponse:
+    job = _get_history_job(job_id, request)
     if job.status == "failed":
         raise ApiError(409, f"Tâche échouée : {job.error or 'erreur inconnue'}.")
     if job.result is None:

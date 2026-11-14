@@ -31,7 +31,7 @@ def test_no_write_endpoints_exist(client):
         for method in methods:
             assert method in ("get", "post"), f"méthode interdite {method} sur {path}"
             if method == "post":
-                assert path in ("/api/v1/experiments", "/api/v1/datasets/validate", "/api/v1/firms/analyze")
+                assert path in ("/api/v1/experiments", "/api/v1/datasets/validate", "/api/v1/firms/analyze", "/api/v1/firms/history")
 
 
 def test_responses_carry_data_origin_and_no_secret(client):

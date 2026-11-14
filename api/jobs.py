@@ -38,6 +38,7 @@ def _now() -> str:
 JOB_KIND_PATHS = {
     "harmonization": "experiments",
     "firms_analyze": "firms/analyze",
+    "firms_history": "firms/history",
 }
 
 

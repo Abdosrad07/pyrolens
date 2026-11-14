@@ -79,6 +79,8 @@ class Settings:
     cors_origins: tuple[str, ...] = field(default_factory=tuple)
     # Clé FIRMS (usage serveur uniquement — jamais renvoyée au client).
     firms_map_key: str | None = None
+    # Cache des CSV annuels FIRMS par pays (archive, sans clé).
+    archive_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "data" / "raw" / "archive")
 
     @staticmethod
     def from_env() -> "Settings":
@@ -101,4 +103,5 @@ class Settings:
             api_token=_env_str("PYROLENS_API_TOKEN"),
             cors_origins=origins,
             firms_map_key=_env_str("FIRMS_MAP_KEY"),
+            archive_dir=_env_path("PYROLENS_ARCHIVE_DIR", PROJECT_ROOT / "data" / "raw" / "archive"),
         )

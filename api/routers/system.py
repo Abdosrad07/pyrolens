@@ -1,6 +1,9 @@
-"""Routes système : santé, méta, rapport scientifique."""
+"""Routes système : santé, méta, rapport scientifique, état des téléchargements."""
 
 from __future__ import annotations
+
+import json
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Request, Response
 
@@ -70,6 +73,65 @@ def meta(request: Request, response: Response) -> dict:
             "Le Jaccard mesure un recouvrement d'ensembles entre capteurs, pas une précision : "
             "aucune référence indépendante n'est mobilisée (H4/H6 non exécutés)."
         ),
+    }
+
+
+@router.get(
+    "/downloads/status",
+    summary="État des téléchargements FIRMS (pipeline + archive)",
+    description=(
+        "Lecture légère des manifests et du disque : progression du pipeline "
+        "data/raw/firms et volume du cache archive data/raw/archive. "
+        "Aucun appel réseau — interrogeable en continu."
+    ),
+)
+def downloads_status(request: Request) -> dict:
+    root = Path(__file__).resolve().parents[2]
+    firms_dir = root / "data" / "raw" / "firms"
+    archive_dir = root / "data" / "raw" / "archive"
+    manifest_path = root / "data" / "manifests" / "downloads.json"
+
+    entries: list = []
+    if manifest_path.exists():
+        try:
+            entries = json.loads(manifest_path.read_text(encoding="utf-8")).get("entries", [])
+        except Exception:  # noqa: BLE001
+            entries = []
+
+    def _count_status(status: str) -> int:
+        return sum(1 for e in entries if e.get("status") == status)
+
+    # Le manifest cumule l'historique des runs : le dénominateur honnête est
+    # le nombre de chemins uniques jamais acquis, pas le nombre d'entrées.
+    unique_paths = {
+        e.get("path") for e in entries if e.get("path") and e.get("status") in
+        ("downloaded", "already_present")
+    }
+    total_unique = len(unique_paths)
+    firms_files = len(list(firms_dir.glob("*.csv"))) if firms_dir.exists() else 0
+    archive_files = (
+        len([p for p in archive_dir.rglob("*.csv")]) if archive_dir.exists() else 0
+    )
+    archive_bytes = (
+        sum(p.stat().st_size for p in archive_dir.rglob("*.csv"))
+        if archive_dir.exists()
+        else 0
+    )
+    return {
+        "firms": {
+            "files_on_disk": firms_files,
+            "unique_files_expected": total_unique,
+            "acquired_entries": _count_status("downloaded"),
+            "already_present_entries": _count_status("already_present"),
+            "deferred_entries": _count_status("deferred"),
+            "error_entries": _count_status("http_error") + _count_status("error"),
+            "pct": round(100 * min(firms_files, total_unique) / total_unique, 1)
+            if total_unique else None,
+        },
+        "archive": {
+            "files": archive_files,
+            "mb": round(archive_bytes / 1e6, 1),
+        },
     }
 
 

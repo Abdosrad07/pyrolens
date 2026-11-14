@@ -456,6 +456,7 @@ path.perimeter:hover{fill-opacity:.62}
   </details>
   <div id="bottombar">
     <span id="coords">Survolez la carte pour les coordonnées</span>
+    <span id="dlGauge" title="Progression des téléchargements FIRMS"></span>
     <span id="modeLabel">Source : …</span>
     <span>Imagerie : <span id="baseLabel">Esri World Imagery</span></span>
     <a href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">NASA FIRMS<svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg></a>
@@ -943,14 +944,18 @@ async function renderCalendar(){
 async function renderZoneCalendar(el){
   // Charger le résultat si on a un jobId sans result
   if(!zoneCal.result && zoneCal.jobId){
+    const zbase = zoneCal.mode==='history' ? '/api/v1/firms/history' : '/api/v1/firms/analyze';
     try{
-      const res=await fetch(`/api/v1/firms/analyze/${zoneCal.jobId}/result`);
+      const res=await fetch(`${zbase}/${zoneCal.jobId}/result`);
       if(res.ok) zoneCal.result=(await res.json()).result||null;
     }catch(e){}
   }
-  // Liste des analyses passées pour le sélecteur
+  // Liste des analyses passées pour le sélecteur (NRT + historique)
   let past=[];
-  try{ const r=await fetch('/api/v1/firms/analyze'); if(r.ok){ const j=await r.json(); past=(j.items||[]).filter(x=>x.status==='succeeded'); } }catch(e){}
+  for(const [kind,path] of [['analyze','/api/v1/firms/analyze'],['history','/api/v1/firms/history']]){
+    try{ const r=await fetch(path); if(r.ok){ const j=await r.json(); (j.items||[]).filter(x=>x.status==='succeeded').forEach(x=>past.push({...x,_kind:kind})); } }catch(e){}
+  }
+  past.sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
 
   if(!zoneCal.result){
     el.innerHTML=`
@@ -958,11 +963,11 @@ async function renderZoneCalendar(el){
       <small>Affiche les détections journalières de la dernière analyse FIRMS sur une zone délimitée (paramètres choisis : bbox, maille, fenêtre).</small>
       <div class="controls" style="margin-top:1rem">
         <div class="seg"><button type="button" data-mode="pipeline">Données pipeline (Cameroun)</button><button type="button" data-mode="zone" aria-pressed="true">Zone analysée</button></div>
-        ${past.length?`<label>Analyse passée<select id="zcPick">${past.map(j=>`<option value="${esc(j.job_id)}">${esc(j.job_id.slice(0,8))} — ${esc((j.params?.bbox||[]).map(v=>(+v).toFixed(1)).join(','))} — ${esc(fdt(j.created_at))}</option>`).join('')}</select></label>`:''}
+        ${past.length?`<label>Analyse<select id="zcPick">${past.map(j=>`<option value="${esc(j._kind)}:${esc(j.job_id)}">${j._kind==='history'?'📅':'⚡'} ${esc(j.job_id.slice(0,8))} — ${esc((j.params?.bbox||[]).map(v=>(+v).toFixed(1)).join(','))} — ${esc(fdt(j.created_at))}</option>`).join('')}</select></label>`:''}
       </div>
       <p class="empty" style="margin-top:1rem">Aucune analyse de zone disponible.${past.length?' Choisissez-en une ci-dessus.':' Cliquez sur la carte puis « Lancer l\'analyse », puis « Voir dans le calendrier ».'}</p>`;
     el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{cal.mode=b.dataset.mode;renderCalendar()});
-    const pk=$('#zcPick'); if(pk) pk.onchange=e=>{zoneCal.jobId=e.target.value;zoneCal.result=null;renderZoneCalendar(el)};
+    const pk=$('#zcPick'); if(pk) pk.onchange=e=>{const [k,id]=e.target.value.split(':');zoneCal.mode=k;zoneCal.jobId=id;zoneCal.result=null;renderZoneCalendar(el)};
     return;
   }
 
@@ -984,10 +989,20 @@ async function renderZoneCalendar(el){
     cells.push(`<button type="button" class="cal-cell${r2?' on':''}${cal.sel===iso?' sel':''}" data-day="${iso}" ${r2?'':'disabled'} style="${r2?`background:color-mix(in srgb,var(--lagoon) ${Math.round(10+inten*50)}%,#fff)`:''}">
       <strong>${d}</strong><span>${r2?fmt(tot)+' cellules':'·'}</span><span style="display:block;color:var(--muted)">${r2?`∩ ${fmt(r2.common)}`:'—'}</span></button>`);
   }
-  const labels=dates, series=[
+  // Série longue (historique) : agrégation mensuelle pour rester lisible
+  let labels=dates, series=[
     {name:'VIIRS cellules',values:dates.map(d=>byDay[d].viirs_cells||0)},
     {name:'MODIS cellules',values:dates.map(d=>byDay[d].modis_cells||0)},
     {name:'Communs',values:dates.map(d=>byDay[d].common||0)}];
+  if(dates.length>400){
+    const months=[...new Set(dates.map(d=>d.slice(0,7)))].sort();
+    const agg=(key)=>months.map(m=>dates.filter(d=>d.startsWith(m)).reduce((a,d)=>a+(byDay[d][key]||0),0));
+    labels=months;
+    series=[
+      {name:'VIIRS cellules (mois)',values:agg('viirs_cells')},
+      {name:'MODIS cellules (mois)',values:agg('modis_cells')},
+      {name:'Communs (mois)',values:agg('common')}];
+  }
   const win=r.window||{};
   el.innerHTML=`
     <h2>Calendrier — zone analysée</h2>
@@ -995,15 +1010,15 @@ async function renderZoneCalendar(el){
     ${banner(r.data_origin, r.generated_at, '· zone arbitraire — qualité préliminaire NRT')}
     <div class="controls" style="margin-top:1rem">
       <div class="seg"><button type="button" data-mode="pipeline">Données pipeline (Cameroun)</button><button type="button" data-mode="zone" aria-pressed="true">Zone analysée</button></div>
-      ${past.length?`<label>Analyse<select id="zcPick2">${past.map(j=>`<option value="${esc(j.job_id)}" ${j.job_id===zoneCal.jobId?'selected':''}>${esc(j.job_id.slice(0,8))} — ${esc(fdt(j.created_at))}</option>`).join('')}</select></label>`:''}
+      ${past.length?`<label>Analyse<select id="zcPick2">${past.map(j=>`<option value="${esc(j._kind)}:${esc(j.job_id)}" ${j.job_id===zoneCal.jobId&&j._kind===zoneCal.mode?'selected':''}>${j._kind==='history'?'📅':'⚡'} ${esc(j.job_id.slice(0,8))} — ${esc(fdt(j.created_at))}</option>`).join('')}</select></label>`:''}
     </div>
     <div class="detail" style="margin-top:.8rem">
       <h3>Paramètres de l'analyse</h3>
       <table class="dt"><tbody>
         <tr><td>bbox</td><td class="mono">${esc((p.bbox||[]).map(v=>(+v).toFixed(3)).join(', '))}</td></tr>
-        <tr><td>Fenêtre</td><td>${esc(win.requested||'nrt')} — ${esc(win.start||'—')} → ${esc(win.end||'—')}</td></tr>
+        <tr><td>Période</td><td>${esc(win.start_year?`${win.start_year} → ${win.end_year}`:`${win.requested||'nrt'} — ${win.start||'—'} → ${win.end||'—'}`)}</td></tr>
         <tr><td>Maille d'appariement</td><td>${fmt(r.grid_deg,2)}° — ${esc(r.key_definition||'')}</td></tr>
-        <tr><td>Sources</td><td class="mono" style="font-size:.72rem">${esc(Object.values(r.sources||{}).flat().join(' + ')||'—')}</td></tr>
+        <tr><td>Sources</td><td class="mono" style="font-size:.72rem">${esc(Object.values(r.sources||{}).flat().join(' + ')||(r.countries||[]).map(c=>c.name).join(', ')||'—')}</td></tr>
         <tr><td>Jaccard global</td><td><b>${r.jaccard!=null?fmt(r.jaccard,3):'—'}</b> (recouvrement, pas précision)</td></tr>
       </tbody></table>
     </div>
@@ -1011,10 +1026,10 @@ async function renderZoneCalendar(el){
     <div class="cal-grid"><div class="cal-dow">Lun</div><div class="cal-dow">Mar</div><div class="cal-dow">Mer</div><div class="cal-dow">Jeu</div><div class="cal-dow">Ven</div><div class="cal-dow">Sam</div><div class="cal-dow">Dim</div>${cells.join('')}</div>
     <div class="detail" id="calDetail" style="display:none"></div>
     <div class="chart-box"><h3>Cellules par jour — VIIRS vs MODIS vs communs</h3><canvas id="zcDayChart"></canvas>
-      <p class="legend-note">${dates.length} jour(s) couverts par la fenêtre NRT. « Cellules » = cellules ${fmt(r.grid_deg,2)}° avec ≥1 détection — pas des feux.</p></div>`;
+      <p class="legend-note">${dates.length} jour(s) couverts — cellules ${fmt(r.grid_deg,2)}° avec ≥1 détection. « Cellules » ≠ feux ; une cellule vide ≠ absence de feu.</p></div>`;
   setTimeout(()=>{const cv=$('#zcDayChart'); if(cv) drawLines(cv,{labels,series,h:240});},30);
   el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{cal.mode=b.dataset.mode;renderCalendar()});
-  const pk2=$('#zcPick2'); if(pk2) pk2.onchange=e=>{zoneCal.jobId=e.target.value;zoneCal.result=null;renderZoneCalendar(el)};
+  const pk2=$('#zcPick2'); if(pk2) pk2.onchange=e=>{const [k,id]=e.target.value.split(':');zoneCal.mode=k;zoneCal.jobId=id;zoneCal.result=null;renderZoneCalendar(el)};
   $('#zcPrev').onclick=()=>{const [yy,mm]=cal.month.split('-').map(Number);const d=new Date(Date.UTC(yy,mm-2,1));cal.month=`${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}`;renderZoneCalendar(el)};
   $('#zcNext').onclick=()=>{const [yy,mm]=cal.month.split('-').map(Number);const d=new Date(Date.UTC(yy,mm,1));cal.month=`${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}`;renderZoneCalendar(el)};
   el.querySelectorAll('.cal-cell[data-day]').forEach(c=>c.onclick=()=>{
@@ -1300,10 +1315,12 @@ async function renderDQ(){
 /* =========================================================
    ANALYSE DE ZONE FIRMS — clic carte → bbox → job → jauge → résultats
    ========================================================= */
-const zc = { center:null, form:{radius:1, window:'nrt', grid_deg:0.1}, layer:null, rect:null, timer:null, jobId:null };
-const zoneCal = { jobId:null, result:null };
+const zc = { center:null, form:{radius:1, window:'nrt', grid_deg:0.25, start_year:2019, end_year:new Date().getFullYear()}, layer:null, rect:null, timer:null, jobId:null, mode:'analyze' };
+const zoneCal = { jobId:null, result:null, mode:'analyze' };
 const ZC_STEPS = [['fetch_viirs','VIIRS NRT (NOAA-20/21)'],['fetch_modis','MODIS NRT'],['normalize','Normalisation'],['match','Appariement cellules'],['metrics','Métriques']];
 const ZC_IDX = {fetch_viirs:0,fetch_modis:1,normalize:2,match:3,metrics:4};
+const ZH_STEPS = [['countries','Pays intersectés'],['fetch','Fichiers archive (par année)'],['load','Lecture + filtre bbox'],['aggregate','Agrégation cellule/jour'],['metrics','Métriques']];
+const ZH_IDX = {countries:0,fetch:1,load:2,aggregate:3,metrics:4};
 
 function zcOpen(latlng){
   if(DATA.mode!=='api'){ toast('Analyse de zone : nécessite l\'API backend (/api/v1).'); return; }
@@ -1326,27 +1343,43 @@ function zcRenderForm(){
     </div>
     <label class="fl" style="margin-top:.7rem">Maille d'appariement<select id="zcGrid">${[0.05,0.1,0.25].map(g=>`<option value="${g}" ${zc.form.grid_deg===g?'selected':''}>${g}°</option>`).join('')}</select></label>
     <div style="margin-top:1rem"><button class="btn" id="zcGo" style="width:100%;justify-content:center">${ico('cpu')} Lancer l'analyse</button></div>
-    <p class="legend-note" style="margin-top:.7rem">La tâche tourne côté serveur : la jauge reflète la progression réelle (téléchargement → normalisation → appariement → Jaccard).</p>`;
+    <p class="legend-note" style="margin-top:.7rem">La tâche tourne côté serveur : la jauge reflète la progression réelle (téléchargement → normalisation → appariement → Jaccard).</p>
+    <hr style="border:0;border-top:1px solid var(--mist);margin:1rem 0">
+    <h3 style="font:700 .95rem var(--display);margin-bottom:.5rem">Historique archive (2019 → aujourd'hui)</h3>
+    <p class="legend-note" style="margin-bottom:.6rem">CSV annuels FIRMS par pays (qualité standard) — couverture complète de la zone sur la plage choisie. Téléchargement une fois, mis en cache.</p>
+    <div class="zc-row">
+      <label class="fl">Du<select id="zcY1">${Array.from({length:new Date().getFullYear()-2018},(_,i)=>2019+i).map(y=>`<option ${zc.form.start_year===y?'selected':''}>${y}</option>`).join('')}</select></label>
+      <label class="fl">Au<select id="zcY2">${Array.from({length:new Date().getFullYear()-2018},(_,i)=>2019+i).map(y=>`<option ${zc.form.end_year===y?'selected':''}>${y}</option>`).join('')}</select></label>
+    </div>
+    <div style="margin-top:.8rem"><button class="btn ghost" id="zcHist" style="width:100%;justify-content:center">${ico('cal')} Charger l'historique</button></div>`;
   $('#zcRadius').onchange=e=>zc.form.radius=+e.target.value;
   $('#zcWin').onchange=e=>zc.form.window=e.target.value;
   $('#zcGrid').onchange=e=>zc.form.grid_deg=+e.target.value;
-  $('#zcGo').onclick=zcLaunch;
+  $('#zcY1').onchange=e=>zc.form.start_year=+e.target.value;
+  $('#zcY2').onchange=e=>zc.form.end_year=+e.target.value;
+  $('#zcGo').onclick=()=>{zc.mode='analyze';zcLaunch()};
+  $('#zcHist').onclick=()=>{zc.mode='history';zcLaunch()};
 }
 function zcBBox(){
   const r=zc.form.radius, c=zc.form.grid_deg;
   return [zc.center.lng-r, Math.max(-90,zc.center.lat-r), zc.center.lng+r, Math.min(90,zc.center.lat+r)];
 }
 async function zcLaunch(){
-  const go=$('#zcGo'); if(go){go.disabled=true;go.textContent='Lancement…';}
+  const btn = zc.mode==='history' ? $('#zcHist') : $('#zcGo');
+  if(btn){btn.disabled=true;btn.textContent='Lancement…';}
   try{
-    const res=await fetch('/api/v1/firms/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({bbox:zcBBox(),window:zc.form.window,grid_deg:zc.form.grid_deg})});
+    const isHist = zc.mode==='history';
+    const body = isHist
+      ? {bbox:zcBBox(), start_year:zc.form.start_year, end_year:zc.form.end_year, grid_deg:zc.form.grid_deg}
+      : {bbox:zcBBox(), window:zc.form.window, grid_deg:zc.form.grid_deg};
+    const res=await fetch(`/api/v1/firms/${isHist?'history':'analyze'}`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)});
     if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(e?.error?.message||e?.detail||`HTTP ${res.status}`); }
     const job=await res.json();
     zc.jobId=job.job_id; zcDrawRect();
     clearInterval(zc.timer);
     zc.timer=setInterval(zcPoll,1500); zcPoll();
-  }catch(e){ toast('Échec : '+e.message); if(go){go.disabled=false;} }
+  }catch(e){ toast('Échec : '+e.message); if(btn){btn.disabled=false;} }
 }
 function zcDrawRect(){
   const [w,s,e,n]=zcBBox();
@@ -1354,35 +1387,71 @@ function zcDrawRect(){
   zc.rect=L.rectangle([[s,w],[n,e]],{color:'#F2541B',weight:2,dashArray:'6 4',fillOpacity:.04}).addTo(map);
 }
 function zcGauge(pct, curStep, detail){
-  const idx = curStep!=null ? ZC_IDX[curStep] : -1;
-  $('#zcTitle').textContent='Analyse en cours';
+  const isHist = zc.mode==='history';
+  const steps = isHist ? ZH_STEPS : ZC_STEPS;
+  const idxMap = isHist ? ZH_IDX : ZC_IDX;
+  const idx = curStep!=null ? (idxMap[curStep] ?? -1) : -1;
+  const span = isHist ? `${zc.form.start_year} → ${zc.form.end_year}` : (zc.form.window==='nrt'?'NRT ~5 jours':'archive');
+  $('#zcTitle').textContent= isHist ? 'Historique en cours' : 'Analyse en cours';
   $('#zcBody').innerHTML=`
     <div class="zc-gauge">
       <div class="zc-bar"><i style="width:${pct||0}%"></i></div>
-      <div class="zc-steps">${ZC_STEPS.map(([k,l],i)=>`<div class="zc-step ${i<idx?'done':i===idx?'cur':''}"><span class="dot">${i<idx?'✓':i+1}</span><span>${l} <small>${i===idx&&detail?'— '+esc(detail):''}</small></span></div>`).join('')}</div>
+      <div class="zc-steps">${steps.map(([k,l],i)=>`<div class="zc-step ${i<idx?'done':i===idx?'cur':''}"><span class="dot">${i<idx?'✓':i+1}</span><span>${l} <small>${i===idx&&detail?'— '+esc(detail):''}</small></span></div>`).join('')}</div>
     </div>
-    <p class="legend-note">Fenêtre ${esc(zc.form.window==='nrt'?'NRT ~5 jours':'archive')} · maille ${zc.form.grid_deg}° · bbox ${zcBBox().map(v=>v.toFixed(2)).join(', ')}</p>`;
+    <p class="legend-note">${isHist?`Archive SP ${span}`:`Fenêtre ${esc(span)}`} · maille ${zc.form.grid_deg}° · bbox ${zcBBox().map(v=>v.toFixed(2)).join(', ')}</p>`;
 }
 async function zcPoll(){
   if(!zc.jobId) return;
+  const base = zc.mode==='history' ? '/api/v1/firms/history' : '/api/v1/firms/analyze';
   try{
-    const r=await fetch(`/api/v1/firms/analyze/${zc.jobId}`);
+    const r=await fetch(`${base}/${zc.jobId}`);
     if(!r.ok) return;
     const j=await r.json();
     const p=j.progress||{};
     if(j.status==='succeeded'){
       clearInterval(zc.timer); zc.timer=null;
-      const res=await (await fetch(`/api/v1/firms/analyze/${zc.jobId}/result`)).json();
-      zcRenderResult(res.result||{});
+      const res=await (await fetch(`${base}/${zc.jobId}/result`)).json();
+      const out = res.result||{};
+      if(zc.mode==='history') zcRenderHistResult(out); else zcRenderResult(out);
     }else if(j.status==='failed'){
       clearInterval(zc.timer); zc.timer=null;
-      $('#zcTitle').textContent='Analyse échouée';
+      $('#zcTitle').textContent='Tâche échouée';
       $('#zcBody').innerHTML=`<div class="banner warn"><b>Échec :</b> ${esc(j.error||'erreur inconnue')}</div><div style="margin-top:.8rem"><button class="btn ghost" id="zcRetry">Réessayer</button></div>`;
       $('#zcRetry').onclick=zcRenderForm;
     }else{
       zcGauge(p.pct??0, p.step, p.detail);
     }
   }catch(e){ /* réseau : on réessaie au prochain tick */ }
+}
+function zcRenderHistResult(r){
+  const c=r.counts||{};
+  const countries=(r.countries||[]).map(x=>x.name).join(', ')||'—';
+  const unresolved=(r.unresolved_countries||[]).length?`<div class="banner warn" style="margin-top:.6rem"><b>Pays non résolus :</b> ${esc(r.unresolved_countries.join(', '))} — leurs zones ne sont pas couvertes.</div>`:'';
+  $('#zcTitle').textContent='Historique — zone analysée';
+  $('#zcBody').innerHTML=`
+    ${banner(r.data_origin, r.generated_at, '· archive FIRMS SP — qualité standard')}
+    <div class="zc-cards">
+      <div class="card"><div class="k">VIIRS cellules</div><div class="v">${fmt(c.viirs_cells)}</div><div class="d">${fmt(c.viirs_rows)} détections</div></div>
+      <div class="card"><div class="k">MODIS cellules</div><div class="v">${fmt(c.modis_cells)}</div><div class="d">${fmt(c.modis_rows)} détections</div></div>
+      <div class="card"><div class="k">Cellules communes</div><div class="v">${fmt(c.common_cells)}</div><div class="d">sur ${fmt(c.union_cells)} union</div></div>
+      <div class="card"><div class="k">Jaccard global</div><div class="v">${r.jaccard!=null?fmt(r.jaccard,3):'—'}</div><div class="d">recouvrement — pas précision</div></div>
+    </div>
+    <div class="zc-legend"><span><i style="background:#F2541B"></i>VIIRS S-NPP</span><span><i style="background:#168F80"></i>MODIS</span></div>
+    <p class="legend-note" style="margin-top:.6rem"><b>Période :</b> ${esc(r.window?.start_year)} → ${esc(r.window?.end_year)} · <b>Pays :</b> ${esc(countries)} · fichiers : ${fmt(r.files?.downloaded)} téléchargés / ${fmt(r.files?.cached)} en cache</p>
+    ${unresolved}
+    ${r.daily?.length?`<div class="chart-box" style="padding:.6rem;margin-top:.6rem"><canvas id="zcChart" style="height:200px"></canvas></div>`:''}
+    <p class="legend-note" style="margin-top:.6rem">${esc(r.note||'')}</p>
+    <div style="display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap">
+      <button class="btn ghost" id="zcCal">${ico('cal')} Voir dans le calendrier</button>
+      <button class="btn ghost" id="zcAgain">Nouvelle zone</button>
+      <button class="btn ghost" id="zcClose2">Fermer</button>
+    </div>`;
+  zcDrawPoints(r.points||{});
+  const cv=$('#zcChart');
+  if(cv&&r.daily?.length) drawLines(cv,{labels:r.daily.map(d=>d.date.slice(0,7)),series:[{name:'VIIRS',values:r.daily.map(d=>d.viirs_cells)},{name:'MODIS',values:r.daily.map(d=>d.modis_cells)},{name:'Communs',values:r.daily.map(d=>d.common)}],h:200});
+  $('#zcCal').onclick=()=>{ zoneCal.jobId=zc.jobId; zoneCal.mode='history'; zoneCal.result=r; cal.mode='zone'; showView('calendar'); };
+  $('#zcAgain').onclick=()=>{ zc.jobId=null; if(zc.rect)map.removeLayer(zc.rect); zcRenderForm(); };
+  $('#zcClose2').onclick=zcClose;
 }
 function zcRenderResult(r){
   const c=r.counts||{};
@@ -1419,6 +1488,29 @@ function zcDrawPoints(points){
 }
 map.on('click', e=>{ if(!view.classList.contains('open')) zcOpen(e.latlng); });
 $('#zcClose').onclick = zcClose;
+
+/* =========================================================
+   JAUGE TÉLÉCHARGEMENTS — /api/v1/downloads/status (20 s)
+   ========================================================= */
+async function pollDownloads(){
+  const el=$('#dlGauge'); if(!el||DATA.mode!=='api') return;
+  try{
+    const r=await fetch('/api/v1/downloads/status');
+    if(!r.ok) return;
+    const d=await r.json();
+    const f=d.firms||{}, a=d.archive||{};
+    const pct=f.pct;
+    const label = pct==null ? 'FIRMS : —' :
+      (pct>=100 ? `FIRMS ✓ ${fmt(f.files_on_disk)}` : `⬇ FIRMS ${pct}% (${fmt(f.files_on_disk)})`);
+    const arch = a.files?` · archive ${fmt(a.files)} f.`:'';
+    el.textContent = label + arch;
+    el.style.color = pct!=null&&pct>=100 ? 'var(--lagoon)' : 'var(--sulphur)';
+    el.title = `Pipeline : ${fmt(f.files_on_disk)} fichiers` +
+      (f.unique_files_expected?` / ${fmt(f.unique_files_expected)} attendus`:'') +
+      ` — archive : ${fmt(a.files)} fichiers (${fmt(a.mb)} Mo)`;
+  }catch(e){ /* API indisponible : on garde l'état précédent */ }
+}
+setInterval(pollDownloads, 20000); pollDownloads();
 
 /* =========================================================
    INIT
