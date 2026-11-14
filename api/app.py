@@ -15,6 +15,23 @@ from fastapi import FastAPI
 
 from api import PROJECT_ROOT
 
+
+def _load_env_files() -> None:
+    """Charge `.env` puis `.env.local` (prioritaire) — même convention que le pipeline."""
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    env_file = PROJECT_ROOT / ".env"
+    local_file = PROJECT_ROOT / ".env.local"
+    if env_file.exists():
+        load_dotenv(env_file)
+    if local_file.exists():
+        load_dotenv(local_file, override=True)
+
+
+_load_env_files()
+
 try:
     from pyrolens import __version__ as PYROLENS_VERSION
 except Exception:  # noqa: BLE001 — l'API reste servable si le pipeline n'est pas importable
@@ -26,6 +43,7 @@ from api.routers import audit as audit_router
 from api.routers import baselines as baselines_router
 from api.routers import catalog as catalog_router
 from api.routers import experiments as experiments_router
+from api.routers import firms as firms_router
 from api.routers import fire_calendar as fire_calendar_router
 from api.routers import methodology as methodology_router
 from api.routers import system as system_router
@@ -57,6 +75,7 @@ ROUTERS = (
     (methodology_router.router, "méthodologie"),
     (validation_router.router, "validation"),
     (experiments_router.router, "expériences"),
+    (firms_router.router, "analyse de zone FIRMS"),
 )
 
 

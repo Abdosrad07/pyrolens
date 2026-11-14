@@ -29,6 +29,25 @@ class RowsResponse(BaseModel):
     rows: list[dict[str, Any]] = Field(default_factory=list)
 
 
+class ZoneAnalysisRequest(BaseModel):
+    """Demande d'analyse FIRMS sur une bbox arbitraire (VIIRS vs MODIS)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    bbox: list[float] = Field(
+        description="[min_lon, min_lat, max_lon, max_lat] en degrés (WGS84).",
+        min_length=4, max_length=4,
+    )
+    window: Literal["nrt", "archive"] = Field(
+        default="nrt",
+        description="Fenêtre : nrt (récent ~5 jours, FIRMS SP) | archive (non supporté par zone).",
+    )
+    grid_deg: float = Field(
+        default=0.05, gt=0.0, le=1.0,
+        description="Maille d'appariement en degrés (défaut 0.05 ≈ 5 km).",
+    )
+
+
 class ExperimentRequest(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -58,6 +77,10 @@ class JobView(BaseModel):
     started_at: str | None = None
     finished_at: str | None = None
     error: str | None = None
+    progress: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Avancement temps réel : {step, pct, detail, at} pendant l'exécution.",
+    )
     links: dict[str, str] = Field(default_factory=dict)
 
 

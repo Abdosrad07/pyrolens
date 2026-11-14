@@ -16,10 +16,11 @@ import json
 import logging
 import threading
 import uuid
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from api.errors import ApiError
 from api.settings import Settings
@@ -34,6 +35,12 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+JOB_KIND_PATHS = {
+    "harmonization": "experiments",
+    "firms_analyze": "firms/analyze",
+}
+
+
 class Job:
     def __init__(self, kind: str, params: dict[str, Any]) -> None:
         self.id = uuid.uuid4().hex[:12]
@@ -46,10 +53,17 @@ class Job:
         self.error: str | None = None
         self.result: dict[str, Any] | None = None
         self.result_path: Path | None = None
+        self.progress: dict[str, Any] = {}
         self.lock = threading.Lock()
+
+    def report(self, step: str, pct: float, detail: str | None = None) -> None:
+        """Publication de l'avancement courant (lu par GET …/{id})."""
+        with self.lock:
+            self.progress = {"step": step, "pct": max(0.0, min(100.0, pct)), "detail": detail, "at": _now()}
 
     def view(self) -> dict[str, Any]:
         with self.lock:
+            base = JOB_KIND_PATHS.get(self.kind, "experiments")
             view: dict[str, Any] = {
                 "job_id": self.id,
                 "kind": self.kind,
@@ -59,9 +73,10 @@ class Job:
                 "started_at": self.started_at,
                 "finished_at": self.finished_at,
                 "error": self.error,
+                "progress": dict(self.progress),
                 "links": {
-                    "self": f"/api/v1/experiments/{self.id}",
-                    "result": f"/api/v1/experiments/{self.id}/result",
+                    "self": f"/api/v1/{base}/{self.id}",
+                    "result": f"/api/v1/{base}/{self.id}/result",
                 },
             }
         return view
@@ -75,10 +90,15 @@ class JobManager:
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pyrolens-exp")
 
     # -- API publique ----------------------------------------------------
-    def submit(self, params: dict[str, Any], fn: Callable[[], dict[str, Any]]) -> Job:
+    def submit(
+        self,
+        params: dict[str, Any],
+        fn: Callable[[Callable[[str, float, str | None], None]], dict[str, Any]],
+        kind: str = "harmonization",
+    ) -> Job:
         if not self.settings.jobs_enabled:
             raise ApiError(403, "Exécution d'expériences désactivée (PYROLENS_JOBS_ENABLED=0).")
-        job = Job("harmonization", params)
+        job = Job(kind, params)
         with self._lock:
             self._evict_locked()
             self._jobs[job.id] = job
@@ -115,7 +135,7 @@ class JobManager:
             job.status = "running"
             job.started_at = _now()
         try:
-            result = fn()
+            result = fn(job.report)
             path = self._result_path(job.id)
             path.parent.mkdir(parents=True, exist_ok=True)
             payload = {"job_id": job.id, "kind": job.kind, "params": job.params, "status": "succeeded"}
@@ -139,7 +159,7 @@ class JobManager:
                 job.error = "Mémoire insuffisante pour la source demandée."
                 job.finished_at = _now()
             logger.exception("expérience %s : mémoire épuisée", job.id)
-        except Exception as exc:  # noqa: BLE001 — jamais de pile dans la réponse
+        except Exception as exc:  # jamais de pile dans la réponse
             with job.lock:
                 job.status = "failed"
                 job.error = f"Erreur interne pendant le calcul ({type(exc).__name__})."

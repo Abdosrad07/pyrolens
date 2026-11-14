@@ -20,6 +20,27 @@ from .config import PROJECT_ROOT, Config, load_config
 from .logging_utils import get_logger
 from .provenance import now_iso
 
+
+def _load_env_files() -> None:
+    """Charge `.env` puis `.env.local` (prioritaire) — convention env.example.
+
+    python-dotenv est optionnel : absent, les variables d'environnement
+    du processus restent la seule source.
+    """
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    env_file = PROJECT_ROOT / ".env"
+    local_file = PROJECT_ROOT / ".env.local"
+    if env_file.exists():
+        load_dotenv(env_file)
+    if local_file.exists():
+        load_dotenv(local_file, override=True)
+
+
+_load_env_files()
+
 app = typer.Typer(help="PyroLens phase 2 — pipeline MODIS / VIIRS (pilote Cameroun).", no_args_is_help=True)
 
 

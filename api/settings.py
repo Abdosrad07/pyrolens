@@ -1,8 +1,9 @@
 """Configuration de l'API lue dans l'environnement (aucune valeur sensible en dur).
 
-Toutes les variables sont documentées dans ``.env.example``. Les clés d'acquisition
-(``FIRMS_MAP_KEY``, ``EARTHDATA_*``) ne sont **jamais** lues par l'API : l'acquisition
-reste une opération du pipeline, en local.
+Toutes les variables sont documentées dans ``.env.example``. ``FIRMS_MAP_KEY`` est
+lue **uniquement côté serveur** pour l'analyse de zone à la demande
+(``POST /firms/analyze``) : elle n'est jamais exposée dans une réponse ni côté
+client. ``EARTHDATA_*`` reste réservé au pipeline.
 """
 
 from __future__ import annotations
@@ -76,6 +77,8 @@ class Settings:
     # Si défini, les endpoints POST exigent « Authorization: Bearer <jeton> ».
     api_token: str | None = None
     cors_origins: tuple[str, ...] = field(default_factory=tuple)
+    # Clé FIRMS (usage serveur uniquement — jamais renvoyée au client).
+    firms_map_key: str | None = None
 
     @staticmethod
     def from_env() -> "Settings":
@@ -97,4 +100,5 @@ class Settings:
             max_jobs=max(1, _env_int("PYROLENS_MAX_JOBS", 20)),
             api_token=_env_str("PYROLENS_API_TOKEN"),
             cors_origins=origins,
+            firms_map_key=_env_str("FIRMS_MAP_KEY"),
         )
