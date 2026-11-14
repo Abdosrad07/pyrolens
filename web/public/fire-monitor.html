@@ -857,7 +857,7 @@ async function renderOverview(){
 /* =========================================================
    VUE CALENDRIER — série quotidienne réelle
    ========================================================= */
-const cal = { pair:'', gran:'jour', month:null, sel:null };
+const cal = { pair:'', gran:'jour', month:null, sel:null, mode:'pipeline' };
 async function fireSeries(){
   if(DATA.mode==='api'){
     const [d,m] = await Promise.all([
@@ -875,6 +875,7 @@ async function fireSeries(){
 }
 async function renderCalendar(){
   const el = $('#calBody');
+  if(cal.mode==='zone') return renderZoneCalendar(el);
   el.innerHTML = '<p class="empty">Chargement du calendrier…</p>';
   let data; try{ data = await fireSeries(); }catch(e){ el.innerHTML = `<p class="empty">Chargement impossible : ${esc(e.message)}</p>`; return; }
   const pairs = [...new Set([...data.daily.map(r=>r.pair), ...data.monthly.map(r=>r.pair)])];
@@ -902,6 +903,10 @@ async function renderCalendar(){
     <small>Détections par jour/mois pour la paire choisie. « Observations » = enregistrements des deux capteurs ; « Communs » = cellules partagées.</small>
     ${banner(data.data_origin, data.generated_at, '· « aucun enregistrement » ne signifie pas « pas de feu »')}
     <div class="controls">
+      <div class="seg" role="group" aria-label="Source du calendrier">
+        <button type="button" data-mode="pipeline" aria-pressed="true">Données pipeline (Cameroun)</button>
+        <button type="button" data-mode="zone" aria-pressed="false">Zone analysée</button>
+      </div>
       <label>Paire<select id="calPair">${pairs.map(p=>`<option ${p===cal.pair?'selected':''}>${esc(p)}</option>`).join('')}</select></label>
       <div class="seg" role="group" aria-label="Gravité">${['jour','semaine','mois'].map(g=>`<button type="button" data-g="${g}" aria-pressed="${cal.gran===g}">${g==='jour'?'Jour':g==='semaine'?'Semaine':'Mois'}</button>`).join('')}</div>
     </div>
@@ -914,6 +919,7 @@ async function renderCalendar(){
       <p class="legend-note">Recouvrement entre capteurs sur la configuration primaire — pas une précision.</p></div>`:''}`;
   setTimeout(()=>{ const cv=$('#calChart'); if(cv) drawLines(cv,{labels,series}); const j=$('#calJac'); if(j) drawLines(j,{labels:jac.map(r=>r.month),series:[{name:'Jaccard',values:jac.map(r=>r.jaccard)}]}); },30);
   $('#calPair').onchange = e=>{ cal.pair=e.target.value; renderCalendar(); };
+  el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{ cal.mode=b.dataset.mode; renderCalendar(); });
   document.querySelectorAll('.seg [data-g]').forEach(b=>b.onclick=()=>{ cal.gran=b.dataset.g; toast('Agrégation « '+b.dataset.g+' » : visualisation journalière affichée (données mensuelles dans le graphique).'); });
   $('#calPrev').onclick=()=>{ const [yy,mm]=cal.month.split('-').map(Number); const d=new Date(Date.UTC(yy,mm-2,1)); cal.month=`${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}`; renderCalendar(); };
   $('#calNext').onclick=()=>{ const [yy,mm]=cal.month.split('-').map(Number); const d=new Date(Date.UTC(yy,mm,1)); cal.month=`${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}`; renderCalendar(); };
@@ -930,6 +936,100 @@ async function renderCalendar(){
       </tbody></table>
       <p class="legend-note" style="margin-top:.5rem">Source : ${esc(data.data_origin)} · ${esc(fdt(data.generated_at))}</p>`;
     el.querySelectorAll('.cal-cell').forEach(x=>x.classList.toggle('sel', x.dataset.day===iso));
+  });
+}
+
+/* ---------- CALENDRIER MODE ZONE (analyse FIRMS délimitée) ---------- */
+async function renderZoneCalendar(el){
+  // Charger le résultat si on a un jobId sans result
+  if(!zoneCal.result && zoneCal.jobId){
+    try{
+      const res=await fetch(`/api/v1/firms/analyze/${zoneCal.jobId}/result`);
+      if(res.ok) zoneCal.result=(await res.json()).result||null;
+    }catch(e){}
+  }
+  // Liste des analyses passées pour le sélecteur
+  let past=[];
+  try{ const r=await fetch('/api/v1/firms/analyze'); if(r.ok){ const j=await r.json(); past=(j.items||[]).filter(x=>x.status==='succeeded'); } }catch(e){}
+
+  if(!zoneCal.result){
+    el.innerHTML=`
+      <h2>Calendrier — zone analysée</h2>
+      <small>Affiche les détections journalières de la dernière analyse FIRMS sur une zone délimitée (paramètres choisis : bbox, maille, fenêtre).</small>
+      <div class="controls" style="margin-top:1rem">
+        <div class="seg"><button type="button" data-mode="pipeline">Données pipeline (Cameroun)</button><button type="button" data-mode="zone" aria-pressed="true">Zone analysée</button></div>
+        ${past.length?`<label>Analyse passée<select id="zcPick">${past.map(j=>`<option value="${esc(j.job_id)}">${esc(j.job_id.slice(0,8))} — ${esc((j.params?.bbox||[]).map(v=>(+v).toFixed(1)).join(','))} — ${esc(fdt(j.created_at))}</option>`).join('')}</select></label>`:''}
+      </div>
+      <p class="empty" style="margin-top:1rem">Aucune analyse de zone disponible.${past.length?' Choisissez-en une ci-dessus.':' Cliquez sur la carte puis « Lancer l\'analyse », puis « Voir dans le calendrier ».'}</p>`;
+    el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{cal.mode=b.dataset.mode;renderCalendar()});
+    const pk=$('#zcPick'); if(pk) pk.onchange=e=>{zoneCal.jobId=e.target.value;zoneCal.result=null;renderZoneCalendar(el)};
+    return;
+  }
+
+  const r=zoneCal.result, p=r.params||{};
+  const byDay={}; (r.daily||[]).forEach(d=>byDay[d.date]=d);
+  const dates=Object.keys(byDay).sort();
+  if(!cal.month||!dates.some(d=>d.startsWith(cal.month))) cal.month=(dates[dates.length-1]||new Date().toISOString().slice(0,7)).slice(0,7);
+  const [y,m]=cal.month.split('-').map(Number);
+  const first=new Date(Date.UTC(y,m-1,1)); const startDow=(first.getUTCDay()+6)%7;
+  const nDays=new Date(Date.UTC(y,m,0)).getUTCDate();
+  const monthName=first.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const maxTot=Math.max(1,...dates.filter(d=>d.startsWith(cal.month)).map(d=>(byDay[d].viirs_cells||0)+(byDay[d].modis_cells||0)));
+  const cells=[];
+  for(let i=0;i<startDow;i++) cells.push('<div class="cal-cell" style="visibility:hidden"></div>');
+  for(let d=1;d<=nDays;d++){
+    const iso=`${cal.month}-${p2(d)}`, r2=byDay[iso];
+    const tot=r2?(r2.viirs_cells||0)+(r2.modis_cells||0):0;
+    const inten=tot?Math.min(1,tot/maxTot):0;
+    cells.push(`<button type="button" class="cal-cell${r2?' on':''}${cal.sel===iso?' sel':''}" data-day="${iso}" ${r2?'':'disabled'} style="${r2?`background:color-mix(in srgb,var(--lagoon) ${Math.round(10+inten*50)}%,#fff)`:''}">
+      <strong>${d}</strong><span>${r2?fmt(tot)+' cellules':'·'}</span><span style="display:block;color:var(--muted)">${r2?`∩ ${fmt(r2.common)}`:'—'}</span></button>`);
+  }
+  const labels=dates, series=[
+    {name:'VIIRS cellules',values:dates.map(d=>byDay[d].viirs_cells||0)},
+    {name:'MODIS cellules',values:dates.map(d=>byDay[d].modis_cells||0)},
+    {name:'Communs',values:dates.map(d=>byDay[d].common||0)}];
+  const win=r.window||{};
+  el.innerHTML=`
+    <h2>Calendrier — zone analysée</h2>
+    <small>Détections FIRMS NRT sur la zone délimitée, avec les paramètres choisis.</small>
+    ${banner(r.data_origin, r.generated_at, '· zone arbitraire — qualité préliminaire NRT')}
+    <div class="controls" style="margin-top:1rem">
+      <div class="seg"><button type="button" data-mode="pipeline">Données pipeline (Cameroun)</button><button type="button" data-mode="zone" aria-pressed="true">Zone analysée</button></div>
+      ${past.length?`<label>Analyse<select id="zcPick2">${past.map(j=>`<option value="${esc(j.job_id)}" ${j.job_id===zoneCal.jobId?'selected':''}>${esc(j.job_id.slice(0,8))} — ${esc(fdt(j.created_at))}</option>`).join('')}</select></label>`:''}
+    </div>
+    <div class="detail" style="margin-top:.8rem">
+      <h3>Paramètres de l'analyse</h3>
+      <table class="dt"><tbody>
+        <tr><td>bbox</td><td class="mono">${esc((p.bbox||[]).map(v=>(+v).toFixed(3)).join(', '))}</td></tr>
+        <tr><td>Fenêtre</td><td>${esc(win.requested||'nrt')} — ${esc(win.start||'—')} → ${esc(win.end||'—')}</td></tr>
+        <tr><td>Maille d'appariement</td><td>${fmt(r.grid_deg,2)}° — ${esc(r.key_definition||'')}</td></tr>
+        <tr><td>Sources</td><td class="mono" style="font-size:.72rem">${esc(Object.values(r.sources||{}).flat().join(' + ')||'—')}</td></tr>
+        <tr><td>Jaccard global</td><td><b>${r.jaccard!=null?fmt(r.jaccard,3):'—'}</b> (recouvrement, pas précision)</td></tr>
+      </tbody></table>
+    </div>
+    <div class="cal-nav"><button class="ibtn" id="zcPrev" aria-label="Mois précédent">${ico('chev','flip')}</button><h3>${monthName}</h3><button class="ibtn" id="zcNext" aria-label="Mois suivant">${ico('chev')}</button></div>
+    <div class="cal-grid"><div class="cal-dow">Lun</div><div class="cal-dow">Mar</div><div class="cal-dow">Mer</div><div class="cal-dow">Jeu</div><div class="cal-dow">Ven</div><div class="cal-dow">Sam</div><div class="cal-dow">Dim</div>${cells.join('')}</div>
+    <div class="detail" id="calDetail" style="display:none"></div>
+    <div class="chart-box"><h3>Cellules par jour — VIIRS vs MODIS vs communs</h3><canvas id="zcDayChart"></canvas>
+      <p class="legend-note">${dates.length} jour(s) couverts par la fenêtre NRT. « Cellules » = cellules ${fmt(r.grid_deg,2)}° avec ≥1 détection — pas des feux.</p></div>`;
+  setTimeout(()=>{const cv=$('#zcDayChart'); if(cv) drawLines(cv,{labels,series,h:240});},30);
+  el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{cal.mode=b.dataset.mode;renderCalendar()});
+  const pk2=$('#zcPick2'); if(pk2) pk2.onchange=e=>{zoneCal.jobId=e.target.value;zoneCal.result=null;renderZoneCalendar(el)};
+  $('#zcPrev').onclick=()=>{const [yy,mm]=cal.month.split('-').map(Number);const d=new Date(Date.UTC(yy,mm-2,1));cal.month=`${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}`;renderZoneCalendar(el)};
+  $('#zcNext').onclick=()=>{const [yy,mm]=cal.month.split('-').map(Number);const d=new Date(Date.UTC(yy,mm,1));cal.month=`${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}`;renderZoneCalendar(el)};
+  el.querySelectorAll('.cal-cell[data-day]').forEach(c=>c.onclick=()=>{
+    const iso=c.dataset.day, d=byDay[iso]; if(!d) return;
+    cal.sel=iso;
+    $('#calDetail').style.display='block';
+    $('#calDetail').innerHTML=`<h3>${iso}</h3>
+      <table class="dt"><tbody>
+        <tr><td>Cellules VIIRS</td><td>${fmt(d.viirs_cells)}</td></tr>
+        <tr><td>Cellules MODIS</td><td>${fmt(d.modis_cells)}</td></tr>
+        <tr><td>Cellules communes</td><td><b>${fmt(d.common)}</b></td></tr>
+        <tr><td>Jaccard du jour</td><td>${d.jaccard!=null?fmt(d.jaccard,3):'—'}</td></tr>
+      </tbody></table>
+      <p class="legend-note" style="margin-top:.5rem">Maille ${fmt(r.grid_deg,2)}° · source FIRMS NRT · ${esc(fdt(r.generated_at))}</p>`;
+    el.querySelectorAll('.cal-cell').forEach(x=>x.classList.toggle('sel',x.dataset.day===iso));
   });
 }
 
@@ -1201,6 +1301,7 @@ async function renderDQ(){
    ANALYSE DE ZONE FIRMS — clic carte → bbox → job → jauge → résultats
    ========================================================= */
 const zc = { center:null, form:{radius:1, window:'nrt', grid_deg:0.1}, layer:null, rect:null, timer:null, jobId:null };
+const zoneCal = { jobId:null, result:null };
 const ZC_STEPS = [['fetch_viirs','VIIRS NRT (NOAA-20/21)'],['fetch_modis','MODIS NRT'],['normalize','Normalisation'],['match','Appariement cellules'],['metrics','Métriques']];
 const ZC_IDX = {fetch_viirs:0,fetch_modis:1,normalize:2,match:3,metrics:4};
 
@@ -1297,13 +1398,15 @@ function zcRenderResult(r){
     <div class="zc-legend"><span><i style="background:#F2541B"></i>VIIRS NRT</span><span><i style="background:#168F80"></i>MODIS NRT</span></div>
     ${r.daily?.length?`<div class="chart-box" style="padding:.6rem"><canvas id="zcChart" style="height:180px"></canvas></div>`:''}
     <p class="legend-note" style="margin-top:.6rem">${esc(r.note||'')}</p>
-    <div style="display:flex;gap:.6rem;margin-top:.8rem">
+    <div style="display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap">
+      <button class="btn ghost" id="zcCal">${ico('cal')} Voir dans le calendrier</button>
       <button class="btn ghost" id="zcAgain">Nouvelle zone</button>
       <button class="btn ghost" id="zcClose2">Fermer</button>
     </div>`;
   zcDrawPoints(r.points||{});
   const cv=$('#zcChart');
   if(cv&&r.daily?.length) drawLines(cv,{labels:r.daily.map(d=>d.date),series:[{name:'VIIRS',values:r.daily.map(d=>d.viirs_cells)},{name:'MODIS',values:r.daily.map(d=>d.modis_cells)},{name:'Communs',values:r.daily.map(d=>d.common)}],h:180});
+  $('#zcCal').onclick=()=>{ zoneCal.jobId=zc.jobId; zoneCal.result=r; cal.mode='zone'; showView('calendar'); };
   $('#zcAgain').onclick=()=>{ zc.jobId=null; if(zc.rect)map.removeLayer(zc.rect); zcRenderForm(); };
   $('#zcClose2').onclick=zcClose;
 }
