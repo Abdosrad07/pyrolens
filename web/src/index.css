@@ -476,3 +476,48 @@ figure.fig figcaption { color: var(--muted); font-size: 12.5px; margin-top: 8px;
   .hero { grid-template-columns: 1fr; }
   .hero-title { font-size: 40px; }
 }
+
+/* ---------- fire calendar ---------- */
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-dow { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; text-align: center; padding-bottom: 4px; }
+.cal-day {
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  cursor: pointer;
+  padding: 2px;
+  transition: border-color 0.15s ease;
+}
+.cal-day:hover { border-color: var(--ember); }
+.cal-day.out { opacity: 0.3; cursor: default; }
+.cal-day.out:hover { border-color: var(--line); }
+.cal-day.sel { outline: 2px solid var(--ember); outline-offset: 1px; }
+.cal-day .n { font-weight: 600; line-height: 1; }
+.cal-day .v { font-size: 10px; color: var(--muted); line-height: 1; }
+.cal-legend { display: flex; align-items: center; gap: 6px; margin-top: 12px; color: var(--muted); font-size: 12px; }
+.cal-legend .sw { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); display: inline-block; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.seg button.on { background: var(--panel-2); color: var(--text); }
+
+/* ---------- pagination ---------- */
+.pager { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.pager .btn:disabled { opacity: 0.4; cursor: default; }

@@ -15,23 +15,34 @@ web/
 └── src/
     ├── main.jsx          # createRoot + import "./index.css" (jamais retirer)
     ├── App.jsx           # navigation VIEWS + orchestration loadAll
-    ├── data.js           # TOUS les accès aux artefacts passent par ici
+    ├── data.js           # TOUS les accès aux données passent par ici
+    │                     # (artefacts /artifacts en statique, /api/v1 si VITE_API_BASE défini)
     ├── index.css         # jetons de thème (voir §3)
-    └── views/            # 6 vues, un fichier par écran
-        ├── Overview.jsx       # Synthèse d'exécution (provenance, étapes, blocages)
-        ├── Audit.jsx          # comptabilité, anomalies, distributions (recharts)
-        ├── Baselines.jsx      # explorateur paire × grille × fenêtre (recharts)
-        ├── Observability.jsx  # 4 états (recharts)
-        ├── Report.jsx         # rendu Markdown maison (pas de dépendance MD)
-        └── Figures.jsx        # grille des PNG
+    ├── components/       # composants partagés (filtres, états, expériences…)
+    └── views/            # écrans, un fichier par vue
+        ├── Overview.jsx           # Synthèse d'exécution (provenance, étapes, blocages)
+        ├── Audit.jsx              # comptabilité, anomalies, distributions (recharts)
+        ├── Baselines.jsx          # explorateur paire × grille × fenêtre (recharts)
+        ├── Observability.jsx      # 4 états (recharts)
+        ├── Report.jsx             # rendu Markdown maison (pas de dépendance MD)
+        ├── Figures.jsx            # grille des PNG
+        ├── FireCalendar.jsx       # calendrier quotidien + séries (recharts, API /fire-calendar)
+        ├── Harmonization*.jsx     # Laboratoire d'harmonisation (expériences, API /experiments)
+        ├── DataCatalog.jsx        # catalogue des jeux de données (API /catalog)
+        ├── DatasetDetail.jsx      # détail d'un jeu de données
+        └── Methodology.jsx        # documentation méthodologique (API /methodology)
 ```
 
 - **Chargement** : `loadAll()` = `Promise.allSettled` sur 6 JSON + 1 MD ; un échec isolé
   alimente `data.errors[]` et n'empêche pas les autres vues (affiché dans le pied de sidebar).
 - **Libellés** : `PAIR_LABELS`, `SENSOR_LABELS`, `pairLabel()`, `fmt()` (nombre au format
   `fr-FR`) — réutilisés par toutes les vues, jamais recopiés à la main.
-- **Graphiques** : `recharts` uniquement dans `Audit.jsx`, `Baselines.jsx`,
-  `Observability.jsx` (aucune autre lib de charts autorisée sans D2).
+- **Graphiques** : `recharts` dans `Audit.jsx`, `Baselines.jsx`,
+  `Observability.jsx`, `FireCalendar.jsx`, `Overview.jsx` (arbitrage
+  `specs-aurel.md` modules 1-2) — aucune autre lib de charts autorisée sans D2.
+- **Mode API** : `data.js` bascule sur `/api/v1/*` quand `VITE_API_BASE` est
+  défini (vide = same-origin via le proxy Vite `/api` → backend ; voir
+  `frontend-handoff/api-integration.md`). Le mode statique reste le défaut du build.
 
 ## 2. Ajouter une vue (procédure type)
 
@@ -51,7 +62,8 @@ web/
   `--blue`, `--amber`, `--red`, `--green` ; `--mono` pour les valeurs numériques.
 - Classes existantes (ne pas en recréer de parallèles) : `.panel`, `.card`, `.cards`,
   `.page-title`, `.page-sub`, `.hint`, `.muted`, `.small`, `.mono`, `.pill`, `.banner info|warn`,
-  `.blocker`, `.table-wrap`, `.chart-box`, `.fig-grid`, `.legend-note`, `.loading`, `.banner`.
+  `.blocker`, `.table-wrap`, `.chart-box`, `.fig-grid`, `.legend-note`, `.loading`, `.banner`,
+  `.cal-head`, `.cal-grid`, `.cal-dow`, `.cal-day` (+`.out`, `.sel`), `.cal-legend`, `.seg`.
 - Tailwind n'est **pas** utilisée dans ce projet : rester en CSS pur du fichier `index.css`.
 
 ## 4. Règles non négociables (contrat éditorial)
@@ -81,7 +93,22 @@ web/
 - [ ] phrases d'avertissement d'interprétation intactes
 - [ ] si `data.js` modifié : `api_contract.md` §1 mis à jour en même temps
 
-## 6. Passage à une API (si D2 validée)
+## 6. Blocages de données connus (modules specs-aurel)
+
+Écarts specs ↔ données publiées, assumés en mode dégradé — à traiter côté
+pipeline Python si un lot ultérieur les lève :
+
+| Spec | Manque | État actuel |
+|---|---|---|
+| `MapView` (P0, Overview + Harmo) | `baselines.spatial` ne publie que des **indices de cellules** (`cell_i`/`cell_j`), pas de lat/lon ; pas d'endpoint `/observations` | heatmap SVG des indices de cellules, mention « pas une carte géographique » ; aucune position inventée |
+| Comparaison par satellite (§1.1.D) | `audit.files` agrège Terra+Aqua en `modis` | comparaison MODIS vs VIIRS (capteur), pas par satellite — séparer exige un recomptage de l'audit |
+| Graphiques Fire Calendar « cellules actives » / « FRP » (§2.1.D) | ces séries temporelles ne sont pas dans les artefacts | non affichées — aucune valeur codée en dur ni estimée |
+| `GET /observations` (specs-aurel §TRAVAIL COMMUN) | endpoint inexistant | écran concerné reste en mode dégradé documenté |
+
+Règle : un manque de donnée se documente dans l'écran (message explicite) et
+ici — jamais comblé par une valeur inventée.
+
+## 7. Passage à une API (si D2 validée)
 
 Remplacer l'implémentation de `getJSON`/`getText` dans `data.js` par des appels `/api/v1/*`
 (**§2 de `api_contract.md`**) en conservant les mêmes noms d'objets exposés aux vues :

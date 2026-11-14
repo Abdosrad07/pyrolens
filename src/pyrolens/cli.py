@@ -20,6 +20,27 @@ from .config import PROJECT_ROOT, Config, load_config
 from .logging_utils import get_logger
 from .provenance import now_iso
 
+
+def _load_env_files() -> None:
+    """Charge `.env` puis `.env.local` (prioritaire) — convention env.example.
+
+    python-dotenv est optionnel : absent, les variables d'environnement
+    du processus restent la seule source.
+    """
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    env_file = PROJECT_ROOT / ".env"
+    local_file = PROJECT_ROOT / ".env.local"
+    if env_file.exists():
+        load_dotenv(env_file)
+    if local_file.exists():
+        load_dotenv(local_file, override=True)
+
+
+_load_env_files()
+
 app = typer.Typer(help="PyroLens phase 2 — pipeline MODIS / VIIRS (pilote Cameroun).", no_args_is_help=True)
 
 
@@ -464,6 +485,56 @@ def run(
 
     typer.echo(f"Pipeline terminé : {', '.join(steps_run)}")
     record_step(cfg, "run", "ok", "séquence complète exécutée : " + ", ".join(steps_run))
+
+
+@app.command()
+def predict(
+    source: Optional[str] = typer.Option(None, help="répertoire CSV (défaut : raw/firms puis fixture)"),
+    grid: float = typer.Option(0.25, help="maille spatiale en degrés"),
+    window: int = typer.Option(8, help="horizon de prédiction en jours"),
+    stride: int = typer.Option(7, help="pas d'échantillonnage temporel en jours"),
+    reference_date: Optional[str] = typer.Option(None, help="date de référence AAAA-MM-JJ (défaut : max des données)"),
+    out: Optional[str] = typer.Option(None, help="chemin de sortie (défaut : web/public/artifacts/fire_risk.json)"),
+) -> None:
+    """Prédit le risque d'activité de feu DÉTECTÉE (baseline fréquence + RandomForest).
+
+    Backtest historique uniquement : les données s'arrêtent en 2020 — le résultat
+    n'est jamais une prévision actuelle. Voir docs/FIRE_RISK_PREDICTION.md.
+    """
+    from .prediction import run_prediction
+
+    cfg = load_config()
+    src_dir, origin = _source_dir(cfg, source)
+    csv_paths = sorted(src_dir.glob("*.csv"))
+    if not csv_paths:
+        raise typer.BadParameter(f"Aucun CSV dans {src_dir}")
+    ref = date.fromisoformat(reference_date) if reference_date else None
+    typer.echo(f"Source : {src_dir} (origine={origin}) — {len(csv_paths)} CSV")
+
+    def _progress(step: str, pct: float, detail: str | None = None) -> None:
+        typer.echo(f"  [{pct:5.1f}%] {step:<10} {detail or ''}")
+
+    payload = run_prediction(
+        csv_paths,
+        grid_deg=grid,
+        horizon=window,
+        stride=stride,
+        reference_date=ref,
+        out_path=out,
+        model_dir=cfg.path_of("models"),
+        progress=_progress,
+    )
+    m = payload.get("metrics", {})
+    typer.echo(
+        f"Modèle : {payload['model']['type']} — {len(payload['cells'])} cellules, "
+        f"référence {payload['reference_date']} ({payload['estimate_kind']})"
+    )
+    typer.echo(
+        f"Test : PR-AUC={m.get('pr_auc')} F1={m.get('f1')} recall={m.get('recall')} "
+        f"Brier={m.get('brier')}"
+    )
+    record_step(cfg, "predict", "ok",
+                f"fire_risk.json — {payload['model']['type']}, origine={payload['data_origin']}")
 
 
 @app.command("web-artifacts")

@@ -74,6 +74,34 @@ def meta(request: Request, response: Response) -> dict:
 
 
 @router.get(
+    "/fire-risk",
+    summary="Risque d'activité de feu détectée (backtest)",
+    description=(
+        "Sert l'artefact `fire_risk.json` produit par `pyrolens predict`. "
+        "Probabilités calibrées par cellule — estimation d'activité détectée, "
+        "jamais une alerte incendie. 404 propre si l'artefact n'existe pas ; "
+        "l'API ne recalcule jamais le modèle."
+    ),
+)
+def fire_risk(request: Request, response: Response) -> dict:
+    from api.errors import ApiError
+
+    guard = cache_guard(request, "fire_risk.json")
+    if guard is not None:
+        return guard
+    store = get_store(request)
+    if not store.has("fire_risk.json"):
+        raise ApiError(
+            404,
+            "Aucun artefact fire_risk.json : exécuter `pyrolens predict` "
+            "(nécessite les CSV FIRMS dans data/raw/firms ou data/fixture).",
+        )
+    payload = store.require_json("fire_risk.json")
+    apply_cache_headers(request, response, "fire_risk.json")
+    return payload
+
+
+@router.get(
     "/report",
     summary="Rapport scientifique",
     response_class=Response,

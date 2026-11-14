@@ -15,6 +15,39 @@ avec rapports scientifiques servis en web (Vite + React + Recharts).
 
 ---
 
+## 0. Démarrage rapide (interface + API)
+
+Trois processus suffisent pour tout faire tourner en local :
+
+```powershell
+# 1) Clés (une seule fois) : copier le gabarit puis remplir
+Copy-Item env.example .env.local   # FIRMS_MAP_KEY, EARTHDATA_*, PYROLENS_API_TOKEN…
+#    .env.local est gitignoré — ne JAMAIS mettre de clé dans env.example (versionné)
+
+# 2) Backend API FastAPI — port 8010 (8010 évite les conflits courants sur 8000)
+python -m uvicorn api.index:app --host 127.0.0.1 --port 8010
+
+# 3) Frontend Vite — port 5173, proxy /api → 8010
+$env:PYROLENS_API_ORIGIN='http://127.0.0.1:8010'   # ou via web/.env.local
+npm --prefix web run dev
+```
+
+| Interface | URL | Contenu |
+| --- | --- | --- |
+| **Fire Monitor** (recommandée) | `http://localhost:5173/fire-monitor.html` | Carte Leaflet + tuiles NASA GIBS, vues Aperçu / Calendrier / Expériences / Données / Méthodologie / Qualité, **analyse de zone FIRMS** (clic carte → jauge → Jaccard VIIRS/MODIS) |
+| React (historique) | `http://localhost:5173/` | Les 6 écrans de rapport + Harmonization Lab sur artefacts |
+| API | `http://127.0.0.1:8010/api/v1` | Docs interactives : `/api/v1/docs` — OpenAPI : `/api/v1/openapi.json` |
+
+**Sans backend** : les vues artefacts (Aperçu, Calendrier pipeline, Qualité) fonctionnent
+en mode statique ; Expériences, Données, Méthodologie et l'analyse de zone affichent un
+message « API requise ».
+
+**Variables utiles** (`.env.local`, lues par le pipeline ET l'API) :
+`FIRMS_MAP_KEY` (analyse de zone + `pyrolens download`), `EARTHDATA_*` (granules),
+`PYROLENS_API_TOKEN` (protège les POST), `PYROLENS_CORS_ORIGINS`, `PYROLENS_SOURCE_DIR`.
+
+---
+
 ## 1. Installation
 
 ```bash
@@ -72,11 +105,19 @@ Les CSV réels sont alors prioritaires sur `data/fixture` (détection automatiqu
 
 ## 4. Rapports web
 
-L'interface lit des artefacts statiques JSON/PNG (`web/public/artifacts/`) : aucune base de
-données, aucun calcul côté client. Une **API FastAPI en lecture seule** (`api/`, contrat
-`docs/api.md`, OpenAPI `docs/openapi.json`) sert les mêmes artefacts en JSON — exports,
-validation de fichiers téléversés, expériences de comparaison en tâche de fond. Le front
-reste pleinement fonctionnel sans elle. Commandes depuis la racine du projet :
+Deux interfaces coexistent :
+
+- **`web/public/fire-monitor.html`** — interface « Fire Monitor » (socle maquette
+  `fire-monitor-aurel.html`) : carte + toutes les vues métier + analyse de zone
+  FIRMS (`POST /api/v1/firms/analyze`, voir `docs/phase2/api_contract.md`).
+- **`web/` (Vite + React + Recharts)** — les 6 écrans de rapport + Harmonization Lab.
+
+Les deux lisent les artefacts statiques JSON/PNG (`web/public/artifacts/`) : aucune
+base de données, aucun calcul côté client. Une **API FastAPI** (`api/`, contrat
+`docs/api.md`, OpenAPI `docs/openapi.json`) sert les mêmes artefacts en JSON —
+exports, validation de fichiers téléversés, expériences de comparaison et analyses
+de zone en tâche de fond. Les fronts restent fonctionnels sans elle (mode statique).
+Commandes depuis la racine du projet :
 
 ```bash
 npm --prefix web install   # installation des dépendances du frontend

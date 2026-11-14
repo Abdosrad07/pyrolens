@@ -8,9 +8,16 @@ import Baselines from "./views/Baselines.jsx";
 import Observability from "./views/Observability.jsx";
 import Report from "./views/Report.jsx";
 import Figures from "./views/Figures.jsx";
+import HarmonizationList from "./views/HarmonizationList.jsx";
+import HarmonizationNew from "./views/HarmonizationNew.jsx";
+import HarmonizationDetail from "./views/HarmonizationDetail.jsx";
+import DataCatalog from "./views/DataCatalog.jsx";
+import DatasetDetail from "./views/DatasetDetail.jsx";
+import Methodology from "./views/Methodology.jsx";
+import FireCalendar from "./views/FireCalendar.jsx";
 
 const VIEWS = [
-  { id: "overview", label: "Synthèse d'exécution" },
+  { id: "overview", label: "Overview" },
   { id: "audit", label: "Audit des données" },
   { id: "baselines", label: "Baselines de concordance" },
   { id: "observability", label: "Observabilité (4 états)" },
@@ -18,7 +25,38 @@ const VIEWS = [
   { id: "figures", label: "Figures" },
 ];
 
+const NEW_VIEWS = [
+  { id: "fire-calendar", label: "Calendrier des feux" },
+  { id: "harmonization", label: "Harmonization Lab" },
+  { id: "data", label: "Données" },
+  { id: "methodology", label: "Méthodologie" },
+];
+
 const SESSION_KEY = "pyrolens.session";
+
+const ALL_VIEW_IDS = new Set([
+  "landing",
+  "auth",
+  "overview",
+  "audit",
+  "baselines",
+  "observability",
+  "report",
+  "figures",
+  "fire-calendar",
+  "harmonization",
+  "harmonization-new",
+  "data",
+  "methodology",
+]);
+
+/** Traduit un hash d'URL (#harmonization-abc, #data-xyz…) en id de vue. */
+function hashToView(hash) {
+  const h = String(hash || "").replace(/^#\/?/, "");
+  if (!h) return null;
+  if (h.startsWith("harmonization-") || h.startsWith("data-")) return h;
+  return ALL_VIEW_IDS.has(h) ? h : null;
+}
 
 function readSession() {
   try {
@@ -39,7 +77,7 @@ function writeSession(on) {
 
 export default function App() {
   const [data, setData] = useState(null);
-  const [view, setView] = useState("landing"); // landing | auth | vues du pipeline
+  const [view, setView] = useState(() => hashToView(window.location.hash) || "landing");
   const [authed, setAuthed] = useState(readSession);
   const [returnTo, setReturnTo] = useState("overview");
 
@@ -51,18 +89,26 @@ export default function App() {
     };
   }, []);
 
+  // Les vues modules naviguent via window.location.hash : écouter le hash.
+  useEffect(() => {
+    function onHash() {
+      const target = hashToView(window.location.hash);
+      if (target) go(target);
+    }
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authed]);
+
   // Les vues du pipeline exigent une session ; on mémorise la destination.
   function go(target) {
-    if (target === "landing" || target === "auth") {
-      setView(target);
-      return;
-    }
-    if (!authed) {
+    let dest = target;
+    if (target !== "landing" && target !== "auth" && !authed) {
       setReturnTo(target);
-      setView("auth");
-      return;
+      dest = "auth";
     }
-    setView(target);
+    setView(dest);
+    window.location.hash = dest === "landing" ? "" : dest;
   }
 
   function enter(target = "overview") {
@@ -112,6 +158,16 @@ export default function App() {
           </button>
           <div className="nav-group">Rapports</div>
           {VIEWS.map((v) => (
+            <button
+              key={v.id}
+              className={view === v.id ? "active" : ""}
+              onClick={() => go(v.id)}
+            >
+              {v.label}
+            </button>
+          ))}
+          <div className="nav-group">Modules</div>
+          {NEW_VIEWS.map((v) => (
             <button
               key={v.id}
               className={view === v.id ? "active" : ""}
@@ -170,6 +226,13 @@ export default function App() {
         {view === "observability" && <Observability data={data} />}
         {view === "report" && <Report data={data} />}
         {view === "figures" && <Figures data={data} />}
+        {view === "fire-calendar" && <FireCalendar />}
+        {view === "harmonization" && <HarmonizationList data={data} />}
+        {view === "harmonization-new" && <HarmonizationNew />}
+        {view.startsWith("harmonization-") && <HarmonizationDetail jobId={view.replace("harmonization-", "")} />}
+        {view === "data" && <DataCatalog data={data} />}
+        {view.startsWith("data-") && <DatasetDetail datasetId={view.replace("data-", "")} />}
+        {view === "methodology" && <Methodology />}
       </main>
     </div>
   );

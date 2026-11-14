@@ -100,7 +100,10 @@ export default function Baselines({ data }) {
       </p>
 
       <div className="banner warn">
-        <strong>Origine : {b.data_origin}</strong>
+        <strong>
+          Origine : {b.data_origin}
+          {b.generated_at ? ` · artefacts du ${b.generated_at.slice(0, 10)}` : ""}
+        </strong>
         {b.data_origin === "synthetic_fixture"
           ? "Ces concordances sont calculées sur l'échantillon synthétique : elles valident les calculs, elles ne décrivent pas la concordance observée au Cameroun. Les chiffres v0.3 de l'exploratoire ne sont pas recalculés ici."
           : "Toutes les valeurs de cette page sont calculées par le pipeline."}

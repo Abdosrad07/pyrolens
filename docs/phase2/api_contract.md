@@ -76,3 +76,26 @@ détection (jamais de filtre « feu absent »), aucun secret ni chemin local en 
 Si D2 est validée : `web/src/data.js` devient la seule couche à remplacer (mêmes noms de
 données en retour), les composants de vues ne changent pas — voir `frontend_handoff.md` §4.
 Tant que D2 n'est pas tranchée, **le contrat v1 est le contrat**.
+
+**État au 13/11/2026** : `data.js` supporte les deux modes — statique par défaut,
+API v1 quand `VITE_API_BASE` est défini (mode dev via proxy Vite `/api`,
+`web/vite.config.js`). Les modules Harmonization / Data / Methodology /
+Fire Calendar consomment les endpoints v1 ; les écrans de rapport restent sur
+les artefacts (voir `frontend-handoff/api-integration.md`).
+
+### Extension : analyse de zone FIRMS (`/firms/analyze`)
+
+Ajouté pour la vue carte « Fire Monitor » (`web/public/fire-monitor.html`) :
+
+| Endpoint | Description |
+|---|---|
+| `POST /api/v1/firms/analyze` | `{bbox:[w,s,e,n], window:"nrt"|"archive", grid_deg}` → 202 `JobView` (kind `firms_analyze`). bbox ≤ 20°/côté. |
+| `GET /api/v1/firms/analyze` | Liste des analyses de zone. |
+| `GET /api/v1/firms/analyze/{id}` | Suivi : `status` + `progress {step,pct,detail}` temps réel. |
+| `GET /api/v1/firms/analyze/{id}/result` | `{counts, jaccard, daily, points{viirs,modis}, data_origin:"firms_api_nrt"}` — 409 si non terminée. |
+
+Limites : sources **NRT** uniquement (`VIIRS_NOAA20/21_NRT`, `MODIS_NRT` — les
+sources SP ne couvrent pas les derniers jours) ; `window:"archive"` échoue avec
+explication (archives FIRMS = fichiers annuels mondiaux) ; `FIRMS_MAP_KEY`
+lue côté serveur uniquement, jamais exposée ; Jaccard = recouvrement de
+cellules/date, pas une précision.

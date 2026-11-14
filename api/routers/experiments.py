@@ -61,7 +61,7 @@ def create_experiment(
         "window_days": body.window_days,
         "source": body.source,
     }
-    job = jobs.submit(params, lambda: run_harmonization_experiment(params, cfg, settings))
+    job = jobs.submit(params, lambda _report: run_harmonization_experiment(params, cfg, settings))
     response.headers["Location"] = f"/api/v1/experiments/{job.id}"
     return JobView(**job.view())
 

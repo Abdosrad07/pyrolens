@@ -54,6 +54,8 @@ au-dessus de `--bg` — conserver.
 | `.controls` + `select` | filtres d'écran (label muted + select mono) |
 | `.chart-box` (320 px) / `.chart-box.tall` (420 px) | conteneurs recharts |
 | `.legend-note` | note sous un graphique |
+| `.cal-head`, `.cal-grid`, `.cal-dow`, `.cal-day` (+ `.out`, `.sel`), `.cal-legend` | calendrier quotidien (Fire Calendar) — intensité via `color-mix` sur `--ember` |
+| `.seg` (+ `button.on`) | bascule segmentée jour/semaine/mois |
 | `.fig-grid` + `figure.fig` | galerie de PNG (img fond blanc, figcaption mono) |
 | `.md` | rendu Markdown du rapport (h1/h2 ember-soft, tables, code, pre) |
 | `.loading` | état de chargement initial |
@@ -65,8 +67,10 @@ toute valeur issue d'un artefact).
 
 ## 4. Graphiques (Recharts)
 
-- Autorisés uniquement dans `Audit.jsx`, `Baselines.jsx`,
-  `Observability.jsx` (règle D2 : aucune autre lib de charts sans arbitrage).
+- Autorisés : `Audit.jsx`, `Baselines.jsx`, `Observability.jsx`,
+  `FireCalendar.jsx` et `Overview.jsx` (arbitrage : `specs-aurel.md` modules 1
+  et 2 prescrivent Recharts ; même lib, aucune nouvelle dépendance). Toute
+  autre vue : arbitrage requis.
 - Palette : `--teal`, `--blue`, `--amber`, `--ember`, `--red`, `--green` —
   toujours une légende `.legend-note` expliquant ce qui est mesuré.
 - Axes : grille `--line`, texte `--muted`, formatage `fmt()`.
