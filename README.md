@@ -34,7 +34,7 @@ npm --prefix web run dev
 
 | Interface | URL | Contenu |
 | --- | --- | --- |
-| **Fire Monitor** (recommandée) | `http://localhost:5173/fire-monitor.html` | Carte Leaflet + tuiles NASA GIBS, vues Aperçu / Calendrier / Expériences / Données / Méthodologie / Qualité, **analyse de zone FIRMS** (clic carte → jauge → Jaccard VIIRS/MODIS) |
+| **Fire Monitor** (recommandée) | `http://localhost:5173/fire-monitor.html` | Carte Leaflet + tuiles NASA GIBS, vues Aperçu / Calendrier / Expériences / Données / Méthodologie / Qualité, **analyse de zone FIRMS** : NRT ~5 j (clic carte → jauge → Jaccard) **et historique archive 2019→aujourd'hui** (CSV annuels par pays, cache `data/raw/archive/`) |
 | React (historique) | `http://localhost:5173/` | Les 6 écrans de rapport + Harmonization Lab sur artefacts |
 | API | `http://127.0.0.1:8010/api/v1` | Docs interactives : `/api/v1/docs` — OpenAPI : `/api/v1/openapi.json` |
 
@@ -44,7 +44,17 @@ message « API requise ».
 
 **Variables utiles** (`.env.local`, lues par le pipeline ET l'API) :
 `FIRMS_MAP_KEY` (analyse de zone + `pyrolens download`), `EARTHDATA_*` (granules),
-`PYROLENS_API_TOKEN` (protège les POST), `PYROLENS_CORS_ORIGINS`, `PYROLENS_SOURCE_DIR`.
+`PYROLENS_API_TOKEN` (protège les POST), `PYROLENS_CORS_ORIGINS`, `PYROLENS_SOURCE_DIR`,
+`PYROLENS_ARCHIVE_DIR` (cache des CSV annuels archive, défaut `data/raw/archive`).
+
+**Historique par zone** : la section « Historique archive » du panneau zone
+(`/firms/history`) couvre n'importe quelle bbox via les fichiers annuels
+`/data/country/{sensor}/{year}/{Pays}.csv` de FIRMS — **sans clé**, qualité
+standard processing (VIIRS-SNPP dès 2012, MODIS dès 2000). Les pays sont
+résolus par intersection bbox/polygones Natural Earth ; chaque fichier est
+téléchargé une fois (parallèle par plages HTTP) puis filtré sur la bbox.
+Le serveur archive est lent (~Ko/s par connexion) : le premier appel peut
+durer longtemps, les suivants sont servis depuis le cache.
 
 ---
 

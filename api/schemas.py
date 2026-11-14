@@ -48,6 +48,20 @@ class ZoneAnalysisRequest(BaseModel):
     )
 
 
+class ZoneHistoryRequest(BaseModel):
+    """Demande d'historique FIRMS archive sur une bbox (VIIRS vs MODIS, par années)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    bbox: list[float] = Field(
+        description="[min_lon, min_lat, max_lon, max_lat] en degrés (WGS84).",
+        min_length=4, max_length=4,
+    )
+    start_year: int = Field(default=2019, ge=2000, le=2100)
+    end_year: int = Field(default=2026, ge=2000, le=2100)
+    grid_deg: float = Field(default=0.25, gt=0.0, le=1.0)
+
+
 class ExperimentRequest(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
