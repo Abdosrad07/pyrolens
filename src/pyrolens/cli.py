@@ -182,7 +182,7 @@ def geo() -> None:
         typer.echo("ÉCHEC : polygone d'emprise non acquis", err=True)
         record_step(cfg, "geo", "bloqué", "impossible de télécharger la géométrie d'emprise",
                     blocker=True, what="Géométrie d'emprise",
-                    detail="Aucune source Natural Earth accessible", action="réessayer ou fournir un GeoJSON")
+                    action="réessayer ou fournir un GeoJSON")
         raise typer.Exit(code=1)
 
 
@@ -263,7 +263,7 @@ def download(
                             f"{new} nouveaux fichiers FIRMS (total session {kept} déjà présents)")
     except Exception as exc:  # noqa: BLE001
         record_step(cfg, "download:firms", "erreur", str(exc), blocker=True,
-                    what="FIRMS API", detail=str(exc), action="vérifier réseau/clé")
+                    what="FIRMS API", action="vérifier réseau/clé")
 
     # Probe d'un granule standard (MOD14 2019 sur l'emprise) — sans contournement
     try:
@@ -286,7 +286,7 @@ def download(
             record_step(cfg, "download:earthdata", "attention", "aucun granule renvoyé par CMR")
     except Exception as exc:  # noqa: BLE001
         record_step(cfg, "download:earthdata", "erreur", str(exc), blocker=True,
-                    what="Archives standard", detail=str(exc), action="vérifier l'accès réseau CMR")
+                    what="Archives standard", action="vérifier l'accès réseau CMR")
 
     # Accumulation : les exécutions partielles (--start/--end) ne doivent pas
     # écraser la provenance des téléchargements précédents.
