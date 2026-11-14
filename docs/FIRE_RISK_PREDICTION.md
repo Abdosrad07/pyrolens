@@ -139,7 +139,30 @@ Sorties : `web/public/artifacts/fire_risk.json` + `models/fire_risk_*.joblib|jso
 API : `GET /api/v1/fire-risk` → artefact + ETag ; 404 propre si absent ;
 aucun recalcul à la requête.
 
-## 11. Reproduction
+## 11. Résultats sur données réelles (2026-11-14)
+
+Exécution : `pyrolens predict --grid 0.25 --window 8` sur les 1 170 CSV
+FIRMS canoniques (2013-01 → 2020-12, `data_origin=nasa_firms`).
+
+| Indicateur | Valeur |
+| --- | --- |
+| Cellules actives | 1 215 |
+| Échantillons | 489 645 (train 245 430 / val 121 500 / test 122 715) |
+| Taux de positifs | ~6-7 % |
+| **Modèle retenu** | `random_forest` (PR-AUC val 0,928 > baseline 0,875 × 1,05) |
+| Calibration | isotonic |
+| Seuil F1 (val) | 0,42 |
+| **PR-AUC test** | **0,926** |
+| F1 / recall test | 0,841 / 0,844 |
+| Brier test | 0,072 |
+
+Interprétation : le RF exploite la forte persistance de l'activité de feu
+(comptes récents par capteur) — PR-AUC élevé mais **pas** une probabilité
+d'incendie : c'est P(≥1 détection FIRMS dans les 8 j). La baseline seule
+atteint déjà 0,875 : le signal est dominé par la persistance, pas par des
+drivers météo (absents des features).
+
+## 12. Reproduction
 
 1. `pip install -r requirements.txt` (inclut `scikit-learn>=1.5`)
 2. `pyrolens download` (données réelles) ou `pyrolens fixture`
@@ -147,7 +170,7 @@ aucun recalcul à la requête.
    `random_state=42`, échantillonnage déterministe par tri des dates)
 4. `python -m pytest` → 105 tests
 
-## 12. Limites scientifiques
+## 13. Limites scientifiques
 
 - **Un seul domaine** (Cameroun) : aucune généralisation spatiale revendiquée.
 - Label bruité par la couverture (nuages) — atténué par l'union capteurs,

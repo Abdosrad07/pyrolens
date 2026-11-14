@@ -22,6 +22,7 @@ web/.vite/
 data/raw/firms/
 data/raw/earthdata/
 data/raw/archive/
+models/
 
 # ── Sorties d'exécution régénérables (pas des artefacts publiés) ──
 reports/anomalies/
