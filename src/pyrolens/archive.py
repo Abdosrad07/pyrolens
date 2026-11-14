@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import json
 import logging
-import math
 import time
 import urllib.request
 from dataclasses import dataclass
@@ -195,67 +194,23 @@ def ensure_country_file(
             "error": f"{type(last_exc).__name__}: {last_exc}"}
 
 
-def _download_file(url: str, dest: Path, n_chunks: int = 6) -> None:
-    """Télécharge ``url`` vers ``dest`` — parallélisé par plages HTTP si possible.
+def _download_file(url: str, dest: Path) -> None:
+    """Télécharge ``url`` vers ``dest`` en flux unique.
 
-    Le serveur FIRMS archive est lent en flux simple (~Ko/s) mais accepte
-    ``Accept-Ranges: bytes`` : on découpe le fichier en ``n_chunks`` plages
-    téléchargées en parallèle puis assemblées. Repli flux unique si le
-    serveur ne supporte pas les ranges ou si la taille est inconnue.
+    Le serveur FIRMS archive bride fortement les requêtes ``Range`` parallèles
+    (~40 Ko/s) alors que le flux simple tient ~300 Ko/s — mesuré le
+    2026-11-14. On garde donc un flux unique avec vérification de taille.
     """
-    import concurrent.futures
-
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT_S) as resp:
         total = int(resp.headers.get("Content-Length") or 0)
-        accepts_ranges = (resp.headers.get("Accept-Ranges") or "").lower() == "bytes"
-    if not accepts_ranges or total <= 0:
-        with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT_S) as resp, \
-                open(dest, "wb") as fh:
-            while True:
-                chunk = resp.read(1 << 20)
-                if not chunk:
-                    break
-                fh.write(chunk)
-        got = dest.stat().st_size
-        if total and got != total:
-            raise IOError(f"téléchargement tronqué : {got}/{total} octets")
-        return
-
-    chunk = max(1, math.ceil(total / n_chunks))
-    ranges = [(i, min(total, (i + 1) * chunk) - 1) for i in range(n_chunks)]
-    ranges = [(a, b) for a, b in ranges if a <= b]
-    parts = [dest.with_suffix(f".part{i}") for i in range(len(ranges))]
-
-    def _fetch_range(idx_a_b: tuple[int, int, Path]) -> None:
-        i, (a, b), part = idx_a_b
-        r = urllib.request.Request(
-            url, headers={"User-Agent": USER_AGENT, "Range": f"bytes={a}-{b}"}
-        )
-        with urllib.request.urlopen(r, timeout=FETCH_TIMEOUT_S) as resp, \
-                open(part, "wb") as fh:
-            while True:
-                data = resp.read(1 << 20)
-                if not data:
-                    break
-                fh.write(data)
-
-    try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(ranges)) as pool:
-            list(pool.map(_fetch_range, [(i, rb, parts[i]) for i, rb in enumerate(ranges)]))
-        # vérifier chaque plage avant assemblage (connexion coupée = plage courte)
-        expected = {i: b - a + 1 for i, (a, b) in enumerate(ranges)}
-        for i, part in enumerate(parts):
-            got = part.stat().st_size if part.exists() else 0
-            if got != expected[i]:
-                raise IOError(f"plage {i} tronquée : {got}/{expected[i]} octets")
-        with open(dest, "wb") as out:
-            for part in parts:
-                out.write(part.read_bytes())
-                part.unlink()
-        if dest.stat().st_size != total:
-            raise IOError(f"fichier tronqué : {dest.stat().st_size}/{total} octets")
-    except Exception:
-        for part in parts:
-            part.unlink(missing_ok=True)
-        raise
+    with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT_S) as resp, \
+            open(dest, "wb") as fh:
+        while True:
+            chunk = resp.read(1 << 20)
+            if not chunk:
+                break
+            fh.write(chunk)
+    got = dest.stat().st_size
+    if total and got != total:
+        raise IOError(f"téléchargement tronqué : {got}/{total} octets")
