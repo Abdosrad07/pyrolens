@@ -33,7 +33,7 @@ npm --prefix web run dev
 ```
 
 | Interface | URL | Contenu |
-|---|---|---|
+| --- | --- | --- |
 | **Fire Monitor** (recommandée) | `http://localhost:5173/fire-monitor.html` | Carte Leaflet + tuiles NASA GIBS, vues Aperçu / Calendrier / Expériences / Données / Méthodologie / Qualité, **analyse de zone FIRMS** (clic carte → jauge → Jaccard VIIRS/MODIS) |
 | React (historique) | `http://localhost:5173/` | Les 6 écrans de rapport + Harmonization Lab sur artefacts |
 | API | `http://127.0.0.1:8010/api/v1` | Docs interactives : `/api/v1/docs` — OpenAPI : `/api/v1/openapi.json` |
