@@ -456,6 +456,7 @@ path.perimeter:hover{fill-opacity:.62}
   </details>
   <div id="bottombar">
     <span id="coords">Survolez la carte pour les coordonnées</span>
+    <span id="dlGauge" title="Progression des téléchargements FIRMS"></span>
     <span id="modeLabel">Source : …</span>
     <span>Imagerie : <span id="baseLabel">Esri World Imagery</span></span>
     <a href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">NASA FIRMS<svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg></a>
@@ -1487,6 +1488,29 @@ function zcDrawPoints(points){
 }
 map.on('click', e=>{ if(!view.classList.contains('open')) zcOpen(e.latlng); });
 $('#zcClose').onclick = zcClose;
+
+/* =========================================================
+   JAUGE TÉLÉCHARGEMENTS — /api/v1/downloads/status (20 s)
+   ========================================================= */
+async function pollDownloads(){
+  const el=$('#dlGauge'); if(!el||DATA.mode!=='api') return;
+  try{
+    const r=await fetch('/api/v1/downloads/status');
+    if(!r.ok) return;
+    const d=await r.json();
+    const f=d.firms||{}, a=d.archive||{};
+    const pct=f.pct;
+    const label = pct==null ? 'FIRMS : —' :
+      (pct>=100 ? `FIRMS ✓ ${fmt(f.files_on_disk)}` : `⬇ FIRMS ${pct}% (${fmt(f.files_on_disk)})`);
+    const arch = a.files?` · archive ${fmt(a.files)} f.`:'';
+    el.textContent = label + arch;
+    el.style.color = pct!=null&&pct>=100 ? 'var(--lagoon)' : 'var(--sulphur)';
+    el.title = `Pipeline : ${fmt(f.files_on_disk)} fichiers` +
+      (f.unique_files_expected?` / ${fmt(f.unique_files_expected)} attendus`:'') +
+      ` — archive : ${fmt(a.files)} fichiers (${fmt(a.mb)} Mo)`;
+  }catch(e){ /* API indisponible : on garde l'état précédent */ }
+}
+setInterval(pollDownloads, 20000); pollDownloads();
 
 /* =========================================================
    INIT
