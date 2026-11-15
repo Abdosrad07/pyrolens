@@ -850,3 +850,4 @@
 {"at": "2026-11-15T09:16:00+00:00", "country": "Côte d'Ivoire", "iso3": "CIV", "sensor": "modis", "year": 2017, "status": "downloaded", "slug": "Cote_d_Ivoire", "bytes": 1956146, "reason": null, "elapsed_s": 4509.0}
 {"at": "2026-11-15T09:17:32+00:00", "country": "Côte d'Ivoire", "iso3": "CIV", "sensor": "modis", "year": 2018, "status": "downloaded", "slug": "Cote_d_Ivoire", "bytes": 1852392, "reason": null, "elapsed_s": 4601.6}
 {"at": "2026-11-15T09:20:41+00:00", "country": "Côte d'Ivoire", "iso3": "CIV", "sensor": "modis", "year": 2019, "status": "downloaded", "slug": "Cote_d_Ivoire", "bytes": 1653835, "reason": null, "elapsed_s": 4789.9}
+{"at": "2026-11-15T09:22:57+00:00", "country": "Côte d'Ivoire", "iso3": "CIV", "sensor": "modis", "year": 2020, "status": "downloaded", "slug": "Cote_d_Ivoire", "bytes": 1936587, "reason": null, "elapsed_s": 4926.1}
