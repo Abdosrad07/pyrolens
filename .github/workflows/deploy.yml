@@ -1,0 +1,61 @@
+name: Deploy
+
+# Déclenché uniquement après une CI verte sur main.
+# Freebuff Sites/Cloud se déploient généralement par connexion Git : si c'est
+# le cas, ce workflow ne fait que constats + build de vérification et le
+# déploiement est automatique côté Freebuff. Sinon, renseigner les secrets
+# DEPLOY_HOOK_URL (webhook) ou les variables d'environnement Freebuff.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy (post-CI)
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Smoke test API (artefacts versionnés)
+        run: |
+          pip install -r requirements.txt
+          python - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("web/public/artifacts/fire_risk.json")
+          assert p.exists(), "fire_risk.json manquant"
+          d = json.loads(p.read_text(encoding="utf-8"))
+          assert d["cells"], "aucune cellule"
+          print("fire_risk.json OK:", d["n_cells"], "cellules,",
+                "PR-AUC", round(d["metrics"]["pr_auc"], 4))
+          PY
+
+      - name: Notify deploy hook (optionnel)
+        if: ${{ vars.DEPLOY_HOOK_URL != '' }}
+        run: |
+          curl -fsS -X POST "${{ vars.DEPLOY_HOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"ref\":\"${{ github.sha }}\",\"repo\":\"${{ github.repository }}\"}"
+        env:
+          DEPLOY_HOOK_URL: ${{ vars.DEPLOY_HOOK_URL }}
+
+      - name: Deployment reminder
+        run: |
+          echo "CI verte sur ${{ github.sha }}."
+          echo "Si Freebuff est connecté au dépôt : déploiement automatique."
+          echo "Sinon : déclencher manuellement le déploiement Freebuff Sites/Cloud"
+          echo "avec frontend/sites-manifest.json et les variables PYROLENS_* documentées."
