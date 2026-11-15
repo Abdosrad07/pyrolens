@@ -21,8 +21,8 @@ function levelOf(total, t1, t2) {
   return "medium";
 }
 
-export default function CalendarView() {
-  const api = useApi();
+export default function CalendarView({ onBack }) {
+  const { fireCalendarDaily } = useApi(); // callback stable (useCallback [])
   const today = new Date();
   const [year, setYear] = useState(2020); // données pipeline : 2013–2020
   const [month, setMonth] = useState(11);
@@ -31,11 +31,11 @@ export default function CalendarView() {
 
   useEffect(() => {
     let alive = true;
-    api.fireCalendarDaily({ limit: 20000 })
+    fireCalendarDaily({ limit: 20000 })
       .then((j) => { if (alive) setRows(j.rows || []); })
       .catch((e) => { if (alive) setError(e.message); });
     return () => { alive = false; };
-  }, [api]);
+  }, [fireCalendarDaily]);
 
   // date → total (somme des paires du jour)
   const byDay = useMemo(() => {
@@ -68,6 +68,11 @@ export default function CalendarView() {
 
   return (
     <div className="content">
+      {onBack && (
+        <button className="btn-back" type="button" onClick={onBack} style={{ marginBottom: "0.8rem" }}>
+          ← Retour à la carte
+        </button>
+      )}
       <h2>Calendrier des feux</h2>
       <small>
         Données réelles du pipeline PyroLens (2013–2020) : cellules en divergence

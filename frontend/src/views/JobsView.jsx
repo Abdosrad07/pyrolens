@@ -7,8 +7,8 @@
  * Props: { onBack: () => void }
  */
 
-import { useState, useEffect, useCallback } from "react";
-import useApi from "../hooks/useApi.js";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { apiGet } from "../services/api.js";
 
 const KIND_LABEL = {
   harmonization: "Harmonisation",
@@ -24,36 +24,94 @@ const STATUS_LABEL = {
   failed: "Échoué",
 };
 
+const PARAM_LABEL = {
+  grid_deg: "Grille (°)",
+  window: "Fenêtre (jours)",
+  horizon_days: "Horizon (jours)",
+  reference_date: "Date de référence",
+  bbox: "Zone (bbox)",
+  start: "Début",
+  end: "Fin",
+  years: "Années",
+  countries: "Pays",
+  sensors: "Capteurs",
+  pair: "Paire capteurs",
+  grid: "Grille",
+  window_days: "Fenêtre (jours)",
+};
+
 function fmtDate(iso) {
   if (!iso) return "—";
   const d = new Date(iso);
   return d.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
 }
 
+function fmtParamValue(v) {
+  if (v == null) return "—";
+  if (Array.isArray(v)) return v.join(", ");
+  if (typeof v === "object") return JSON.stringify(v);
+  return String(v);
+}
+
+/** Paramètres lisibles ; le JSON brut reste disponible dans <details>. */
+function JobParams({ params }) {
+  if (!params || typeof params !== "object" || !Object.keys(params).length) {
+    return <span>—</span>;
+  }
+  const entries = Object.entries(params);
+  return (
+    <div>
+      <table className="dt" style={{ marginBottom: "0.4rem" }}>
+        <tbody>
+          {entries.map(([k, v]) => (
+            <tr key={k}>
+              <td style={{ width: "11rem" }}>{PARAM_LABEL[k] || k}</td>
+              <td><code>{fmtParamValue(v)}</code></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <details>
+        <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "var(--muted)" }}>
+          Paramètres techniques (JSON)
+        </summary>
+        <code style={{ whiteSpace: "pre-wrap", fontSize: "0.78rem" }}>
+          {JSON.stringify(params, null, 2)}
+        </code>
+      </details>
+    </div>
+  );
+}
+
 export default function JobsView({ onBack }) {
-  const api = useApi();
   const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);   // vrai seulement au 1er fetch
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
+  const firstLoad = useRef(true);
 
+  // apiGet est une fonction module stable : load/intervalle ne changent jamais.
   const load = useCallback(async () => {
-    setLoading(true);
+    if (firstLoad.current) setLoading(true);
+    else setRefreshing(true);
     setError(null);
     try {
-      const j = await api.listJobs();
+      const j = await apiGet("/api/v1/experiments");
       setItems(j.items || []);
     } catch (e) {
       setError(e.message);
-      setItems([]);
+      if (firstLoad.current) setItems([]);
     } finally {
+      firstLoad.current = false;
       setLoading(false);
+      setRefreshing(false);
     }
-  }, [api]);
+  }, []);
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 8000); // rafraîchit tant que la vue est ouverte
+    const t = setInterval(load, 8000); // polling silencieux : pas de flash visuel
     return () => clearInterval(t);
   }, [load]);
 
@@ -97,7 +155,7 @@ export default function JobsView({ onBack }) {
           <table className="dt">
             <tbody>
               <tr><td>Type</td><td><code>{job.kind}</code></td></tr>
-              <tr><td>Paramètres</td><td><code style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(job.params, null, 2)}</code></td></tr>
+              <tr><td>Paramètres</td><td><JobParams params={job.params} /></td></tr>
               {job.error && <tr><td>Erreur</td><td><code style={{ whiteSpace: "pre-wrap" }}>{job.error}</code></td></tr>}
               {job.links?.result && (
                 <tr><td>Résultat</td><td><code>{job.links.result}</code></td></tr>
@@ -111,10 +169,16 @@ export default function JobsView({ onBack }) {
 
   return (
     <div className="content">
+      {onBack && (
+        <button className="btn-back" type="button" onClick={onBack} style={{ marginBottom: "0.8rem" }}>
+          ← Retour à la carte
+        </button>
+      )}
       <h2>Jobs</h2>
       <small>
         Tâches réelles de l'API PyroLens : harmonisation, analyse de zone FIRMS,
         historique archive, entraînement du modèle de risque.
+        {refreshing && " — actualisation…"}
       </small>
       {loading && <p className="empty">Chargement…</p>}
       {error && <div className="banner err">API indisponible : {error}</div>}

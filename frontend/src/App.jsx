@@ -144,17 +144,17 @@ export default function App() {
 
       {view === "overview" && (
         <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
-          <OverviewView />
+          <OverviewView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
       {view === "calendar" && (
         <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
-          <CalendarView />
+          <CalendarView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
       {view === "jobs" && (
         <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
-          <JobsView onBack={() => setView("jobs")} />
+          <JobsView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
       {view === "dq" && (
@@ -167,24 +167,20 @@ export default function App() {
         </div>
       )}
 
-      {/* Dock de navigation */}
-      {(isMap || isRiskView) && (
-        <div style={{
-          position: "absolute", left: "50%", bottom: "max(1rem,env(safe-area-inset-bottom))",
-          transform: "translateX(-50%)", zIndex: 1450,
-        }}>
-          <DockNav active={isRiskView ? "risk" : view} onSelect={handleNavSelect} />
-        </div>
-      )}
+      {/* Dock de navigation — visible sur toutes les vues */}
+      <div style={{
+        position: "absolute", left: "50%", bottom: "max(1rem,env(safe-area-inset-bottom))",
+        transform: "translateX(-50%)", zIndex: 1450,
+      }}>
+        <DockNav active={isRiskView ? "risk" : view} onSelect={handleNavSelect} />
+      </div>
 
-      {/* Sphère flottante — ouvre l'assistant IA */}
-      {(isMap || isRiskView) && (
-        <RiskSphere
-          open={aiOpen}
-          onClick={() => setAiOpen((v) => !v)}
-          hasData={!!riskData}
-        />
-      )}
+      {/* Sphère flottante — ouvre l'assistant IA (toutes vues) */}
+      <RiskSphere
+        open={aiOpen}
+        onClick={() => setAiOpen((v) => !v)}
+        hasData={!!riskData}
+      />
 
       {/* Panneau risque */}
       {(isMap || isRiskView) && (
@@ -196,14 +192,12 @@ export default function App() {
         </div>
       )}
 
-      {/* Panneau IA */}
-      {(isMap || isRiskView) && (
-        <AiPanel
-          open={aiOpen}
-          onClose={() => setAiOpen(false)}
-          onSend={handleAiSend}
-        />
-      )}
+      {/* Panneau IA — accessible depuis toutes les vues */}
+      <AiPanel
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        onSend={handleAiSend}
+      />
 
       {/* Toast */}
       <Toast message={toastMsg} onDone={hideToast} />
