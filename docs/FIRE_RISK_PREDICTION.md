@@ -148,7 +148,7 @@ FIRMS canoniques (2013-01 → 2020-12, `data_origin=nasa_firms`).
 | --- | --- |
 | Cellules actives | 1 215 |
 | Échantillons | 489 645 (train 245 430 / val 121 500 / test 122 715) |
-| Taux de positifs | ~6-7 % |
+| Taux de positifs | **31,8 %** (38 964 / 122 715) |
 | **Modèle retenu** | `random_forest` (PR-AUC val 0,928 > baseline 0,875 × 1,05) |
 | Calibration | isotonic |
 | Seuil F1 (val) | 0,42 |

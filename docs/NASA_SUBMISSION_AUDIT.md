@@ -313,6 +313,13 @@ est visible dans la carte (actuellement dans `attribution` Leaflet — OK).
 
 ## 7. Rapport final à l'équipe
 
+> **Addendum — contrôle final ciblé (2026-11-15)** : vérifications
+> supplémentaires consignées en §8 ci-dessous. Deux corrections factuelles
+> détectées : la prévalence des positifs du test est **31,8 %** (38 964 /
+> 122 715), pas « ~6 % » comme indiqué dans `PROJECT_OVERVIEW.md` §7.2 et
+> `FIRE_RISK_PREDICTION.md` §11 — **corrigés depuis** (voir §8.8). L'attribution OpenStreetMap est **confirmée absente**
+> de l'UI (recherche Nominatim sans crédit « © OpenStreetMap »).
+
 ### Niveau de préparation : **~75 %**
 
 Socle technique/scientifique excellent et honnête. Le projet est
@@ -345,3 +352,140 @@ Socle technique/scientifique excellent et honnête. Le projet est
 - `À CONFIRMER` : identifiants Earthdata disponibles ou renoncement assumé
 - `À CONFIRMER` : qui produit la vidéo et qui la monte
 - `À CONFIRMER` : nom exact du défi/track Space Apps 2026 visé
+
+---
+
+## 8. Contrôle final ciblé — constats vérifiés
+
+### 8.1 Cohérence des sources de données
+
+| Source | Période réelle | Consommée par |
+|---|---|---|
+| FIRMS NRT (`data/raw/firms`) | 2013-01-01 → 2020-12-31 (1 171 fenêtres 5 j) | pipeline, baselines, calendrier, **modèle de prédiction** |
+| FIRMS archive pays (`data/raw/archive`) | 2013 → 2025 (téléchargement en cours, ~20 %) | analyse historique de zone (`firms_history`) — **PAS** le modèle |
+| FIRMS NRT live (API) | ~5 derniers jours | analyse de zone `firms_analyze` |
+| `data/fixture` | synthétique | tests/démo uniquement — `data_origin` distinct |
+
+**Le modèle n'a jamais vu les archives** : `run_prediction` lit
+`data/raw/firms` (ou `--source` explicite). `firms_archive_sp` n'apparaît
+que si on passe `--source data/raw/archive`. La distinction NRT vs
+archive SP est propagée dans `data_origin`.
+
+### 8.2 Vérification des métriques du modèle (artefact `fire_risk.json`)
+
+| Métrique | Valeur vérifiée | Source |
+|---|---|---|
+| Test n | **122 715** | `metrics.n` |
+| Positifs test | **38 964 → prévalence 31,8 %** | `metrics.n_positive` |
+| PR-AUC test (RF) | **0,9259** | `metrics.pr_auc` |
+| PR-AUC val baseline | **0,8747** | `metrics.validation.baseline.pr_auc` |
+| PR-AUC val RF | **0,9280** | `metrics.validation.random_forest.pr_auc` |
+| Recall / Precision / F1 test | 0,844 / 0,837 / 0,841 | `metrics.*` |
+| Brier test | **0,0722** | `metrics.brier` |
+| ROC-AUC test | 0,9564 | `metrics.roc_auc` |
+| Calibration | **isotonic**, bins test predicted≈observed (ex. 0,9-1,0 → 0,98 vs 0,98) | `metrics.calibration_bins_test` |
+| Seuil | 0,42 (argmax F1 sur validation) | `metrics.threshold` |
+| Matrice confusion | 32 890 VP / 6 074 FN / 6 389 FP / 77 362 VN — cohérente avec n | `metrics.confusion_matrix` |
+
+**Fuite temporelle** : vérifiée dans `prediction.py` — split chrono
+2013-16/2017-18/2019-20 + **purge 8 j** aux frontières + features 100 %
+trailing (searchsorted ≤ t) + calibration sur validation uniquement.
+**Aucune fuite détectée.**
+
+**⚠️ Correction** : la prévalence réelle est **31,8 %**, pas « ~6-7 % » —
+`PROJECT_OVERVIEW.md` §7.2 et `FIRE_RISK_PREDICTION.md` §11 indiquent un
+chiffre erroné à corriger.
+
+### 8.3 Harmonisation H1–H6 (`harmonization.py` — statuts réels)
+
+| Hypothèse | Statut | Détail |
+|---|---|---|
+| H1 schéma commun sans conversion | ✅ **Exécuté** (audit 18/10) | 4 460 288 lignes, 0 malformée |
+| H2 grille commune + aire | ✅ **Exécuté** | 24 configurations, Jaccard 0,103→0,659 selon maille/fenêtre |
+| H3 fenêtres multiples | ✅ **Exécuté** | 1/4/8/16 j publiées |
+| H4 seuils confiance natifs | ❌ **Non exécuté** | prérequis manquants |
+| H5 calibration FRP géométrique | ❌ **Non exécuté** | idem |
+| H6 validation externe | ❌ **Non exécuté** | aucun split dev/val externe |
+
+Le catalogue le dit lui-même : « aucune méthode n'est annoncée comme
+validée — H1-H3 exécutés sur données réelles, H4-H6 non exécutés ».
+
+### 8.4 Captures vidéo — toutes réelles
+
+| Capture prévue | Source réelle vérifiée |
+|---|---|
+| Carte + couche risque | `fire_risk.json` — 1 215 cellules, `prob` calibrées |
+| Analyse zone Jaccard | `firms_analyze` job — résultat archive/NRT réel |
+| Calendrier multi-années | `fire-calendar/daily` + `firms_history` — données réelles |
+| Panneau Risque métriques | `metrics` de l'artefact (PR-AUC 0,926…) |
+| Jobs | `/api/v1/experiments` — jobs réels |
+| Qualité | `audit.json` — 2 634 700 anomalies réelles |
+
+**À ne PAS montrer** : `RiskView.jsx` (stub « activez la vue Carte ») et
+présenter l'assistant chat comme un LLM (c'est déterministe).
+
+### 8.5 Provenance des 1 215 cellules
+
+- `reference_date = 2020-12-31`, `estimate_kind = historical_backtest`,
+  `data_origin = nasa_firms`, `period = 2013-01-01 → 2020-12-31`
+- **Backtest historique confirmé** — aucune estimation récente.
+- Cellules = grille 0,25° sur l'émprise Cameroun (données limited au
+  pipeline, pas à l'archive Ouest-africaine).
+
+### 8.6 Attributions cartographiques — vérifié
+
+| Attribution | État |
+|---|---|
+| Esri World Imagery | ✅ `attribution: "Earthstar Geographics \| Esri"` (MapView + fire-monitor) |
+| NASA GIBS | ✅ attributions par couche (VIIRS SNPP, Blue Marble, FIRMS) |
+| Leaflet controls | ✅ `.leaflet-control-attribution` stylé |
+| **OpenStreetMap (Nominatim)** | ❌ **ABSENT** — recherche de lieu sans crédit « © OpenStreetMap contributors » (OBdL) — à ajouter dans les 2 frontends |
+| Esri boundaries layer | ⚠️ tuiles labels sans chaîne d'attribution propre (couvert par Esri ci-dessus) |
+
+### 8.7 Checklist de déploiement public
+
+**Variables d'environnement** (`.env.local` → variables `PYROLENS_*`) :
+
+| Variable | Requise pour la démo ? | Note |
+|---|---|---|
+| `PYROLENS_API_TOKEN` | ⚠️ **Décision requise** | Si défini → tous les POST exigent `Authorization: Bearer` ; **le frontend `apiPost` n'envoie pas ce header** → les POST (predict, analyze, history, chat, experiments, validate) renverraient 401. Options : laisser vide (POST ouverts — risque d'abus de compute) OU ajouter le header côté frontend avec un token côté client (visible publiquement = sécurité cosmétique) OU restreindre les POST au backend-only |
+| `PYROLENS_CORS_ORIGINS` | ⚠️ Si front≠API | Sinon same-origin via proxy/domaine unique |
+| `FIRMS_MAP_KEY` | ❌ Non pour la démo | Seulement pour `download` NRT et `firms_analyze` ; `firms_history` et `predict` n'en ont pas besoin |
+| `EARTHDATA_*` | ❌ Non | Granules standard bloqués de toute façon |
+| `PYROLENS_JOBS_ENABLED` | ✅ `1` | Sinon tous les POST → 403 |
+| `PYROLENS_SOURCE_DIR` / artifacts | ✅ | `web/public/artifacts/` doit être servi (déjà versionné) |
+
+**Endpoints à vérifier en prod** :
+- `GET /api/v1/health` → 200 sans auth
+- `GET /api/v1/fire-risk` → 200 (artefact commité)
+- `GET /artifacts/*.json` → 200 statique
+- `POST /api/v1/predict` → 401 propre si token configuré (pas 500)
+- `GET /api/v1/firms/history/{id}` → 409/404 propre si jamais lancé
+
+**Données à embarquer** : `web/public/artifacts/*.json` (versionnés ✅),
+`frontend/public/artifacts/*.json` (copie ✅). **`data/raw/` n'est PAS
+nécessaire pour les GET** — sauf si on veut `firms_history`/`predict`
+fon'sctionnels en prod (lourd : des Go — à décider).
+
+**Points de vigilance déploiement** :
+- `JobManager` = 1 worker, jobs en mémoire → un `predict` (~10 min)
+  bloque tous les autres jobs ; à documenter ou à scaler
+- `models/` (300 Mo) non requis — `fire_risk.json` pré-calculé suffit
+- CORS : si frontend et API sur domaines différents →
+  `PYROLENS_CORS_ORIGINS=https://ton-frontend.app`
+- Rate limiting : **absent** — les POST ouverts sans token sont un
+  vecteur d'abus (predict = ~10 min de CPU)
+
+### 8.8 Synthèse du contrôle
+
+| Catégorie | Résultat |
+|---|---|
+| Métriques modèle | ✅ Toutes vérifiées dans l'artefact — PR-AUC 0,926 réel |
+| Fuite temporelle | ✅ Aucune détectée (split chrono + purge + trailing) |
+| Calibration | ✅ Isotonic, bins test cohérents |
+| H1-H6 | ✅ H1-H3 exécutés, H4-H6 honnêtement non exécutés |
+| Captures vidéo | ✅ Toutes sourçables du produit réel |
+| Backtest vs récent | ✅ `historical_backtest` confirmé, reference 2020-12-31 |
+| Attributions | ⚠️ OSM manquante (OBdL), Esri/GIBS OK |
+| Déploiement | ⚠️ POST sans auth header côté frontend = décision requise |
+| **Correction documentaire** | ✅ Prévalence corrigée : « ~6 % » → **31,8 %** dans `PROJECT_OVERVIEW.md` (§7.2, §7.6, §7.7) et `FIRE_RISK_PREDICTION.md` (§11) |

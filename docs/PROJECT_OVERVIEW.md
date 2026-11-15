@@ -243,8 +243,9 @@ ajustement saisonnier mensuel. Aucune ML — pure statistique.
 Validation : **PR-AUC = 0,875**.
 
 **RandomForest** (`sklearn.ensemble.RandomForestClassifier`) :
-- 200 arbres, `class_weight='balanced_subsample'` (seulement ~6 % de
-  positifs — sinon le modèle prédit « non » partout)
+- 200 arbres, `class_weight='balanced_subsample'` (31,8 % de positifs
+  sur le test — le poids équilibré évite le biais vers la classe
+  majoritaire)
 - `min_samples_leaf=20`, profondeur libre, `random_state=42`
 - 24 features → le RF capture les interactions non linéaires
   (« 3 détections cette semaine » ≠ « il y a 3 semaines ») sans normalisation
@@ -264,7 +265,7 @@ Sans cette étape, les % de la carte seraient trompeurs.
 
 | Métrique | Valeur | Lecture |
 |---|---|---|
-| **PR-AUC** | **0,926** | aire sous la courbe précision-rappel — la métrique clé avec 6 % de positifs |
+| **PR-AUC** | **0,926** | aire sous la courbe précision-rappel — la métrique clé avec 31,8 % de positifs |
 | F1 | 0,841 | compromis précision/rappel au seuil optimal (0,42) |
 | Rappel | 0,844 | 84 % des jours à détection sont couverts |
 | Brier | 0,072 | qualité probabiliste (probabilités calibrées) |
