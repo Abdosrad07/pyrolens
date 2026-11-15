@@ -52,6 +52,20 @@ def _env_bool(name: str, default: bool) -> bool:
     return raw.lower() in {"1", "true", "yes", "on"}
 
 
+def normalize_post_path(path: str) -> str:
+    """Ramène un chemin POST à sa forme canonique relative à ``/api/v1``.
+
+    ``"/api/v1/firms/analyze"``, ``"api/v1/firms/analyze"`` et
+    ``"firms/analyze"`` désignent tous ``"firms/analyze"``.
+    """
+    p = path.strip().lstrip("/")
+    if p == "api/v1":
+        return ""
+    if p.startswith("api/v1/"):
+        p = p[len("api/v1/"):]
+    return p.strip("/")
+
+
 def _env_path(name: str, default: Path) -> Path:
     raw = _env_str(name)
     if raw is None:
@@ -81,6 +95,10 @@ class Settings:
     firms_map_key: str | None = None
     # Cache des CSV annuels FIRMS par pays (archive, sans clé).
     archive_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "data" / "raw" / "archive")
+    # Whitelist des chemins POST autorisés (relatifs à /api/v1, forme
+    # canonique). Vide = tous les POST autorisés — utile pour une démo
+    # publique où seuls les POST peu coûteux doivent rester ouverts.
+    allowed_posts: tuple[str, ...] = field(default_factory=tuple)
 
     @staticmethod
     def from_env() -> "Settings":
@@ -104,4 +122,12 @@ class Settings:
             cors_origins=origins,
             firms_map_key=_env_str("FIRMS_MAP_KEY"),
             archive_dir=_env_path("PYROLENS_ARCHIVE_DIR", PROJECT_ROOT / "data" / "raw" / "archive"),
+            allowed_posts=tuple(
+                p
+                for p in (
+                    normalize_post_path(part)
+                    for part in (_env_str("PYROLENS_ALLOWED_POSTS", "") or "").split(",")
+                )
+                if p
+            ),
         )

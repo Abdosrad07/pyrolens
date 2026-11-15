@@ -49,7 +49,7 @@ from api.routers import methodology as methodology_router
 from api.routers import predict as predict_router
 from api.routers import system as system_router
 from api.routers import validation as validation_router
-from api.settings import Settings
+from api.settings import Settings, normalize_post_path
 from api.store import ArtifactStore
 
 logger = logging.getLogger("pyrolens.api")
@@ -131,6 +131,28 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.geometry = _load_geometry_lazily(cfg)
 
     install_error_handlers(app)
+
+    if settings.allowed_posts:
+        allowed = set(settings.allowed_posts)
+
+        @app.middleware("http")
+        async def _allowed_posts_guard(request, call_next):
+            """Whitelist des POST (démo publique) : 403 JSON hors liste.
+
+            Enregistré avant CORS pour que CORSMiddleware reste le
+            middleware le plus externe (en-têtes CORS sur les 403).
+            """
+            if request.method == "POST" and normalize_post_path(request.url.path) not in allowed:
+                return UTF8JSONResponse(
+                    {
+                        "error": {
+                            "code": "403",
+                            "message": "Endpoint POST non autorisé sur cette instance.",
+                        }
+                    },
+                    status_code=403,
+                )
+            return await call_next(request)
 
     if settings.cors_origins:
         from fastapi.middleware.cors import CORSMiddleware
