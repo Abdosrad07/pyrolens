@@ -8,10 +8,10 @@ métier : tout le calcul vit dans ``api/services/`` et ``src/pyrolens/``.
 from __future__ import annotations
 
 import logging
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from api import PROJECT_ROOT
 
@@ -166,6 +166,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     for router, tag in ROUTERS:
         app.include_router(router, prefix="/api/v1", tags=[tag])
+
+    # Mount static files for artifacts
+    artifacts_dir = settings.artifacts_dir
+    if artifacts_dir.exists():
+        app.mount("/artifacts", StaticFiles(directory=str(artifacts_dir)), name="artifacts")
 
     @app.get("/", include_in_schema=False, tags=["system"])
     def root() -> dict:
