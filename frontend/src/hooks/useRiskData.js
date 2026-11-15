@@ -32,7 +32,11 @@ export default function useRiskData() {
   const highCells = (riskData?.cells || []).filter((c) => c.prob >= 0.6).length;
   const origin = riskData?.data_origin || "inconnue";
   const generatedAt = riskData?.generated_at
-    ? new Date(riskData.generated_at).toLocaleDateString("fr-FR")
+    ? new Date(riskData.generated_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : "?";
 
   return {

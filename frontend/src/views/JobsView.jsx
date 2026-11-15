@@ -8,21 +8,10 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { apiGet } from "../services/api.js";
 import { useI18n } from "../i18n/index.jsx";
 
-const PARAM_LABEL = {
-  grid_deg: "Grille (°)",
-  window: "Fenêtre (jours)",
-  horizon_days: "Horizon (jours)",
-  reference_date: "Date de référence",
-  bbox: "Zone (bbox)",
-  start: "Début",
-  end: "Fin",
-  years: "Années",
-  countries: "Pays",
-  sensors: "Capteurs",
-  pair: "Paire capteurs",
-  grid: "Grille",
-  window_days: "Fenêtre (jours)",
-};
+const PARAM_KEYS = [
+  "grid_deg", "window", "horizon_days", "reference_date", "bbox", "start",
+  "end", "years", "countries", "sensors", "pair", "grid", "window_days", "source",
+];
 
 function fmtParamValue(v) {
   if (v == null) return "—";
@@ -32,7 +21,7 @@ function fmtParamValue(v) {
 }
 
 /** Paramètres lisibles ; le JSON brut reste disponible dans <details>. */
-function JobParams({ params }) {
+function JobParams({ params, t }) {
   if (!params || typeof params !== "object" || !Object.keys(params).length) {
     return <span>—</span>;
   }
@@ -43,7 +32,7 @@ function JobParams({ params }) {
         <tbody>
           {entries.map(([k, v]) => (
             <tr key={k}>
-              <td style={{ width: "11rem" }}>{PARAM_LABEL[k] || k}</td>
+              <td style={{ width: "11rem" }}>{PARAM_KEYS.includes(k) ? t(`jobs.param.${k}`, k) : k}</td>
               <td><code>{fmtParamValue(v)}</code></td>
             </tr>
           ))}
@@ -51,7 +40,7 @@ function JobParams({ params }) {
       </table>
       <details>
         <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "var(--muted)" }}>
-          Paramètres techniques (JSON)
+          {t("jobs.table.rawParams", "Technical parameters (JSON)")}
         </summary>
         <code style={{ whiteSpace: "pre-wrap", fontSize: "0.78rem" }}>
           {JSON.stringify(params, null, 2)}
@@ -140,7 +129,7 @@ export default function JobsView({ onBack }) {
           <table className="dt">
             <tbody>
               <tr><td>{t("jobs.table.type", "Type")}</td><td><code>{job.kind}</code></td></tr>
-              <tr><td>{t("jobs.table.params", "Paramètres")}</td><td><JobParams params={job.params} /></td></tr>
+              <tr><td>{t("jobs.table.params", "Paramètres")}</td><td><JobParams params={job.params} t={t} /></td></tr>
               {job.error && <tr><td>{t("jobs.table.error", "Erreur")}</td><td><code style={{ whiteSpace: "pre-wrap" }}>{job.error}</code></td></tr>}
               {job.links?.result && (
                 <tr><td>{t("jobs.table.result")}</td><td><code>{job.links.result}</code></td></tr>

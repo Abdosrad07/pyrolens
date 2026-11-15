@@ -82,7 +82,7 @@ export default function OverviewView({ onBack }) {
     <div className="content">
       {onBack && (
         <button className="btn-back" type="button" onClick={onBack} style={{ marginBottom: "0.8rem" }}>
-          ← Retour à la carte
+          {t("common.backToMap", "← Back to map")}
         </button>
       )}
       <h2>Aperçu des observations</h2>

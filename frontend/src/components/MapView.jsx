@@ -87,15 +87,15 @@ function RiskGeoJSONLayer({ geoJSON, riskData }) {
         };
       },
       onEachFeature(f, layer) {
-        const origin = riskData?.data_origin || "provenance ?";
+        const origin = riskData?.data_origin || "unknown provenance";
         const gen = riskData?.generated_at
-          ? new Date(riskData.generated_at).toLocaleDateString("fr-FR")
+          ? new Date(riskData.generated_at).toLocaleDateString("en-GB")
           : "?";
         layer.bindPopup(
-          `<b>Cellule (${f.properties.cell_i}, ${f.properties.cell_j})</b><br>` +
-          `Probabilité : ${(f.properties.prob * 100).toFixed(1)}%<br>` +
-          `Niveau : ${riskLabel(f.properties.prob)}<br>` +
-          `<small>${origin} · généré le ${gen}</small>`
+          `<b>Cell (${f.properties.cell_i}, ${f.properties.cell_j})</b><br>` +
+          `Probability: ${(f.properties.prob * 100).toFixed(1)}%<br>` +
+          `Level: ${riskLabel(f.properties.prob)}<br>` +
+          `<small>${origin} · generated ${gen}</small>`
         );
       },
     }).addTo(map);

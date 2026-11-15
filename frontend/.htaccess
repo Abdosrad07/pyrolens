@@ -1,0 +1,53 @@
+# PyroLens Frontend - GoDaddy Apache Configuration
+# SPA React (Vite) : réécriture vers index.html + headers + cache.
+#
+# REMARQUE : pas de proxy [P] vers l'API (mod_proxy indisponible sur
+# l'hébergement mutualisé GoDaddy). L'API est appelée directement via
+# VITE_API_BASE (URL absolue) quand elle est déployée.
+
+RewriteEngine On
+RewriteBase /
+
+# Les appels /api/* ne sont PAS réécrits vers index.html :
+# ils retournent un 404 propre tant que l'API n'est pas branchée.
+RewriteCond %{REQUEST_URI} !^/api/
+# Routes SPA : tout ce qui n'est ni fichier ni dossier -> index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+# index.html ne doit jamais être mis en cache (les assets Vite sont hashés : 1 an)
+<IfModule mod_headers.c>
+  <Files "index.html">
+    Header always set Cache-Control "no-cache, no-store, must-revalidate"
+  </Files>
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Cache Static Assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType application/json "access plus 1 hour"
+</IfModule>
+
+# Gzip Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+</IfModule>
+
+# Protect sensitive files
+<FilesMatch "\.(env|local|example)$">
+  Require all denied
+</FilesMatch>

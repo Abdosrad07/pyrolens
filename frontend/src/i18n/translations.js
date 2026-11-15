@@ -33,6 +33,10 @@ export const TRANSLATIONS = {
     risk: { fr: "Risque", en: "Risk" },
   },
 
+  common: {
+    backToMap: { fr: "← Retour à la carte", en: "← Back to map" },
+  },
+
   overview: {
     title: { fr: "Aperçu des observations", en: "Observation overview" },
     subtitle: { fr: "Résumé synthétique du pipeline de traitement. Données mockées si les artefacts publics ne sont pas disponibles.", en: "Synthetic summary of the processing pipeline. Mock data if public artifacts are unavailable." },
@@ -114,12 +118,67 @@ export const TRANSLATIONS = {
       params: { fr: "Paramètres", en: "Parameters" },
       error: { fr: "Erreur", en: "Error" },
       result: { fr: "Résultat", en: "Result" },
+      rawParams: { fr: "Paramètres techniques (JSON)", en: "Technical parameters (JSON)" },
+    },
+    param: {
+      grid_deg: { fr: "Grille (°)", en: "Grid (°)" },
+      window: { fr: "Fenêtre (jours)", en: "Window (days)" },
+      horizon_days: { fr: "Horizon (jours)", en: "Horizon (days)" },
+      reference_date: { fr: "Date de référence", en: "Reference date" },
+      bbox: { fr: "Zone (bbox)", en: "Area (bbox)" },
+      start: { fr: "Début", en: "Start" },
+      end: { fr: "Fin", en: "End" },
+      years: { fr: "Années", en: "Years" },
+      countries: { fr: "Pays", en: "Countries" },
+      sensors: { fr: "Capteurs", en: "Sensors" },
+      pair: { fr: "Paire capteurs", en: "Sensor pair" },
+      grid: { fr: "Grille", en: "Grid" },
+      window_days: { fr: "Fenêtre (jours)", en: "Window (days)" },
+      source: { fr: "Source", en: "Source" },
     },
   },
 
   dq: {
     title: { fr: "Rapport de qualité des données", en: "Data quality report" },
     loading: { fr: "Chargement…", en: "Loading…" },
+    artifactError: { fr: "Artefact audit.json indisponible :", en: "audit.json artifact unavailable:" },
+    warning: {
+      fr: "Les trous temporels listent des jours SANS ENREGISTREMENT pour un capteur. Ils ne signifient pas absence de feu, et sans produit de couverture/nuages l'observabilité reste inconnue.",
+      en: "Temporal gaps list days WITHOUT RECORDS for a sensor. They do not mean absence of fire, and without a coverage/cloud product observability remains unknown.",
+    },
+    meta: {
+      fr: "{n} fichiers · origine {origin} · généré le {date}",
+      en: "{n} files · origin {origin} · generated {date}",
+    },
+    cards: {
+      files: { fr: "Fichiers audités", en: "Files audited" },
+      anomalies: { fr: "Anomalies", en: "Anomalies" },
+      rows: { fr: "Lignes classifiées", en: "Classified rows" },
+      rowsUnit: { fr: "classification rigoureuse", en: "rigorous classification" },
+      gaps: { fr: "Jours sans enregistrement", en: "Days without records" },
+      gapsUnit: { fr: "trous temporels capteurs", en: "sensor temporal gaps" },
+    },
+    sections: {
+      anomalies: { fr: "Anomalies par catégorie", en: "Anomalies by category" },
+      missing: { fr: "Valeurs manquantes par colonne", en: "Missing values by column" },
+      gaps: { fr: "Trous temporels ({n})", en: "Temporal gaps ({n})" },
+    },
+    th: {
+      category: { fr: "Catégorie", en: "Category" },
+      count: { fr: "Nombre", en: "Count" },
+      column: { fr: "Colonne", en: "Column" },
+      missing: { fr: "Manquants", en: "Missing" },
+      sensor: { fr: "Capteur", en: "Sensor" },
+      date: { fr: "Date", en: "Date" },
+      interpretation: { fr: "Interprétation", en: "Interpretation" },
+    },
+    noneAnomaly: { fr: "Aucune anomalie", en: "No anomalies" },
+    noneMissing: { fr: "Aucune valeur manquante", en: "No missing values" },
+    pageLabel: { fr: "Numéro de page", en: "Page number" },
+    pageOf: { fr: "sur {n} pages", en: "of {n} pages" },
+    interp: {
+      aucun_enregistrement: { fr: "aucun_enregistrement", en: "no_record" },
+    },
   },
 
   risk: {
@@ -148,6 +207,7 @@ export const TRANSLATIONS = {
     metrics: { fr: "Métriques du modèle", en: "Model metrics" },
     metricPR: { fr: "PR-AUC", en: "PR-AUC" },
     metricF1: { fr: "F1", en: "F1" },
+    metricBrier: { fr: "Brier", en: "Brier" },
     metricBaseline: { fr: "Baseline", en: "Baseline" },
     log: { fr: "Journal d'exécution", en: "Execution log" },
     status: {

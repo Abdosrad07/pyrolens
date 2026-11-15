@@ -1754,6 +1754,11 @@ path.perimeter:hover {
   .side { width: 13rem; }
   .dt td:first-child { width: 10rem; }
 }
+@media (max-width: 320px) {
+  .ov-map { height: 14rem; }
+  .chart-box canvas { height: 180px; }
+  .brand h1 { font-size: 1rem; }
+}
 
 @media (max-height: 480px) and (min-width: 761px) {
   :root { --hh: 3.25rem; }
@@ -1763,10 +1768,12 @@ path.perimeter:hover {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation: none !important;
+
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
 }
+img { max-width: 100%; height: auto; display: block; }
 
 /* =========================================================
    COMPLÉMENTS : panneaux positionnés via props

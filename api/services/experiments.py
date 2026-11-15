@@ -146,7 +146,7 @@ def run_harmonization_experiment(
         },
         "software": {"pipeline": f"pyrolens {PYROLENS_VERSION}", "api": "pyrolens-api 0.1.0"},
         "warning": (
-            "Le Jaccard mesure un recouvrement d'ensembles, pas une précision : "
-            "aucune référence indépendante n'est mobilisée (H4/H6 non exécutés)."
+            "Jaccard measures set overlap, not accuracy: no independent "
+            "reference is used (H4/H6 not executed)."
         ),
     }

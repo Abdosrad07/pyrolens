@@ -58,8 +58,8 @@ export default function RiskPanel({ open, onClose }) {
     setRunning(true);
     setShowLog(true);
     setLog(
-      `Lancement : grille ${grid}°, fenêtre ${window} j, référence ${date || "max données"}\n` +
-      "(job backend — peut durer ~10 min sur données réelles)\n"
+      `Launch: grid ${grid}°, window ${window} d, reference ${date || "max data"}\n` +
+      "(backend job — may take ~10 min on real data)\n"
     );
     try {
       const job = await api.predict({
@@ -67,7 +67,7 @@ export default function RiskPanel({ open, onClose }) {
         window: +window,
         reference_date: date || null,
       });
-      setLog((prev) => prev + `\nTâche ${job.job_id} — ${job.status}\n`);
+      setLog((prev) => prev + `\nJob ${job.job_id} — ${job.status}\n`);
       const poll = async () => {
         try {
           const j = await api.getPredictJob(job.job_id);
@@ -81,44 +81,45 @@ export default function RiskPanel({ open, onClose }) {
               `\n→ ${p.step || j.status} ${Math.round(p.pct || 0)}% ${p.detail || ""}`.trimEnd()
           );
           if (j.status === "succeeded") {
-            setLog((prev) => prev + "\n✓ Entraînement terminé — rechargement de l'artefact…");
+            setLog((prev) => prev + "\n✓ Training complete — reloading artifact…");
             await reload();
             setRunning(false);
             return;
           }
           if (j.status === "failed") {
-            setLog((prev) => prev + `\n✗ Échec : ${j.error || "erreur inconnue"}`);
+            setLog((prev) => prev + `\n✗ Failed: ${j.error || "unknown error"}`);
             setRunning(false);
             return;
           }
           setTimeout(poll, 5000);
         } catch (e) {
-          setLog((prev) => prev + `\n✗ Polling : ${e.message}`);
+          setLog((prev) => prev + `\n✗ Polling: ${e.message}`);
           setRunning(false);
         }
       };
       poll();
     } catch (e) {
-      setLog((prev) => prev + `\n✗ Lancement refusé : ${e.message}`);
+      setLog((prev) => prev + `\n✗ Launch refused: ${e.message}`);
       setRunning(false);
     }
   };
 
   const handleLoad = async () => {
     setShowLog(true);
-    setLog("Chargement de fire_risk.json…");
+    setLog("Loading fire_risk.json…");
     await reload();
     if (riskData) {
       setLog(
-        `✓ Chargé : ${riskData.cells?.length || 0} cellules\n` +
+        `✓ Loaded: ${riskData.cells?.length || 0} cells\n` +
         `Source: ${riskData.data_origin || "?"}\n` +
-        `Généré: ${riskData.generated_at || "?"}`
+        `Generated: ${riskData.generated_at || "?"}`
       );
     }
   };
 
   const prAuc = metrics.pr_auc;
   const f1 = metrics.f1;
+  const brier = metrics.brier;
   const baseline = metrics.baseline_pr_auc;
 
   return (
@@ -211,6 +212,7 @@ export default function RiskPanel({ open, onClose }) {
                 ? `${t("riskPanel.honestyData", "données {origin} · généré le {generatedAt}", { origin, generatedAt })}` +
                   (prAuc != null ? ` · PR-AUC ${prAuc.toFixed(3)}` : "") +
                   (f1 != null ? ` · F1 ${f1.toFixed(3)}` : "") +
+                  (brier != null ? ` · Brier ${brier.toFixed(3)}` : "") +
                   (baseline != null ? ` · baseline ${baseline.toFixed(3)}` : "")
                 : t("riskPanel.waiting", "Module de prédiction en attente de données")}
             </small>
@@ -232,6 +234,12 @@ export default function RiskPanel({ open, onClose }) {
                 <div className="metric-card">
                   <div className="mk">{t("riskPanel.metricF1", "F1")}</div>
                   <div className="mv">{f1.toFixed(3)}</div>
+                </div>
+              )}
+              {brier != null && (
+                <div className="metric-card">
+                  <div className="mk">{t("riskPanel.metricBrier", "Brier")}</div>
+                  <div className="mv">{brier.toFixed(3)}</div>
                 </div>
               )}
               {baseline != null && (

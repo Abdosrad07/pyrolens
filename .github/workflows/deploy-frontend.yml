@@ -1,0 +1,79 @@
+name: Deploy frontend to GoDaddy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # VITE_API_BASE vide = mode statique (artefacts /artifacts servis en local).
+      # Renseigner la variable de repo VITE_API_BASE (ex: https://xxx.azurewebsites.net)
+      # quand l'API sera déployée — sans slash final.
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE: ${{ vars.VITE_API_BASE }}
+
+      - name: Verify .htaccess in dist
+        run: test -f dist/.htaccess
+
+      # Dry-run au premier passage si besoin : commenter le step ci-dessous
+      # et décommenter celui-ci pour lister les changements sans déployer.
+      # - name: Dry run (no upload)
+      #   uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+      #   with:
+      #     server: ${{ secrets.GODADDY_FTP_SERVER }}
+      #     username: ${{ secrets.GODADDY_FTP_USERNAME }}
+      #     password: ${{ secrets.GODADDY_FTP_PASSWORD }}
+      #     server-dir: ${{ vars.GODADDY_FTP_DIR }}
+      #     local-dir: ./frontend/dist/
+      #     dry-run: true
+
+      # Secrets (Settings → Secrets and variables → Actions) :
+      #   GODADDY_FTP_SERVER    ex: ftp.votredomaine.com (ou votredomaine.com)
+      #   GODADDY_FTP_USERNAME  ex: user_votredomaine
+      #   GODADDY_FTP_PASSWORD  mot de passe du compte FTP cPanel
+      # Variable (onglet Variables) :
+      #   GODADDY_FTP_DIR       ex: public_html/  (ou ./ si le compte est chrooté sur public_html)
+      #
+      # ftps = chiffrement explicite sur le port 21 (GoDaddy/cPanel Pure-FTPd).
+      # security: loose = accepte le certificat FTP qui ne couvre pas toujours
+      # le hostname. Si la connexion échoue totalement : protocol: ftp.
+      - name: Upload to GoDaddy
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.GODADDY_FTP_SERVER }}
+          username: ${{ secrets.GODADDY_FTP_USERNAME }}
+          password: ${{ secrets.GODADDY_FTP_PASSWORD }}
+          server-dir: ${{ vars.GODADDY_FTP_DIR || 'public_html/' }}
+          local-dir: ./frontend/dist/
+          protocol: ftps
+          port: 21
+          security: loose

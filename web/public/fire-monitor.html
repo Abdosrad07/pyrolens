@@ -316,6 +316,14 @@ path.perimeter:hover{fill-opacity:.62}
   .dq-t{min-width:56rem}
 }
 @media (max-width:560px){#btnAnnounce,#btnChat{display:none}}
+@media (max-width: 320px) {
+  #btnSearch { display: grid; }
+  #searchForm { display: none; position: absolute; top: calc(var(--hh) + .6rem); left: .75rem; right: .75rem; width: auto; height: 3rem; background: var(--canopy); border-color: rgb(255 255 255/.3); }
+  #searchForm.open { display: flex; }
+  .jgrid { grid-template-columns: 1fr; }
+  .side { width: 13rem; }
+  .dt td:first-child { width: 10rem; }
+}
 
 /* Boutons et formulaires (vues métier) */
 .btn{display:inline-flex;align-items:center;gap:.5rem;height:2.6rem;padding:0 1.1rem;color:#fff;font-weight:600;background:var(--canopy);border-radius:var(--r-m);border:0;cursor:pointer}
@@ -416,61 +424,61 @@ path.perimeter:hover{fill-opacity:.62}
 <symbol id="i-bypass" viewBox="0 0 24 24"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></symbol>
 </defs></svg>
 
-<a class="skip-link" href="#map">Aller directement à la carte</a>
+<a class="skip-link" href="#map">Skip to the map</a>
 
 <header id="topbar">
   <div class="brand">
     <span class="mark"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg></span>
-    <div><h1>Fire Monitor</h1><small>Feux actifs · données NASA FIRMS</small></div>
+    <div><h1>Fire Monitor</h1><small>Active fires · NASA FIRMS data</small></div>
   </div>
   <span class="sp"></span>
   <form id="searchForm" role="search">
     <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
-    <label class="sr-only" for="searchInput">Rechercher un lieu</label>
-    <input id="searchInput" type="search" placeholder="Rechercher un lieu…" autocomplete="off" enterkeyhint="search">
-    <button type="submit">Aller</button>
+    <label class="sr-only" for="searchInput">Search a location</label>
+    <input id="searchInput" type="search" placeholder="Search a location…" autocomplete="off" enterkeyhint="search">
+    <button type="submit">Go</button>
   </form>
-  <button class="ibtn" id="btnSearch" type="button" title="Rechercher un lieu" aria-label="Rechercher un lieu" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></button>
-  <button class="ibtn" id="btnAnnounce" type="button" title="Annonces" aria-label="Annonces"><svg class="ic" aria-hidden="true"><use href="#i-megaphone"/></svg></button>
-  <button class="ibtn" id="btnChat" type="button" title="Contacter la NASA Earthdata" aria-label="Contact"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg></button>
-  <button class="ibtn" id="burger" type="button" title="Ouvrir le menu principal" aria-label="Ouvrir le menu principal" aria-expanded="false" aria-controls="mainMenu"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <button class="ibtn" id="btnSearch" type="button" title="Search a location" aria-label="Search a location" aria-expanded="false"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg></button>
+  <button class="ibtn" id="btnAnnounce" type="button" title="Announcements" aria-label="Announcements"><svg class="ic" aria-hidden="true"><use href="#i-megaphone"/></svg></button>
+  <button class="ibtn" id="btnChat" type="button" title="Contact NASA Earthdata" aria-label="Contact"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg></button>
+  <button class="ibtn" id="burger" type="button" title="Open main menu" aria-label="Open main menu" aria-expanded="false" aria-controls="mainMenu"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
 </header>
 
 <main id="map" role="application" aria-label="Carte interactive des feux actifs" tabindex="-1"></main>
 
 <div class="quick" role="group" aria-label="Vues rapides">
-  <button type="button" data-go="cmr" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>Cameroun</button>
-  <button type="button" data-go="africa" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg>Afrique</button>
-  <button type="button" data-go="world" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Monde</button>
+  <button type="button" data-go="cmr" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>Cameroon</button>
+  <button type="button" data-go="africa" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg>Africa</button>
+  <button type="button" data-go="world" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>World</button>
 </div>
 
 <div class="hud">
   <details id="legend" open>
-    <summary>Couches affichées<svg class="ic" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <summary>Displayed layers<svg class="ic" aria-hidden="true"><use href="#i-down"/></svg></summary>
     <div class="legend-rows">
-      <div class="row"><span class="sw"><i style="width:14px;height:14px;background:#ff8a00;border:2px solid #d62500"></i></span>Hotspots thermiques VIIRS 375 m — anomalies détectées (rasters NASA GIBS)</div>
-      <div class="row"><span class="sw"><i style="width:14px;height:14px;background:#2ee6d0;opacity:.5"></i></span>Fonds : imagerie Esri, VIIRS vraies couleurs ou Blue Marble (NASA GIBS)</div>
-      <div class="row"><span class="sw"><i style="width:14px;height:10px;background:#cfe3ff;opacity:.7"></i></span>Fumées / aérosols : couche MODIS Terra (option du menu)</div>
-      <div class="row" style="margin-top:.4rem;color:var(--muted)">Ces couches NASA montrent les anomalies thermiques récentes (24–48 h). Les analyses PyroLens (2013–2020, Cameroun) sont dans les vues Aperçu, Calendrier et Qualité.</div>
+      <div class="row"><span class="sw"><i style="width:14px;height:14px;background:#ff8a00;border:2px solid #d62500"></i></span>VIIRS 375 m thermal hotspots — detected anomalies (NASA GIBS rasters)</div>
+      <div class="row"><span class="sw"><i style="width:14px;height:14px;background:#2ee6d0;opacity:.5"></i></span>Basemaps: Esri imagery, VIIRS true color or Blue Marble (NASA GIBS)</div>
+      <div class="row"><span class="sw"><i style="width:14px;height:10px;background:#cfe3ff;opacity:.7"></i></span>Smoke / aerosols: MODIS Terra layer (menu option)</div>
+      <div class="row" style="margin-top:.4rem;color:var(--muted)">These NASA layers show recent thermal anomalies (24–48 h). PyroLens analyses (2013–2020, Cameroon) are in the Overview, Calendar and Quality views.</div>
     </div>
   </details>
   <div id="bottombar">
-    <span id="coords">Survolez la carte pour les coordonnées</span>
-    <span id="dlGauge" title="Progression des téléchargements FIRMS"></span>
-    <span id="modeLabel">Source : …</span>
+    <span id="coords">Hover the map for coordinates</span>
+    <span id="dlGauge" title="FIRMS download progress"></span>
+    <span id="modeLabel">Source: …</span>
     <span>Imagerie : <span id="baseLabel">Esri World Imagery</span></span>
     <a href="https://firms.modaps.eosdis.nasa.gov/map/" target="_blank" rel="noopener">NASA FIRMS<svg class="ic" aria-hidden="true"><use href="#i-ext"/></svg></a>
   </div>
 </div>
 
 <nav id="dock" aria-label="Vues de l’application">
-  <button class="navbtn on" data-view="map" type="button" title="Retour à la carte" aria-current="true"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg><span class="lbl">Carte</span></button>
-  <button class="navbtn" data-view="overview" type="button" title="Aperçu des observations" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg><span class="lbl">Aperçu</span></button>
-  <button class="navbtn" data-view="calendar" type="button" title="Calendrier des feux" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg><span class="lbl">Calendrier</span></button>
-  <button class="navbtn" data-view="experiments" type="button" title="Expériences d'harmonisation" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg><span class="lbl">Expériences</span></button>
-  <button class="navbtn" data-view="data" type="button" title="Catalogue des données" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg><span class="lbl">Données</span></button>
-  <button class="navbtn" data-view="methodology" type="button" title="Méthodologie" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span class="lbl">Méthodologie</span></button>
-  <button class="navbtn" data-view="dq" type="button" title="Rapport de qualité des données" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span class="lbl">Qualité</span></button>
+  <button class="navbtn on" data-view="map" type="button" title="Back to the map" aria-current="true"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg><span class="lbl">Map</span></button>
+  <button class="navbtn" data-view="overview" type="button" title="Observations overview" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg><span class="lbl">Overview</span></button>
+  <button class="navbtn" data-view="calendar" type="button" title="Fire calendar" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg><span class="lbl">Calendar</span></button>
+  <button class="navbtn" data-view="experiments" type="button" title="Harmonization experiments" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg><span class="lbl">Experiments</span></button>
+  <button class="navbtn" data-view="data" type="button" title="Data catalogue" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg><span class="lbl">Data</span></button>
+  <button class="navbtn" data-view="methodology" type="button" title="Methodology" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg><span class="lbl">Methodology</span></button>
+  <button class="navbtn" data-view="dq" type="button" title="Data quality report" aria-current="false"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg><span class="lbl">Quality</span></button>
 </nav>
 
 <div id="mainMenu" role="dialog" aria-label="Menu principal de la carte">
@@ -489,80 +497,80 @@ path.perimeter:hover{fill-opacity:.62}
   <section id="overviewView" class="vw" aria-label="Aperçu des observations">
     <nav class="side" aria-label="Navigation">
       <div class="sbrand"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Pyro<b>Lens</b></span></div>
-      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Carte</button>
-      <button type="button" data-nav="overview" class="act"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Aperçu</button>
-      <button type="button" data-nav="calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendrier</button>
-      <button type="button" data-nav="experiments"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Expériences</button>
-      <button type="button" data-nav="data"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Données</button>
-      <button type="button" data-nav="methodology"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Méthodologie</button>
-      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Qualité</button>
+      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Map</button>
+      <button type="button" data-nav="overview" class="act"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Overview</button>
+      <button type="button" data-nav="calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendar</button>
+      <button type="button" data-nav="experiments"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Experiments</button>
+      <button type="button" data-nav="data"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Data</button>
+      <button type="button" data-nav="methodology"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Methodology</button>
+      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Quality</button>
     </nav>
     <div class="main">
-      <nav class="crumb" aria-label="Fil d’Ariane"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><span class="who">Aperçu</span></nav>
+      <nav class="crumb" aria-label="Breadcrumb"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><span class="who">Aperçu</span></nav>
       <div class="content" id="overviewBody"><p class="empty">Chargement des artefacts du pipeline…</p></div>
     </div>
   </section>
   <section id="calView" class="vw" aria-label="Calendrier des feux">
     <nav class="side" aria-label="Navigation">
       <div class="sbrand"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Pyro<b>Lens</b></span></div>
-      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Carte</button>
-      <button type="button" data-nav="overview"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Aperçu</button>
-      <button type="button" data-nav="calendar" class="act"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendrier</button>
-      <button type="button" data-nav="experiments"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Expériences</button>
-      <button type="button" data-nav="data"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Données</button>
-      <button type="button" data-nav="methodology"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Méthodologie</button>
-      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Qualité</button>
+      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Map</button>
+      <button type="button" data-nav="overview"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Overview</button>
+      <button type="button" data-nav="calendar" class="act"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendar</button>
+      <button type="button" data-nav="experiments"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Experiments</button>
+      <button type="button" data-nav="data"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Data</button>
+      <button type="button" data-nav="methodology"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Methodology</button>
+      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Quality</button>
     </nav>
     <div class="main">
-      <nav class="crumb" aria-label="Fil d’Ariane"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><span class="who">Calendrier des feux</span></nav>
+      <nav class="crumb" aria-label="Breadcrumb"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><span class="who">Calendrier des feux</span></nav>
       <div class="content" id="calBody"><p class="empty">Chargement des artefacts du pipeline…</p></div>
     </div>
   </section>
   <section id="experimentsView" class="vw" aria-label="Expériences d'harmonisation">
     <nav class="side" aria-label="Navigation">
       <div class="sbrand"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Pyro<b>Lens</b></span></div>
-      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Carte</button>
-      <button type="button" data-nav="overview"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Aperçu</button>
-      <button type="button" data-nav="calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendrier</button>
-      <button type="button" data-nav="experiments" class="act"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Expériences</button>
-      <button type="button" data-nav="data"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Données</button>
-      <button type="button" data-nav="methodology"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Méthodologie</button>
-      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Qualité</button>
+      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Map</button>
+      <button type="button" data-nav="overview"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Overview</button>
+      <button type="button" data-nav="calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendar</button>
+      <button type="button" data-nav="experiments" class="act"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Experiments</button>
+      <button type="button" data-nav="data"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Data</button>
+      <button type="button" data-nav="methodology"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Methodology</button>
+      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Quality</button>
     </nav>
     <div class="main">
-      <nav class="crumb" aria-label="Fil d’Ariane"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><button id="crExp" type="button">Expériences</button><span id="crJob"></span><span class="sp"></span><span class="who">Harmonization Lab</span></nav>
+      <nav class="crumb" aria-label="Breadcrumb"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><button id="crExp" type="button">Experiments</button><span id="crJob"></span><span class="sp"></span><span class="who">Harmonization Lab</span></nav>
       <div class="content" id="expBody"></div>
     </div>
   </section>
   <section id="dataView" class="vw" aria-label="Catalogue des données">
     <nav class="side" aria-label="Navigation">
       <div class="sbrand"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Pyro<b>Lens</b></span></div>
-      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Carte</button>
-      <button type="button" data-nav="overview"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Aperçu</button>
-      <button type="button" data-nav="calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendrier</button>
-      <button type="button" data-nav="experiments"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Expériences</button>
-      <button type="button" data-nav="data" class="act"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Données</button>
-      <button type="button" data-nav="methodology"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Méthodologie</button>
-      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Qualité</button>
+      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Map</button>
+      <button type="button" data-nav="overview"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Overview</button>
+      <button type="button" data-nav="calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendar</button>
+      <button type="button" data-nav="experiments"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Experiments</button>
+      <button type="button" data-nav="data" class="act"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Data</button>
+      <button type="button" data-nav="methodology"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Methodology</button>
+      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Quality</button>
     </nav>
     <div class="main">
-      <nav class="crumb" aria-label="Fil d’Ariane"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><button id="crData" type="button">Données</button><span id="crDs"></span><span class="sp"></span><span class="who">Catalogue</span></nav>
+      <nav class="crumb" aria-label="Breadcrumb"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><button id="crData" type="button">Data</button><span id="crDs"></span><span class="sp"></span><span class="who">Catalogue</span></nav>
       <div class="content" id="dataBody"></div>
     </div>
   </section>
   <section id="methodologyView" class="vw" aria-label="Méthodologie">
     <nav class="side" aria-label="Navigation">
       <div class="sbrand"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg><span>Pyro<b>Lens</b></span></div>
-      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Carte</button>
-      <button type="button" data-nav="overview"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Aperçu</button>
-      <button type="button" data-nav="calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendrier</button>
-      <button type="button" data-nav="experiments"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Expériences</button>
-      <button type="button" data-nav="data"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Données</button>
-      <button type="button" data-nav="methodology" class="act"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Méthodologie</button>
-      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Qualité</button>
+      <button type="button" data-nav="map"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg>Map</button>
+      <button type="button" data-nav="overview"><svg class="ic" aria-hidden="true"><use href="#i-target"/></svg>Overview</button>
+      <button type="button" data-nav="calendar"><svg class="ic" aria-hidden="true"><use href="#i-cal"/></svg>Calendar</button>
+      <button type="button" data-nav="experiments"><svg class="ic" aria-hidden="true"><use href="#i-cpu"/></svg>Experiments</button>
+      <button type="button" data-nav="data"><svg class="ic" aria-hidden="true"><use href="#i-checks"/></svg>Data</button>
+      <button type="button" data-nav="methodology" class="act"><svg class="ic" aria-hidden="true"><use href="#i-text"/></svg>Methodology</button>
+      <button type="button" data-nav="dq"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Quality</button>
     </nav>
     <div class="main">
-      <nav class="crumb" aria-label="Fil d’Ariane"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><span class="who">Méthodologie</span></nav>
+      <nav class="crumb" aria-label="Breadcrumb"><span>PyroLens</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg><span class="who">Méthodologie</span></nav>
       <div class="content" id="methBody"><p class="empty">Chargement…</p></div>
     </div>
   </section>
@@ -591,7 +599,7 @@ path.perimeter:hover{fill-opacity:.62}
 const $ = s => document.querySelector(s);
 const ico = (n, c='') => `<svg class="ic ${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt = (n, d=0) => (n===null||n===undefined||Number.isNaN(+n)) ? '—' : Number(n).toLocaleString('fr-FR',{maximumFractionDigits:d});
+const fmt = (n, d=0) => (n===null||n===undefined||Number.isNaN(+n)) ? '—' : Number(n).toLocaleString('en-US',{maximumFractionDigits:d});
 const p2 = n => String(n).padStart(2,'0');
 const fdt = iso => { if(!iso) return '—'; const d=new Date(iso); return isNaN(d)?String(iso):`${p2(d.getDate())}/${p2(d.getMonth()+1)}/${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}`; };
 const PAIR_LABELS = {'terra__aqua':'Terra – Aqua (MODIS)','aqua__viirs_snpp':'Aqua (MODIS) – VIIRS S-NPP','terra__viirs_snpp':'Terra (MODIS) – VIIRS S-NPP'};
@@ -1053,7 +1061,7 @@ async function renderZoneCalendar(el){
    ========================================================= */
 const exp = { view:'list', jobId:null, form:{pair:'terra__aqua',grid_deg:0.25,window_days:8,source:'auto'}, step:1 };
 const EXP_PAIRS = ['terra__aqua','aqua__viirs_snpp','terra__viirs_snpp'];
-const GRIDS=[0.1,0.25,0.5], WINDOWS=[1,4,8,16], SOURCES=[['auto','Auto (réel sinon fixture)'],['fixture','Fixture synthétique'],['raw','FIRMS brutes']];
+const GRIDS=[0.1,0.25,0.5], WINDOWS=[1,4,8,16], SOURCES=[['auto','Auto (real if available)'],['fixture','Synthetic fixture'],['raw','Raw FIRMS']];
 const stBadge = s => ({queued:'PENDING',running:'RUNNING',succeeded:'COMPLETED',failed:'FAILED',cancelled:'FAILED'})[s]||'PENDING';
 
 async function renderExperiments(){
@@ -1067,50 +1075,50 @@ async function renderExperiments(){
 }
 async function renderExpList(el){
   exp.view='list';
-  el.innerHTML='<h2>Expériences d\'harmonisation</h2><small>Comparaisons paire × maille × fenêtre sur la source configurée. Le Jaccard mesure le recouvrement des détections — pas la précision.</small><p class="empty">Chargement…</p>';
-  let items=[]; try{ const r=await apiGet('/experiments'); items=r.items||[]; }catch(e){ el.innerHTML=`<h2>Expériences</h2><p class="empty">API injoignable : ${esc(e.message)}</p>`; return; }
+  el.innerHTML='<h2>Harmonization experiments</h2><small>Pair × grid × window comparisons on the configured source. Jaccard measures detection overlap — not accuracy.</small><p class="empty">Loading…</p>';
+  let items=[]; try{ const r=await apiGet('/experiments'); items=r.items||[]; }catch(e){ el.innerHTML=`<h2>Experiments</h2><p class="empty">API unreachable: ${esc(e.message)}</p>`; return; }
   items.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
   el.innerHTML=`
-    <h2>Expériences d'harmonisation</h2>
-    <small>${items.length} tâche(s) connue(s) · statuts : queued → running → succeeded / failed</small>
-    <div style="margin:.8rem 0"><button class="btn" id="expNew">${ico('cpu')} Nouvelle expérience</button></div>
-    ${items.length?`<table class="jl"><thead><tr><th>Tâche</th><th>Paire</th><th>Maille</th><th>Fenêtre</th><th>Source</th><th>Statut</th><th>Créée</th></tr></thead><tbody>
-      ${items.map(j=>{const p=j.params||{};return `<tr data-job="${esc(j.job_id)}" tabindex="0"><td class="mono">${esc(j.job_id.slice(0,8))}</td><td>${esc(pairLabel(p.pair||j.kind))}</td><td>${fmt(p.grid_deg,2)}°</td><td>${p.window_days??'—'} j</td><td>${esc(p.source||'—')}</td><td><span class="badge ${stBadge(j.status)}">${esc(j.status)}</span></td><td>${esc(fdt(j.created_at))}</td></tr>`}).join('')}
-    </tbody></table>`:`<p class="empty">Aucune expérience pour l'instant — lancez-en une pour comparer deux capteurs.</p>`}`;
+    <h2>Harmonization experiments</h2>
+    <small>${items.length} known task(s) · statuses: queued → running → succeeded / failed</small>
+    <div style="margin:.8rem 0"><button class="btn" id="expNew">${ico('cpu')} New experiment</button></div>
+    ${items.length?`<table class="jl"><thead><tr><th>Task</th><th>Pair</th><th>Grid</th><th>Window</th><th>Source</th><th>Status</th><th>Created</th></tr></thead><tbody>
+      ${items.map(j=>{const p=j.params||{};return `<tr data-job="${esc(j.job_id)}" tabindex="0"><td class="mono">${esc(j.job_id.slice(0,8))}</td><td>${esc(pairLabel(p.pair||j.kind))}</td><td>${fmt(p.grid_deg,2)}°</td><td>${p.window_days??'—'} d</td><td>${esc(p.source||'—')}</td><td><span class="badge ${stBadge(j.status)}">${esc(j.status)}</span></td><td>${esc(fdt(j.created_at))}</td></tr>`}).join('')}
+    </tbody></table>`:`<p class="empty">No experiments yet — run one to compare two sensors.</p>`}`;
   $('#expNew').onclick=()=>{ exp.view='form'; exp.step=1; renderExperiments(); };
   el.querySelectorAll('tr[data-job]').forEach(tr=>{ const go=()=>{exp.view='detail';exp.jobId=tr.dataset.job;renderExperiments()}; tr.onclick=go; tr.onkeydown=e=>{if(e.key==='Enter')go()}; });
 }
 function renderExpForm(el){
   const f=exp.form, step=exp.step;
-  const steps=['Paire','Configuration','Source','Récapitulatif'];
+  const steps=['Pair','Configuration','Source','Summary'];
   const pairOpts = EXP_PAIRS.map(p=>`<option value="${p}" ${f.pair===p?'selected':''}>${esc(pairLabel(p))}</option>`).join('');
   let body='';
-  if(step===1) body=`<label class="fl">Paire de capteurs<select id="fPair">${pairOpts}</select></label>
-    <p class="legend-note">La comparaison mesure le recouvrement des détections MODIS/VIIRS sur les cellules du Cameroun.</p>`;
+  if(step===1) body=`<label class="fl">Sensor pair<select id="fPair">${pairOpts}</select></label>
+    <p class="legend-note">The comparison measures MODIS/VIIRS detection overlap on Cameroon grid cells.</p>`;
   if(step===2) body=`<div class="fgrid">
-    <label class="fl">Maille spatiale<select id="fGrid">${GRIDS.map(g=>`<option value="${g}" ${f.grid_deg===g?'selected':''}>${g}° (~${Math.round(g*111)} km)</option>`).join('')}</select></label>
-    <label class="fl">Fenêtre temporelle<select id="fWin">${WINDOWS.map(w=>`<option value="${w}" ${f.window_days===w?'selected':''}>${w} jour(s)</option>`).join('')}</select></label></div>
-    <p class="legend-note">Clé d'ensemble : (cellule, date) ou (cellule, fenêtre) selon la fenêtre.</p>`;
-  if(step===3) body=`<label class="fl">Source des données<select id="fSrc">${SOURCES.map(([v,l])=>`<option value="${v}" ${f.source===v?'selected':''}>${esc(l)}</option>`).join('')}</select></label>
-    <p class="legend-note"><b>auto</b> : données réelles si disponibles, sinon fixture. <b>fixture</b> : synthétique (étiqueté). <b>raw</b> : FIRMS normalisées.</p>`;
+    <label class="fl">Spatial grid<select id="fGrid">${GRIDS.map(g=>`<option value="${g}" ${f.grid_deg===g?'selected':''}>${g}° (~${Math.round(g*111)} km)</option>`).join('')}</select></label>
+    <label class="fl">Temporal window<select id="fWin">${WINDOWS.map(w=>`<option value="${w}" ${f.window_days===w?'selected':''}>${w} day(s)</option>`).join('')}</select></label></div>
+    <p class="legend-note">Set key: (cell, date) or (cell, window) depending on the window.</p>`;
+  if(step===3) body=`<label class="fl">Data source<select id="fSrc">${SOURCES.map(([v,l])=>`<option value="${v}" ${f.source===v?'selected':''}>${esc(l)}</option>`).join('')}</select></label>
+    <p class="legend-note"><b>auto</b>: real data when available, otherwise fixture. <b>fixture</b>: synthetic (labelled). <b>raw</b>: normalized FIRMS.</p>`;
   if(step===4) body=`<table class="dt"><tbody>
-    <tr><td>Paire</td><td>${esc(pairLabel(f.pair))}</td></tr><tr><td>Maille</td><td>${f.grid_deg}°</td></tr>
-    <tr><td>Fenêtre</td><td>${f.window_days} jour(s)</td></tr><tr><td>Source</td><td>${esc((SOURCES.find(s=>s[0]===f.source)||[])[1]||f.source)}</td></tr></tbody></table>
-    <p class="legend-note" style="margin-top:.6rem">L'expérience tourne en arrière-plan ; le résultat (Jaccard mensuel, top cellules) sera disponible au suivi.</p>`;
+    <tr><td>Pair</td><td>${esc(pairLabel(f.pair))}</td></tr><tr><td>Grid</td><td>${f.grid_deg}°</td></tr>
+    <tr><td>Window</td><td>${f.window_days} day(s)</td></tr><tr><td>Source</td><td>${esc((SOURCES.find(s=>s[0]===f.source)||[])[1]||f.source)}</td></tr></tbody></table>
+    <p class="legend-note" style="margin-top:.6rem">The experiment runs in the background; the result (monthly Jaccard, top cells) will appear in the tracking view.</p>`;
   el.innerHTML=`
-    <button class="btn-back" id="expBack">${ico('back')}Retour aux expériences</button>
-    <div class="jtitle"><div><h2>Nouvelle expérience</h2><small>Étape ${step}/4 — ${steps[step-1]}</small></div></div>
+    <button class="btn-back" id="expBack">${ico('back')}Back to experiments</button>
+    <div class="jtitle"><div><h2>New experiment</h2><small>Step ${step}/4 — ${steps[step-1]}</small></div></div>
     <div class="controls" style="margin-top:1rem">${steps.map((s,i)=>`<span class="badge ${i<step?'COMPLETED':i===step-1?'RUNNING':'PENDING'}" style="opacity:${i<step-1?'.55':'1'}">${i+1}. ${s}</span>`).join('')}</div>
     <div class="detail" style="margin-top:1rem">${body}</div>
     <div style="display:flex;gap:.6rem;margin-top:1rem">
-      ${step>1?'<button class="btn ghost" id="expPrev">← Précédent</button>':''}
-      ${step<4?'<button class="btn" id="expNext">Suivant →</button>':'<button class="btn" id="expGo">Lancer l\'expérience</button>'}
+      ${step>1?'<button class="btn ghost" id="expPrev">← Previous</button>':''}
+      ${step<4?'<button class="btn" id="expNext">Next →</button>':'<button class="btn" id="expGo">Run experiment</button>'}
     </div>`;
   $('#expBack').onclick=()=>{exp.view='list';renderExperiments()};
   const bind=(id,key)=>{const n=$('#'+id); if(n) n.onchange=()=>{exp.form[key]=key==='grid_deg'?+n.value:key==='window_days'?+n.value:n.value;};};
   bind('fPair','pair');bind('fGrid','grid_deg');bind('fWin','window_days');bind('fSrc','source');
   const prev=$('#expPrev'); if(prev) prev.onclick=()=>{exp.step--;renderExperiments()};
-  const next=$('#expNext'); if(next) next.onclick=()=>{ if(step===1&&!$('#fPair').checkValidity()){toast('Choisissez une paire');return;} exp.step++; renderExperiments(); };
+  const next=$('#expNext'); if(next) next.onclick=()=>{ if(step===1&&!$('#fPair').checkValidity()){toast('Choose a pair');return;} exp.step++; renderExperiments(); };
   const go=$('#expGo'); if(go) go.onclick=async()=>{
     go.disabled=true; go.textContent='Lancement…';
     try{
@@ -1120,15 +1128,15 @@ function renderExpForm(el){
   };
 }
 async function renderExpDetail(el, jobId){
-  el.innerHTML='<p class="empty">Chargement de la tâche…</p>';
-  let job; try{ job=await apiGet(`/experiments/${jobId}`); }catch(e){ el.innerHTML=`<button class="btn-back" id="expBack2">${ico('back')}Retour</button><p class="empty">Tâche introuvable : ${esc(e.message)}</p>`; $('#expBack2').onclick=()=>{exp.view='list';renderExperiments()}; return; }
+  el.innerHTML='<p class="empty">Loading task…</p>';
+  let job; try{ job=await apiGet(`/experiments/${jobId}`); }catch(e){ el.innerHTML=`<button class="btn-back" id="expBack2">${ico('back')}Back</button><p class="empty">Task not found: ${esc(e.message)}</p>`; $('#expBack2').onclick=()=>{exp.view='list';renderExperiments()}; return; }
   const p=job.params||{};
   $('#crJob').textContent=' › '+jobId.slice(0,8);
-  const rows=[['Tâche',`<span class="mono">${esc(jobId)}</span>`],['Type',esc(job.kind||'harmonisation')],['Paire',esc(pairLabel(p.pair))],['Maille',`${fmt(p.grid_deg,2)}°`],['Fenêtre',`${p.window_days??'—'} jour(s)`],['Source',esc(p.source||'—')],['Créée',esc(fdt(job.created_at))],['Démarrée',esc(fdt(job.started_at))],['Terminée',esc(fdt(job.finished_at))]];
-  if(job.error) rows.push(['Erreur',`<span style="color:var(--bad)">${esc(job.error)}</span>`]);
+  const rows=[['Task',`<span class="mono">${esc(jobId)}</span>`],['Type',esc(job.kind||'harmonization')],['Pair',esc(pairLabel(p.pair))],['Grid',`${fmt(p.grid_deg,2)}°`],['Window',`${p.window_days??'—'} day(s)`],['Source',esc(p.source||'—')],['Created',esc(fdt(job.created_at))],['Started',esc(fdt(job.started_at))],['Finished',esc(fdt(job.finished_at))]];
+  if(job.error) rows.push(['Error',`<span style="color:var(--bad)">${esc(job.error)}</span>`]);
   el.innerHTML=`
-    <button class="btn-back" id="expBack2">${ico('back')}Retour aux expériences</button>
-    <div class="jtitle"><div><h2>Expérience ${esc(jobId.slice(0,8))}</h2><small>${esc(pairLabel(p.pair))} · ${fmt(p.grid_deg,2)}° · ${p.window_days??'—'} j · ${esc(p.source||'')}</small></div><span class="badge ${stBadge(job.status)}">${esc(job.status)}</span></div>
+    <button class="btn-back" id="expBack2">${ico('back')}Back to experiments</button>
+    <div class="jtitle"><div><h2>Experiment ${esc(jobId.slice(0,8))}</h2><small>${esc(pairLabel(p.pair))} · ${fmt(p.grid_deg,2)}° · ${p.window_days??'—'} d · ${esc(p.source||'')}</small></div><span class="badge ${stBadge(job.status)}">${esc(job.status)}</span></div>
     <div id="expResult"></div>
     <table class="dt" style="margin-top:1rem"><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</tbody></table>`;
   $('#expBack2').onclick=()=>{exp.view='list';exp.jobId=null;clearInterval(expTimer);renderExperiments()};
@@ -1143,34 +1151,34 @@ async function renderExpDetail(el, jobId){
         const src=inner.source||{};
         $('#expResult').innerHTML=`
           <div class="cards" style="margin-top:1rem">
-            <div class="card"><div class="k">Jaccard moyen</div><div class="v">${fmt(rr.jaccard_mean??rr.jaccard??monthly.length?monthly.reduce((a,m)=>a+(m.jaccard||0),0)/Math.max(1,monthly.length):null,3)}</div><div class="d">recouvrement — pas précision</div></div>
-            <div class="card"><div class="k">Lignes source</div><div class="v">${fmt(src.n_rows_loaded)}</div><div class="d">${fmt(src.n_files)} fichier(s)</div></div>
-            <div class="card"><div class="k">Durée</div><div class="v">${inner.elapsed_s!=null?fmt(inner.elapsed_s,1)+' s':'—'}</div><div class="d">${esc(inner.data_origin||'')}</div></div>
+            <div class="card"><div class="k">${rr.jaccard!=null?'Jaccard (aggregate)':'Mean Jaccard (monthly)'}</div><div class="v">${fmt((rr.jaccard ?? rr.jaccard_mean ?? (monthly.length ? monthly.reduce((a,m)=>a+(m.jaccard||0),0)/Math.max(1,monthly.length) : null)),3)}</div><div class="d">overlap — not accuracy</div></div>
+            <div class="card"><div class="k">Source rows</div><div class="v">${fmt(src.n_rows_loaded)}</div><div class="d">${fmt(src.n_files)} file(s)</div></div>
+            <div class="card"><div class="k">Elapsed</div><div class="v">${inner.elapsed_s!=null?fmt(inner.elapsed_s,1)+' s':'—'}</div><div class="d">${esc(inner.data_origin||'')}</div></div>
           </div>
           ${inner.warning?`<div class="banner warn">${esc(inner.warning)}</div>`:''}
-          ${monthly.length?`<div class="chart-box"><h3>Divergences mensuelles (a_only / b_only / both)</h3><canvas id="expChart"></canvas>
-            <table class="dt" style="margin-top:.6rem"><thead><tr><th>Mois</th><th>A seul</th><th>B seul</th><th>Commun</th><th>Jaccard</th></tr></thead><tbody>
+          ${monthly.length?`<div class="chart-box"><h3>Monthly divergences (A only / B only / Common)</h3><canvas id="expChart"></canvas>
+            <table class="dt" style="margin-top:.6rem"><thead><tr><th>Month</th><th>A only</th><th>B only</th><th>Common</th><th>Jaccard</th></tr></thead><tbody>
             ${monthly.slice(-24).map(m=>`<tr><td>${esc(m.month)}</td><td>${fmt(m.only_a)}</td><td>${fmt(m.only_b)}</td><td>${fmt(m.common)}</td><td>${fmt(m.jaccard,3)}</td></tr>`).join('')}</tbody></table></div>`:''}
-          ${spatial.length?`<div class="chart-box"><h3>Cellules les plus divergentes</h3>
-            <table class="dt"><thead><tr><th>Cellule</th><th>A</th><th>B</th></tr></thead><tbody>
+          ${spatial.length?`<div class="chart-box"><h3>Most divergent cells</h3>
+            <table class="dt"><thead><tr><th>Cell</th><th>A</th><th>B</th></tr></thead><tbody>
             ${spatial.slice(0,15).map(c=>`<tr><td class="mono">${esc(c.cell)}</td><td>${fmt(c.a)}</td><td>${fmt(c.b)}</td></tr>`).join('')}</tbody></table></div>`:''}
           <div style="display:flex;gap:.6rem;margin-top:.8rem">
             <button class="btn ghost" id="expCsv">${ico('download')} Export CSV</button>
             <button class="btn ghost" id="expJson">${ico('download')} Export JSON</button>
           </div>`;
-        setTimeout(()=>{const cv=$('#expChart'); if(cv) drawLines(cv,{labels:monthly.slice(-36).map(m=>m.month),series:[{name:'A seul',values:monthly.slice(-36).map(m=>m.only_a)},{name:'B seul',values:monthly.slice(-36).map(m=>m.only_b)},{name:'Commun',values:monthly.slice(-36).map(m=>m.common)}]});},30);
+        setTimeout(()=>{const cv=$('#expChart'); if(cv) drawLines(cv,{labels:monthly.slice(-36).map(m=>m.month),series:[{name:'A only',values:monthly.slice(-36).map(m=>m.only_a)},{name:'B only',values:monthly.slice(-36).map(m=>m.only_b)},{name:'Common',values:monthly.slice(-36).map(m=>m.common)}]});},30);
         const dl=(content,type,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();};
         $('#expCsv').onclick=()=>{const rows=monthly.length?monthly:spatial; const head=rows.length?Object.keys(rows[0]):[]; const csv=[head.join(','),...rows.map(r=>head.map(h=>{const v=r[h];return /[",\n]/.test(String(v??''))?`"${String(v).replace(/"/g,'""')}"`:v??''}).join(','))].join('\n'); dl(csv,'text/csv',`exp_${jobId.slice(0,8)}.csv`);};
         $('#expJson').onclick=()=>dl(JSON.stringify(res,null,2),'application/json',`exp_${jobId.slice(0,8)}.json`);
-      }catch(e){ $('#expResult').innerHTML=`<div class="banner warn">Résultat illisible : ${esc(e.message)}</div>`; }
+      }catch(e){ $('#expResult').innerHTML=`<div class="banner warn">Unreadable result: ${esc(e.message)}</div>`; }
       return;
     }
     if(job.status==='failed'){
       clearInterval(expTimer);
-      $('#expResult').innerHTML=`<div class="banner warn"><b>Échec :</b> ${esc(job.error||'erreur inconnue')}</div>`;
+      $('#expResult').innerHTML=`<div class="banner warn"><b>Failed:</b> ${esc(job.error||'unknown error')}</div>`;
       return;
     }
-    $('#expResult').innerHTML=`<div class="banner info">Tâche <b>${esc(job.status)}</b> — actualisation automatique…</div>`;
+    $('#expResult').innerHTML=`<div class="banner info">Task <b>${esc(job.status)}</b> — auto-refresh…</div>`;
   };
   await paintResult();
   if(['queued','running'].includes(job.status)) expTimer=setInterval(async()=>{ try{ job=await apiGet(`/experiments/${jobId}`); await paintResult(); }catch(e){} },3000);

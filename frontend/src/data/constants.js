@@ -8,10 +8,10 @@
  */
 
 export const RISK_LEVELS = [
-  { min: 0.0, label: "Faible", color: "#FFC83D" },
-  { min: 0.3, label: "Modéré", color: "#FF8A00" },
-  { min: 0.6, label: "Élevé",  color: "#F2541B" },
-  { min: 0.8, label: "Critique", color: "#A4201B" },
+  { min: 0.0, label: "Low", color: "#FFC83D" },
+  { min: 0.3, label: "Moderate", color: "#FF8A00" },
+  { min: 0.6, label: "High",  color: "#F2541B" },
+  { min: 0.8, label: "Critical", color: "#A4201B" },
 ];
 
 export const RISK_GRID = 0.25; // degrés

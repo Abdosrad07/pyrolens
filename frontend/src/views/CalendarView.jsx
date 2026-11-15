@@ -69,7 +69,7 @@ export default function CalendarView({ onBack }) {
     <div className="content">
       {onBack && (
         <button className="btn-back" type="button" onClick={onBack} style={{ marginBottom: "0.8rem" }}>
-          ← {t("common.backToMap", "Retour à la carte")}
+          {t("common.backToMap", "← Back to map")}
         </button>
       )}
       <h2>{t("calendar.title", "Calendrier des feux")}</h2>

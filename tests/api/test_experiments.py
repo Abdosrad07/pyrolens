@@ -65,7 +65,7 @@ def test_experiment_runs_and_reports_provenance(fixture_client, fixture_dir, wai
     assert payload["result"]["monthly"]
     assert all(0.0 <= m["jaccard"] <= 1.0 for m in payload["result"]["monthly"])
     # Avertissement d'interprétation porté par le résultat
-    assert "précision" in payload["warning"]
+    assert "accuracy" in payload["warning"]
 
 
 def test_experiment_result_persisted_on_disk(fixture_client, wait_job):

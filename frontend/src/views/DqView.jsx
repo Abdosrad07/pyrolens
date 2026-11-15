@@ -11,7 +11,8 @@ import { useI18n } from "../i18n/index.jsx";
 const PAGE = 15;
 
 export default function DqView({ onClose }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const loc = lang === "en" ? "en-US" : "fr-FR";
   const [audit, setAudit] = useState(null);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
@@ -30,7 +31,7 @@ export default function DqView({ onClose }) {
           <h3>{t("dq.title")}</h3>
           <button className="ibtn" type="button" aria-label="Fermer" onClick={onClose}>✕</button>
         </div>
-        <div className="banner err">Artefact audit.json indisponible : {error}</div>
+        <div className="banner err">{t("dq.artifactError", "audit.json artifact unavailable:")} {error}</div>
       </div>
     );
   if (!audit)
@@ -54,80 +55,83 @@ export default function DqView({ onClose }) {
   return (
     <div className="dq-card">
       <div className="dq-top">
-        <h3>Rapport de qualité des données</h3>
-        <button className="ibtn" type="button" aria-label="Fermer le rapport" onClick={onClose}>
+        <h3>{t("dq.title", "Data quality report")}</h3>
+        <button className="ibtn" type="button" aria-label={t("dq.close", "Close report")} onClick={onClose}>
           ✕
         </button>
       </div>
       <div className="dq-meta">
-        {audit.n_files} fichiers · origine {audit.data_origin} · généré le{" "}
-        {audit.generated_at ? new Date(audit.generated_at).toLocaleString("fr-FR") : "?"}
+        {t("dq.meta", "{n} files · origin {origin} · generated {date}", {
+          n: Number(audit.n_files).toLocaleString(loc),
+          origin: audit.data_origin,
+          date: audit.generated_at ? new Date(audit.generated_at).toLocaleString(loc) : "?",
+        })}
       </div>
 
       {audit.interpretation_warning && (
         <div className="banner warn" style={{ margin: "0.8rem 0" }}>
-          {audit.interpretation_warning}
+          {t("dq.warning", audit.interpretation_warning)}
         </div>
       )}
 
       <div className="cards" style={{ margin: "1rem 0" }}>
         <div className="card">
-          <div className="k">Fichiers audités</div>
+          <div className="k">{t("dq.cards.files", "Files audited")}</div>
           <div className="v">{audit.n_files}</div>
           <div className="u">{audit.data_origin}</div>
         </div>
         <div className="card">
-          <div className="k">Anomalies</div>
-          <div className="v">{Object.values(anomalies).reduce((a, b) => a + b, 0).toLocaleString("fr-FR")}</div>
-          <div className="u">{Object.keys(anomalies).join(", ") || "aucune"}</div>
+          <div className="k">{t("dq.cards.anomalies", "Anomalies")}</div>
+          <div className="v">{Object.values(anomalies).reduce((a, b) => a + b, 0).toLocaleString(loc)}</div>
+          <div className="u">{Object.keys(anomalies).join(", ") || t("dq.noneAnomaly", "none")}</div>
         </div>
         <div className="card">
-          <div className="k">Lignes classifiées</div>
-          <div className="v">{Object.entries(classes).map(([k, v]) => `${k}: ${v.toLocaleString("fr-FR")}`).join(" · ") || "—"}</div>
-          <div className="u">classification rigoureuse</div>
+          <div className="k">{t("dq.cards.rows", "Classified rows")}</div>
+          <div className="v">{Object.entries(classes).map(([k, v]) => `${k}: ${v.toLocaleString(loc)}`).join(" · ") || "—"}</div>
+          <div className="u">{t("dq.cards.rowsUnit", "rigorous classification")}</div>
         </div>
         <div className="card">
-          <div className="k">Jours sans enregistrement</div>
+          <div className="k">{t("dq.cards.gaps", "Days without records")}</div>
           <div className="v">{audit.temporal_gaps?.n_entries ?? 0}</div>
-          <div className="u">trous temporels capteurs</div>
+          <div className="u">{t("dq.cards.gapsUnit", "sensor temporal gaps")}</div>
         </div>
       </div>
 
-      <h4 style={{ margin: "1rem 0 0.4rem" }}>Anomalies par catégorie</h4>
+      <h4 style={{ margin: "1rem 0 0.4rem" }}>{t("dq.sections.anomalies", "Anomalies by category")}</h4>
       <table className="dt">
-        <thead><tr><th>Catégorie</th><th>Nombre</th></tr></thead>
+        <thead><tr><th>{t("dq.th.category", "Category")}</th><th>{t("dq.th.count", "Count")}</th></tr></thead>
         <tbody>
           {Object.entries(anomalies).map(([k, v]) => (
-            <tr key={k}><td><code>{k}</code></td><td>{v.toLocaleString("fr-FR")}</td></tr>
+            <tr key={k}><td><code>{k}</code></td><td>{v.toLocaleString(loc)}</td></tr>
           ))}
-          {!Object.keys(anomalies).length && <tr><td colSpan={2}>Aucune anomalie</td></tr>}
+          {!Object.keys(anomalies).length && <tr><td colSpan={2}>{t("dq.noneAnomaly", "No anomalies")}</td></tr>}
         </tbody>
       </table>
 
-      <h4 style={{ margin: "1rem 0 0.4rem" }}>Valeurs manquantes par colonne</h4>
+      <h4 style={{ margin: "1rem 0 0.4rem" }}>{t("dq.sections.missing", "Missing values by column")}</h4>
       <table className="dt">
-        <thead><tr><th>Colonne</th><th>Manquants</th></tr></thead>
+        <thead><tr><th>{t("dq.th.column", "Column")}</th><th>{t("dq.th.missing", "Missing")}</th></tr></thead>
         <tbody>
           {Object.entries(missing)
             .sort((a, b) => (b[1] || 0) - (a[1] || 0))
             .slice(0, 12)
             .map(([k, v]) => (
-              <tr key={k}><td><code>{k}</code></td><td>{(v || 0).toLocaleString("fr-FR")}</td></tr>
+              <tr key={k}><td><code>{k}</code></td><td>{(v || 0).toLocaleString(loc)}</td></tr>
             ))}
-          {!Object.keys(missing).length && <tr><td colSpan={2}>Aucune valeur manquante</td></tr>}
+          {!Object.keys(missing).length && <tr><td colSpan={2}>{t("dq.noneMissing", "No missing values")}</td></tr>}
         </tbody>
       </table>
 
-      <h4 style={{ margin: "1rem 0 0.4rem" }}>Trous temporels ({gaps.length})</h4>
+      <h4 style={{ margin: "1rem 0 0.4rem" }}>{t("dq.sections.gaps", "Temporal gaps ({n})", { n: gaps.length })}</h4>
       <div className="dq-scroll">
         <table className="dt">
-          <thead><tr><th>Capteur</th><th>Date</th><th>Interprétation</th></tr></thead>
+          <thead><tr><th>{t("dq.th.sensor", "Sensor")}</th><th>{t("dq.th.date", "Date")}</th><th>{t("dq.th.interpretation", "Interpretation")}</th></tr></thead>
           <tbody>
             {slice.map((g, i) => (
               <tr key={i}>
                 <td><code>{g.sensor}</code></td>
                 <td>{g.date}</td>
-                <td>{g.interpretation}</td>
+                <td>{t(`dq.interp.${g.interpretation}`, g.interpretation)}</td>
               </tr>
             ))}
           </tbody>
@@ -140,9 +144,9 @@ export default function DqView({ onClose }) {
           type="number"
           value={page}
           onChange={(e) => setPage(Math.max(1, parseInt(e.target.value) || 1))}
-          aria-label="Numéro de page"
+          aria-label={t("dq.pageLabel", "Page number")}
         />
-        <span>sur {totalPages} pages</span>
+        <span>{t("dq.pageOf", "of {n} pages", { n: totalPages })}</span>
         <button type="button" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>›</button>
         <button type="button" disabled={page >= totalPages} onClick={() => setPage(totalPages)}>»</button>
       </div>
