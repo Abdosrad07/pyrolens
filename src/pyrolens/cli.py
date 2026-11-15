@@ -101,7 +101,10 @@ def _source_dir(cfg: Config, source: Optional[str]) -> tuple[Path, str]:
         p = Path(source)
         if not p.is_absolute():
             p = PROJECT_ROOT / p
-        origin = "nasa_firms" if "raw" in p.parts else "synthetic_fixture"
+        if "archive" in p.parts:
+            origin = "firms_archive_sp"
+        else:
+            origin = "nasa_firms" if "raw" in p.parts else "synthetic_fixture"
         return p, origin
     raw_firms = cfg.path_of("raw") / "firms"
     if raw_firms.exists() and list(raw_firms.glob("*.csv")):
@@ -505,7 +508,8 @@ def predict(
 
     cfg = load_config()
     src_dir, origin = _source_dir(cfg, source)
-    csv_paths = sorted(src_dir.glob("*.csv"))
+    # rglob : --source accepte aussi un arbre (ex. data/raw/archive/{capteur}/)
+    csv_paths = sorted(src_dir.rglob("*.csv"))
     if not csv_paths:
         raise typer.BadParameter(f"Aucun CSV dans {src_dir}")
     ref = date.fromisoformat(reference_date) if reference_date else None

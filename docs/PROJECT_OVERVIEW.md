@@ -290,7 +290,15 @@ régénérable par `pyrolens predict` en ~10 min.
 
 ---
 
-## 8. L'assistant (`/api/v1/chat`)
+## 8bis. Guide collègue — entraînement local
+
+`docs/MODEL_TRAINING_COLLEAGUE.md` : setup, téléchargements (NRT >2020,
+archive pays sans clé), `pyrolens predict` et ses options, et les leviers
+pour rendre le modèle plus performant.
+
+---
+
+## 9. L'assistant (`/api/v1/chat`)
 
 Déterministe, **sans LLM** : `api/services/chat.py` détecte 8 intentions
 (prédiction, zone, historique, données, calendrier, jobs, qualité, aide)
