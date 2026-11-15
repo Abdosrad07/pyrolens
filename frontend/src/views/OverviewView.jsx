@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
+import MapView from "../components/MapView.jsx";
 import { CAM_BBOX, RISK_GRID } from "../data/constants.js";
 
 const MOCK_EXECUTION = {
@@ -79,8 +80,16 @@ export default function OverviewView() {
 
   return (
     <div className="content">
-      <h2>{t("overview.title", "Aperçu des observations")}</h2>
-      <small>{t("overview.subtitle", "Résumé synthétique du pipeline…")}</small>
+      {onBack && (
+        <button className="btn-back" type="button" onClick={onBack} style={{ marginBottom: "0.8rem" }}>
+          ← Retour à la carte
+        </button>
+      )}
+      <h2>Aperçu des observations</h2>
+      <small>
+        Résumé synthétique du pipeline de traitement. Données mockées si les artefacts
+        publics ne sont pas disponibles.
+      </small>
       <div className="cards">
         {cards.map((c, i) => (
           <div key={i} className="card">
@@ -110,10 +119,13 @@ export default function OverviewView() {
         </label>
       </div>
 
-      <div className="ov-map" style={{ height: "22rem", marginTop: "1rem", borderRadius: "var(--r-m)", overflow: "hidden", boxShadow: "0 0 0 1px var(--mist)" }}>
-        <div style={{ height: "100%", background: "#0B2E4A", display: "flex", alignItems: "center", justifyContent: "center", color: "#B9CCC6", fontSize: "0.875rem" }}>
-          {t("overview.overviewMap", "Carte d'aperçu (voir mode Carte pour la vue interactive)")}
-        </div>
+      <div className="ov-map" style={{ height: "22rem", marginTop: "1rem", borderRadius: "var(--r-m)", overflow: "hidden", boxShadow: "0 0 0 1px var(--mist)", position: "relative" }}>
+        <MapView
+          activeBase="esri"
+          showRisk={false}
+          riskThreshold={0}
+          riskData={null}
+        />
       </div>
 
       <div className="banner info" style={{ marginTop: "1.2rem" }}>

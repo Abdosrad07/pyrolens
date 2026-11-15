@@ -21,11 +21,11 @@ export default function CalendarView() {
 
   useEffect(() => {
     let alive = true;
-    api.fireCalendarDaily({ limit: 20000 })
+    fireCalendarDaily({ limit: 20000 })
       .then((j) => { if (alive) setRows(j.rows || []); })
       .catch((e) => { if (alive) setError(e.message); });
     return () => { alive = false; };
-  }, [api]);
+  }, [fireCalendarDaily]);
 
   const months = t("calendar.months");
   const dow = t("calendar.dow");

@@ -1518,7 +1518,7 @@ path.perimeter:hover {
   position: absolute;
   bottom: 6.5rem;
   left: max(1rem, env(safe-area-inset-left));
-  z-index: 900;
+  z-index: 1470; /* au-dessus des vues contenu (z 1300) et du dock (1450) */
   width: 3.2rem;
   height: 3.2rem;
   display: grid;
@@ -1573,7 +1573,7 @@ path.perimeter:hover {
   left: 0;
   bottom: 0;
   width: min(25rem, 100%);
-  z-index: 1060;
+  z-index: 1500; /* au-dessus des vues contenu (z 1300) — chatbot accessible partout */
   display: none;
   flex-direction: column;
   background: var(--ash);

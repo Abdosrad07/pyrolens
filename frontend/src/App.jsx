@@ -143,17 +143,17 @@ function InnerApp() {
 
       {view === "overview" && (
         <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
-          <OverviewView />
+          <OverviewView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
       {view === "calendar" && (
         <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
-          <CalendarView />
+          <CalendarView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
       {view === "jobs" && (
         <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
-          <JobsView onBack={() => setView("jobs")} />
+          <JobsView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
       {view === "dq" && (
