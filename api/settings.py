@@ -90,7 +90,7 @@ class Settings:
     max_jobs: int = 20
     # Si défini, les endpoints POST exigent « Authorization: Bearer <jeton> ».
     api_token: str | None = None
-    cors_origins: tuple[str, ...] = field(default_factory=tuple)
+    cors_origins: tuple[str, ...] = field(default_factory=lambda: ("http://localhost:5174", "http://localhost:5175", "http://localhost:5176", "http://localhost:5177", "http://127.0.0.1:5174", "http://127.0.0.1:5175", "http://127.0.0.1:5176", "http://127.0.0.1:5177"))
     # Clé FIRMS (usage serveur uniquement — jamais renvoyée au client).
     firms_map_key: str | None = None
     # Cache des CSV annuels FIRMS par pays (archive, sans clé).

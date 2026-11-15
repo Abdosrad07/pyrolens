@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 // PyroLens sur port 5174 pour ne pas entrer en conflit avec web/ (5173).
 // Le proxy /api relaye vers le backend FastAPI.
-const port = Number(process.env.PORT || 5174);
+const port = Number(process.env.PORT || 5176);
 const proxy = { "/api": { target: "", changeOrigin: true } };
 
 export default defineConfig(({ command, mode }) => {
@@ -13,6 +13,15 @@ export default defineConfig(({ command, mode }) => {
     env.VITE_API_ORIGIN ||
     process.env.VITE_API_ORIGIN ||
     "http://127.0.0.1:8010";
+
+  proxy["/api"].configure = (proxy, options) => {
+    proxy.on('error', (err, req, res) => {
+      console.log('proxy error', err);
+    });
+    proxy.on('proxyReq', (proxyReq, req, res) => {
+      console.log('proxying:', req.method, req.url, 'to', options.target);
+    });
+  };
 
   const apiBase =
     env.VITE_API_BASE ?? (command === "serve" ? "" : undefined);
