@@ -38,7 +38,10 @@ async function readArtifact(path, fallback) {
   }
 }
 
+import { useI18n } from "../i18n/index.jsx";
+
 export default function OverviewView() {
+  const { t } = useI18n();
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +61,7 @@ export default function OverviewView() {
     return () => { alive = false; };
   }, []);
 
-  if (loading) return <div className="content"><p className="empty">Chargement des artefacts du pipeline…</p></div>;
+  if (loading) return <div className="content"><p className="empty">{t("overview.loading", "Chargement des artefacts du pipeline…")}</p></div>;
 
   const { execution } = data;
   const period =
@@ -67,20 +70,17 @@ export default function OverviewView() {
       : "—";
 
   const cards = [
-    { k: "Période", v: period, u: "données MODIS/VIIRS" },
-    { k: "Satellites", v: data.baselines?.satellites ?? 2, u: "MODIS Terra, Aqua, VIIRS" },
-    { k: "Sites pilotes", v: data.baselines?.sites ?? 2, u: "Cameroun, etc." },
-    { k: "États observabilité", v: `${data.obs?.states?.green ?? 0} OK`, u: "vert / jaune / orange / rouge" },
-    { k: "Pipeline", v: execution?.project_version ?? "—", u: "version" },
+    { k: t("overview.cards.period", "Période"), v: period, u: t("overview.cards.unitPeriod") },
+    { k: t("overview.cards.satellites", "Satellites"), v: data.baselines?.satellites ?? 2, u: t("overview.cards.unitSatellites") },
+    { k: t("overview.cards.pilotSites", "Sites pilotes"), v: data.baselines?.sites ?? 2, u: t("overview.cards.unitSites") },
+    { k: t("overview.cards.obsStates", "États observabilité"), v: `${data.obs?.states?.green ?? 0} OK`, u: t("overview.cards.unitObs") },
+    { k: t("overview.cards.pipeline", "Pipeline"), v: execution?.project_version ?? "—", u: t("overview.cards.unitPipeline") },
   ];
 
   return (
     <div className="content">
-      <h2>Aperçu des observations</h2>
-      <small>
-        Résumé synthétique du pipeline de traitement. Données mockées si les artefacts
-        publics ne sont pas disponibles.
-      </small>
+      <h2>{t("overview.title", "Aperçu des observations")}</h2>
+      <small>{t("overview.subtitle", "Résumé synthétique du pipeline…")}</small>
       <div className="cards">
         {cards.map((c, i) => (
           <div key={i} className="card">
@@ -93,31 +93,31 @@ export default function OverviewView() {
 
       <div className="controls" style={{ marginTop: "1.5rem" }}>
         <label>
-          Satellite
+          {t("overview.satellite", "Satellite")}
           <select defaultValue="VIIRS">
-            <option>VIIRS SNPP</option>
-            <option>MODIS Terra</option>
-            <option>MODIS Aqua</option>
+            <option>{t("overview.satellitesOpt.viirs", "VIIRS SNPP")}</option>
+            <option>{t("overview.satellitesOpt.terra", "MODIS Terra")}</option>
+            <option>{t("overview.satellitesOpt.aqua", "MODIS Aqua")}</option>
           </select>
         </label>
         <label>
-          Date début
+          {t("overview.startDate", "Date début")}
           <input type="date" defaultValue={execution?.period_start?.slice(0, 10) || ""} />
         </label>
         <label>
-          Date fin
+          {t("overview.endDate", "Date fin")}
           <input type="date" defaultValue={execution?.period_end?.slice(0, 10) || ""} />
         </label>
       </div>
 
       <div className="ov-map" style={{ height: "22rem", marginTop: "1rem", borderRadius: "var(--r-m)", overflow: "hidden", boxShadow: "0 0 0 1px var(--mist)" }}>
         <div style={{ height: "100%", background: "#0B2E4A", display: "flex", alignItems: "center", justifyContent: "center", color: "#B9CCC6", fontSize: "0.875rem" }}>
-          Carte d&apos;aperçu (voir mode Carte pour la vue interactive)
+          {t("overview.overviewMap", "Carte d'aperçu (voir mode Carte pour la vue interactive)")}
         </div>
       </div>
 
       <div className="banner info" style={{ marginTop: "1.2rem" }}>
-        <b>Zone couverte :</b> Emprise Cameroun ({CAM_BBOX[1]}°N–{CAM_BBOX[3]}°N, {CAM_BBOX[0]}°E–{CAM_BBOX[2]}°E) · Grille risque {RISK_GRID}°
+        <b>{t("overview.zoneCovered", "Zone couverte :")}</b> Emprise Cameroun ({CAM_BBOX[1]}°N–{CAM_BBOX[3]}°N, {CAM_BBOX[0]}°E–{CAM_BBOX[2]}°E) · {t("overview.gridRisk", "Grille risque")} {RISK_GRID}°
       </div>
     </div>
   );

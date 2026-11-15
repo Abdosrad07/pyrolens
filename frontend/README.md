@@ -1,6 +1,6 @@
-# Fire Monitor — Frontend React (PyroLens)
+# PyroLens — Frontend React
 
-Interface modulaire Fire Monitor : carte Leaflet (tuiles NASA GIBS), vues Aperçu/Calendrier/Jobs/Qualité/Risque, panneau de prédiction de risque, assistant IA.
+Interface modulaire PyroLens : carte Leaflet (tuiles NASA GIBS), vues Aperçu/Calendrier/Jobs/Qualité/Risque, panneau de prédiction de risque, assistant IA.
 
 ## Prérequis
 
@@ -111,7 +111,7 @@ Le design system est conservé tel quel depuis le fichier HTML source :
 
 - Backend : `C:\Users\USER\Desktop\Pyrolens\pyrolens\`
 - Web app existante : `C:\Users\USER\Desktop\Pyrolens\pyrolens\web\`
-- Fire Monitor React : `C:\Users\USER\Desktop\Pyrolens\pyrolens\frontend\`
+- PyroLens React : `C:\Users\USER\Desktop\Pyrolens\pyrolens\frontend\`
 
 ## Licence
 

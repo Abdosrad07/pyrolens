@@ -1,5 +1,5 @@
 /**
- * Constantes partagées par toute l'application Fire Monitor.
+ * Constantes partagées par toute l'application PyroLens.
  *
  * - Design tokens (design system canopy/ash/ember)
  * - Données géographiques (emprise Cameroun)

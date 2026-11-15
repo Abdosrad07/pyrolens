@@ -1,36 +1,15 @@
 /**
  * JobsView — jobs réels de l'API PyroLens (/api/v1/experiments).
  *
- * Chaque job = harmonisation, analyse FIRMS zone, historique archive ou
- * entraînement predict. Données réelles — aucun mock Slurm.
- *
  * Props: { onBack: () => void }
  */
 
 import { useState, useEffect, useCallback } from "react";
+import { useI18n } from "../i18n/index.jsx";
 import useApi from "../hooks/useApi.js";
 
-const KIND_LABEL = {
-  harmonization: "Harmonisation",
-  firms_analyze: "Analyse zone FIRMS",
-  firms_history: "Historique archive",
-  predict: "Prédiction risque",
-};
-
-const STATUS_LABEL = {
-  pending: "En attente",
-  running: "En cours",
-  succeeded: "Terminé",
-  failed: "Échoué",
-};
-
-function fmtDate(iso) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
-}
-
 export default function JobsView({ onBack }) {
+  const { t } = useI18n();
   const api = useApi();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,42 +32,52 @@ export default function JobsView({ onBack }) {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 8000); // rafraîchit tant que la vue est ouverte
-    return () => clearInterval(t);
+    const t2 = setInterval(load, 8000);
+    return () => clearInterval(t2);
   }, [load]);
 
   const job = items.find((j) => j.job_id === selectedId);
+
+  function fmtDate(iso) {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    const loc = t("lang.fr") === "Français" ? "fr-FR" : "en-US";
+    return d.toLocaleString(loc, { dateStyle: "short", timeStyle: "short" });
+  }
+
+  const TL = (s) => s[0] ? t(`jobs.timeline.${s[0]}`, s[0]) : "";
+  const SK = (s) => s[0] ? t(`jobs.kind.${s[0]}`, s[0]) : "";
 
   if (job) {
     const p = job.progress || {};
     return (
       <div className="content">
         <button className="btn-back" type="button" onClick={() => setSelectedId(null)}>
-          ← Retour aux jobs
+          {t("jobs.back")}
         </button>
         <div className="jtitle">
           <div>
             <h2>Job {job.job_id}</h2>
-            <small>{KIND_LABEL[job.kind] || job.kind}</small>
+            <small>{t(`jobs.kind.${job.kind}`, job.kind)}</small>
           </div>
           <span className={`badge ${job.status === "succeeded" ? "COMPLETED" : job.status === "failed" ? "FAILED" : job.status === "running" ? "RUNNING" : "PENDING"}`}>
-            {STATUS_LABEL[job.status] || job.status}
+            {t(`jobs.status.${job.status}`, job.status)}
           </span>
         </div>
         <div className="jgrid">
           <div className="tl">
             {[
-              ["Créé", fmtDate(job.created_at), "done"],
-              ["Démarré", fmtDate(job.started_at), job.started_at ? "done" : "cur"],
-              ["Progression", p.step ? `${p.step} — ${Math.round(p.pct || 0)}% ${p.detail || ""}` : "—", job.status === "running" ? "cur" : "done"],
-              ["Terminé", fmtDate(job.finished_at), job.finished_at ? "done" : "pend"],
+              ["created", fmtDate(job.created_at), "done"],
+              ["started", fmtDate(job.started_at), job.started_at ? "done" : "cur"],
+              ["progress", p.step ? `${p.step} — ${Math.round(p.pct || 0)}% ${p.detail || ""}` : "—", job.status === "running" ? "cur" : "done"],
+              ["finished", fmtDate(job.finished_at), job.finished_at ? "done" : "pend"],
             ].map((s, i) => (
               <div key={i} className={`st ${s[2]}`}>
                 <div className="c">
                   {s[2] === "done" && <span style={{ display: "grid", placeItems: "center" }}>✓</span>}
                 </div>
                 <div className="t">
-                  <b>{s[0]}</b>
+                  <b>{t(`jobs.timeline.${s[0]}`, s[0])}</b>
                   <span>{s[1]}</span>
                 </div>
               </div>
@@ -96,11 +85,11 @@ export default function JobsView({ onBack }) {
           </div>
           <table className="dt">
             <tbody>
-              <tr><td>Type</td><td><code>{job.kind}</code></td></tr>
-              <tr><td>Paramètres</td><td><code style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(job.params, null, 2)}</code></td></tr>
-              {job.error && <tr><td>Erreur</td><td><code style={{ whiteSpace: "pre-wrap" }}>{job.error}</code></td></tr>}
+              <tr><td>{t("jobs.table.type")}</td><td><code>{job.kind}</code></td></tr>
+              <tr><td>{t("jobs.table.params")}</td><td><code style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(job.params, null, 2)}</code></td></tr>
+              {job.error && <tr><td>{t("jobs.table.error")}</td><td><code style={{ whiteSpace: "pre-wrap" }}>{job.error}</code></td></tr>}
               {job.links?.result && (
-                <tr><td>Résultat</td><td><code>{job.links.result}</code></td></tr>
+                <tr><td>{t("jobs.table.result")}</td><td><code>{job.links.result}</code></td></tr>
               )}
             </tbody>
           </table>
@@ -111,25 +100,22 @@ export default function JobsView({ onBack }) {
 
   return (
     <div className="content">
-      <h2>Jobs</h2>
-      <small>
-        Tâches réelles de l'API PyroLens : harmonisation, analyse de zone FIRMS,
-        historique archive, entraînement du modèle de risque.
-      </small>
-      {loading && <p className="empty">Chargement…</p>}
-      {error && <div className="banner err">API indisponible : {error}</div>}
+      <h2>{t("jobs.title")}</h2>
+      <small>{t("jobs.subtitle")}</small>
+      {loading && <p className="empty">{t("jobs.loading")}</p>}
+      {error && <div className="banner err">{t("jobs.apiError")} {error}</div>}
       {!loading && !error && items.length === 0 && (
-        <p className="empty">Aucun job pour le moment — lance une analyse de zone ou une prédiction depuis la carte.</p>
+        <p className="empty">{t("jobs.none")}</p>
       )}
       {items.length > 0 && (
         <table className="jl" style={{ marginTop: "1.4rem" }}>
           <thead>
             <tr>
-              <th>Job ID</th>
-              <th>Type</th>
-              <th>Statut</th>
-              <th>Progression</th>
-              <th>Créé le</th>
+              <th>{t("jobs.headers.jobId")}</th>
+              <th>{t("jobs.headers.type")}</th>
+              <th>{t("jobs.headers.status")}</th>
+              <th>{t("jobs.headers.progress")}</th>
+              <th>{t("jobs.headers.created")}</th>
             </tr>
           </thead>
           <tbody>
@@ -147,8 +133,8 @@ export default function JobsView({ onBack }) {
                   onKeyDown={(e) => { if (e.key === "Enter") setSelectedId(j.job_id); }}
                 >
                   <td><code>{j.job_id}</code></td>
-                  <td>{KIND_LABEL[j.kind] || j.kind}</td>
-                  <td><span className={`badge ${badge}`}>{STATUS_LABEL[j.status] || j.status}</span></td>
+                  <td>{t(`jobs.kind.${j.kind}`, j.kind)}</td>
+                  <td><span className={`badge ${badge}`}>{t(`jobs.status.${j.status}`, j.status)}</span></td>
                   <td>{j.progress?.step ? `${j.progress.step} ${Math.round(j.progress.pct || 0)}%` : "—"}</td>
                   <td>{fmtDate(j.created_at)}</td>
                 </tr>

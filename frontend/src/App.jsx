@@ -1,5 +1,5 @@
 /**
- * App — composant racine de Fire Monitor.
+ * App — composant racine de PyroLens.
  *
  * Gère l'état global :
  *  - view : "map" | "overview" | "calendar" | "jobs" | "dq" | "risk"
@@ -25,17 +25,19 @@ import RiskView from "./views/RiskView.jsx";
 import useMap from "./hooks/useMap.js";
 import useRiskData from "./hooks/useRiskData.js";
 import useApi from "./hooks/useApi.js";
+import { I18nProvider, useI18n } from "./i18n/index.jsx";
 
 const VIEWS = {
-  map: "Carte",
-  overview: "Aperçu",
-  calendar: "Calendrier",
-  jobs: "Jobs",
-  dq: "Qualité des données",
-  risk: "Risque de feu",
+  map: { fr: "Carte", en: "Map" },
+  overview: { fr: "Aperçu", en: "Overview" },
+  calendar: { fr: "Calendrier", en: "Calendar" },
+  jobs: { fr: "Jobs", en: "Jobs" },
+  dq: { fr: "Qualité des données", en: "Data quality" },
+  risk: { fr: "Risque de feu", en: "Fire risk" },
 };
 
-export default function App() {
+function InnerApp() {
+  const { t, lang, toggle } = useI18n();
   const [view, setView] = useState("map");
   const [aiOpen, setAiOpen] = useState(false);
   const [riskOpen, setRiskOpen] = useState(false);
@@ -48,25 +50,24 @@ export default function App() {
     useRiskData();
   const api = useApi();
 
-  // Charger les données risque au montage
   useEffect(() => {
     if (!riskData) reloadRisk();
   }, []);
 
   const showRiskOnMap = showRisk && (view === "map" || view === "risk");
 
-  const showToast = useCallback((msg) => setToastMsg(msg), []);
+  const showToast = useCallback((key) => setToastMsg(t(key)), [t]);
   const hideToast = useCallback(() => setToastMsg(null), []);
 
   const handleSearch = useCallback(async (q) => {
-    showToast("Recherche…");
+    showToast("toast.searching");
     const res = await api.geocode(q);
     if (res) {
       setView("map");
       flyToCoords(res.lat, res.lon, 8);
-      showToast("Lieu localisé");
+      showToast("toast.located");
     } else {
-      showToast("Lieu introuvable : essayez un nom de ville ou de pays");
+      showToast("toast.notFound");
     }
   }, [api, flyToCoords, showToast]);
 
@@ -101,7 +102,6 @@ export default function App() {
     invalidateSize();
   }, [invalidateSize]);
 
-  // Échap global
   useEffect(() => {
     function onKey(e) {
       if (e.key === "Escape") {
@@ -119,17 +119,16 @@ export default function App() {
 
   return (
     <div className="app-root">
-      {/* Barre du haut */}
       <TopBar
         onSearch={handleSearch}
         onOpenMenu={() => {}}
         onOpenRisk={() => setRiskOpen(true)}
         onOpenAi={() => setAiOpen(true)}
-        onAnnounce={() => showToast("Données hotspots : VIIRS 375 m – NASA FIRMS (dernières 24 h)")}
+        onAnnounce={() => showToast("toast.announce")}
         onContact={() => window.open("https://earthdata.nasa.gov/contact", "_blank")}
+        onToggleLang={toggle}
       />
 
-      {/* Zone principale */}
       {(isMap || isRiskView) && (
         <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 100 }}>
           <MapView
@@ -167,7 +166,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Dock de navigation */}
       {(isMap || isRiskView) && (
         <div style={{
           position: "absolute", left: "50%", bottom: "max(1rem,env(safe-area-inset-bottom))",
@@ -177,7 +175,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Sphère flottante — ouvre l'assistant IA */}
       {(isMap || isRiskView) && (
         <RiskSphere
           open={aiOpen}
@@ -186,7 +183,6 @@ export default function App() {
         />
       )}
 
-      {/* Panneau risque */}
       {(isMap || isRiskView) && (
         <div style={{ position: "absolute", inset: 0, zIndex: 1060, pointerEvents: riskOpen ? "auto" : "none" }}>
           <RiskPanel
@@ -196,7 +192,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Panneau IA */}
       {(isMap || isRiskView) && (
         <AiPanel
           open={aiOpen}
@@ -205,8 +200,15 @@ export default function App() {
         />
       )}
 
-      {/* Toast */}
       <Toast message={toastMsg} onDone={hideToast} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <I18nProvider>
+      <InnerApp />
+    </I18nProvider>
   );
 }

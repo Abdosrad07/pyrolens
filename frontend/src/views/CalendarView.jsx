@@ -7,24 +7,14 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
+import { useI18n } from "../i18n/index.jsx";
 import useApi from "../hooks/useApi.js";
 
-const MONTHS_FR = [
-  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-];
-const DOW = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-
-function levelOf(total, t1, t2) {
-  if (total >= t2) return "critical";
-  if (total >= t1) return "high";
-  return "medium";
-}
-
 export default function CalendarView() {
+  const { t } = useI18n();
   const api = useApi();
   const today = new Date();
-  const [year, setYear] = useState(2020); // données pipeline : 2013–2020
+  const [year, setYear] = useState(2020);
   const [month, setMonth] = useState(11);
   const [rows, setRows] = useState(null);
   const [error, setError] = useState(null);
@@ -36,6 +26,9 @@ export default function CalendarView() {
       .catch((e) => { if (alive) setError(e.message); });
     return () => { alive = false; };
   }, [api]);
+
+  const months = t("calendar.months");
+  const dow = t("calendar.dow");
 
   // date → total (somme des paires du jour)
   const byDay = useMemo(() => {
@@ -66,16 +59,18 @@ export default function CalendarView() {
   const p2 = (n) => String(n).padStart(2, "0");
   const iso = (d) => `${year}-${p2(month + 1)}-${p2(d)}`;
 
+  function levelOf(total, t1, t2) {
+    if (total >= t2) return "critical";
+    if (total >= t1) return "high";
+    return "medium";
+  }
+
   return (
     <div className="content">
-      <h2>Calendrier des feux</h2>
-      <small>
-        Données réelles du pipeline PyroLens (2013–2020) : cellules en divergence
-        inter-capteurs par jour. Un jour sans marqueur = aucune divergence mesurée,
-        pas « absence de feu ».
-      </small>
-      {error && <div className="banner err">API indisponible : {error}</div>}
-      {!rows && !error && <p className="empty">Chargement du calendrier…</p>}
+      <h2>{t("calendar.title", "Calendrier des feux")}</h2>
+      <small>{t("calendar.subtitle", "Données réelles du pipeline…")}</small>
+      {error && <div className="banner err">{t("calendar.apiError", "API indisponible :")} {error}</div>}
+      {!rows && !error && <p className="empty">{t("calendar.loading", "Chargement du calendrier…")}</p>}
       <div className="cal-nav">
         <button type="button" className="ibtn" onClick={() => {
           if (month === 0) { setMonth(11); setYear(year - 1); }
@@ -83,7 +78,7 @@ export default function CalendarView() {
         }}>
           ←
         </button>
-        <h3>{MONTHS_FR[month]} {year}</h3>
+        <h3>{months[month]} {year}</h3>
         <button type="button" className="ibtn" onClick={() => {
           if (month === 11) { setMonth(0); setYear(year + 1); }
           else setMonth(month + 1);
@@ -92,7 +87,7 @@ export default function CalendarView() {
         </button>
       </div>
       <div className="cal-grid">
-        {DOW.map((d) => (
+        {dow.map((d) => (
           <div key={d} className="cal-dow">{d}</div>
         ))}
         {cells.map((d, i) => {
@@ -105,7 +100,7 @@ export default function CalendarView() {
               key={i}
               className={`cal-cell${lvl ? ` fire-${lvl}` : ""}${isToday ? " on" : ""}`}
               aria-disabled={!d}
-              title={total > 0 ? `${date} : ${total} cellules en divergence` : undefined}
+              title={total > 0 ? `${date} : ${total} cells` : undefined}
             >
               {d && <strong>{d}</strong>}
               {lvl && <span style={{ fontSize: "0.6rem", color: "var(--ember)" }}>{total}</span>}
@@ -114,9 +109,8 @@ export default function CalendarView() {
         })}
       </div>
       <div className="banner info" style={{ marginTop: "1rem" }}>
-        <b>Légende</b> · nombre = cellules en divergence capteurs ce jour-là ·
-        niveaux = terciles des jours non nuls
-        {rows && <> · {rows.length} jours couverts</>}
+        <b>{t("calendar.legend", "Légende")}</b> · {t("calendar.legendNote", "nombre = cellules en divergence…")}
+        {rows && <> · {rows.length} {t("calendar.daysCovered", "jours couverts")}</>}
       </div>
     </div>
   );
