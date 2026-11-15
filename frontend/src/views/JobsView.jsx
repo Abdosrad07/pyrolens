@@ -1,131 +1,107 @@
 /**
- * JobsView — vue Jobs de traitement (type Slurm-web).
+ * JobsView — jobs réels de l'API PyroLens (/api/v1/experiments).
+ *
+ * Chaque job = harmonisation, analyse FIRMS zone, historique archive ou
+ * entraînement predict. Données réelles — aucun mock Slurm.
  *
  * Props: { onBack: () => void }
  */
 
-import { useState, useEffect } from "react";
-import { JOBS, fdt, NOW0 } from "../data/constants.js";
+import { useState, useEffect, useCallback } from "react";
+import useApi from "../hooks/useApi.js";
+
+const KIND_LABEL = {
+  harmonization: "Harmonisation",
+  firms_analyze: "Analyse zone FIRMS",
+  firms_history: "Historique archive",
+  predict: "Prédiction risque",
+};
+
+const STATUS_LABEL = {
+  pending: "En attente",
+  running: "En cours",
+  succeeded: "Terminé",
+  failed: "Échoué",
+};
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
+}
 
 export default function JobsView({ onBack }) {
+  const api = useApi();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
-  const [timer, setTimer] = useState(null);
 
-  const job = JOBS.find((j) => j.id === selectedId);
-
-  const stepsFor = (j) => {
-    const sub = (j.start ?? NOW0) - 175e3;
-    const st = j.start;
-    const p2 = (n) => String(n).padStart(2, "0");
-    const fmt = (ms) => {
-      const d = new Date(ms);
-      return `${p2(d.getDate())}/${p2(d.getMonth() + 1)}/${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())}`;
-    };
-    if (j.state === "RUNNING")
-      return [
-        ["Submitted", fmt(sub), "done"],
-        ["Eligible", fmt(sub), "done"],
-        ["Scheduling", fmt(st), "done"],
-        ["Running", <span key="e">{j.elapsed} seconds elapsed</span>, "cur"],
-        ["Completing", `Limite ${fmt(st + j.limit * 60e3)}`, "pend"],
-        ["Terminated", "", "pend"],
-      ];
-    if (j.state === "COMPLETED")
-      return [
-        ["Submitted", fmt(sub), "done"],
-        ["Eligible", fmt(sub), "done"],
-        ["Scheduling", fmt(st), "done"],
-        ["Running", `${j.elapsed} seconds`, "done"],
-        ["Completing", fmt(st + j.elapsed * 1e3), "done"],
-        ["Terminated", fmt(st + j.elapsed * 1e3 + 4e3), "done"],
-      ];
-    if (j.state === "FAILED")
-      return [
-        ["Submitted", fmt(sub), "done"],
-        ["Eligible", fmt(sub), "done"],
-        ["Scheduling", fmt(st), "done"],
-        ["Running", `${j.elapsed} seconds`, "done"],
-        ["Completing", fmt(st + j.elapsed * 1e3), "done"],
-        ["Terminated", `Échec – ${fmt(st + j.elapsed * 1e3 + 3e3)}`, "done"],
-      ];
-    return [
-      ["Submitted", fmt(sub), "done"],
-      ["Eligible", fmt(sub), "done"],
-      ["Scheduling", "En attente de ressources", "cur"],
-      ["Running", "", "pend"],
-      ["Completing", "", "pend"],
-      ["Terminated", "", "pend"],
-    ];
-  };
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const j = await api.listJobs();
+      setItems(j.items || []);
+    } catch (e) {
+      setError(e.message);
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [api]);
 
   useEffect(() => {
-    if (job?.state === "RUNNING") {
-      const t0 = Date.now();
-      setTimer(
-        setInterval(() => {
-          setSelectedId((id) => {
-            const j = JOBS.find((x) => x.id === id);
-            if (j?.state !== "RUNNING") return id;
-            return id;
-          });
-        }, 1000)
-      );
-    }
-    return () => clearInterval(timer);
-  }, [job?.state]);
+    load();
+    const t = setInterval(load, 8000); // rafraîchit tant que la vue est ouverte
+    return () => clearInterval(t);
+  }, [load]);
+
+  const job = items.find((j) => j.job_id === selectedId);
 
   if (job) {
-    const rows = [
-      ["User", j.user],
-      ["Group", "scientists"],
-      ["Account", "fire-monitoring"],
-      ["Wckeys", ""],
-      ["Priority", j.prio],
-      ["Name", j.name],
-      ["Comments", ""],
-      ["Submit line", j.cmd],
-      ["Script", ""],
-      ["Working directory", `/home/${j.user}`],
-      ["Exit Code", j.exit],
-      ["Nodes", j.nodes],
-      ["Partition", j.part],
-      ["QOS", j.state === "FAILED" ? "low" : "normal"],
-      ["Requested", `Nodes : 1\nCPU : 1\nMemory : 512 MB${j.gpu ? "\nGPU : h100 × 4" : ""}`],
-    ];
+    const p = job.progress || {};
     return (
       <div className="content">
-        <button className="btn-back" type="button" onClick={onBack}>
+        <button className="btn-back" type="button" onClick={() => setSelectedId(null)}>
           ← Retour aux jobs
         </button>
         <div className="jtitle">
           <div>
-            <h2>Job {job.id}</h2>
-            <small>All job settings</small>
+            <h2>Job {job.job_id}</h2>
+            <small>{KIND_LABEL[job.kind] || job.kind}</small>
           </div>
-          <span className={`badge ${job.state}`}>{job.state}</span>
+          <span className={`badge ${job.status === "succeeded" ? "COMPLETED" : job.status === "failed" ? "FAILED" : job.status === "running" ? "RUNNING" : "PENDING"}`}>
+            {STATUS_LABEL[job.status] || job.status}
+          </span>
         </div>
         <div className="jgrid">
           <div className="tl">
-            {stepsFor(job).map((s, i) => (
+            {[
+              ["Créé", fmtDate(job.created_at), "done"],
+              ["Démarré", fmtDate(job.started_at), job.started_at ? "done" : "cur"],
+              ["Progression", p.step ? `${p.step} — ${Math.round(p.pct || 0)}% ${p.detail || ""}` : "—", job.status === "running" ? "cur" : "done"],
+              ["Terminé", fmtDate(job.finished_at), job.finished_at ? "done" : "pend"],
+            ].map((s, i) => (
               <div key={i} className={`st ${s[2]}`}>
                 <div className="c">
                   {s[2] === "done" && <span style={{ display: "grid", placeItems: "center" }}>✓</span>}
                 </div>
                 <div className="t">
                   <b>{s[0]}</b>
-                  <span>{typeof s[1] === "string" ? s[1] : s[1]}</span>
+                  <span>{s[1]}</span>
                 </div>
               </div>
             ))}
           </div>
           <table className="dt">
             <tbody>
-              {rows.map(([k, v]) => (
-                <tr key={k}>
-                  <td>{k}</td>
-                  <td>{v === "" ? "" : <code style={{ whiteSpace: "pre-wrap" }}>{v}</code>}</td>
-                </tr>
-              ))}
+              <tr><td>Type</td><td><code>{job.kind}</code></td></tr>
+              <tr><td>Paramètres</td><td><code style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(job.params, null, 2)}</code></td></tr>
+              {job.error && <tr><td>Erreur</td><td><code style={{ whiteSpace: "pre-wrap" }}>{job.error}</code></td></tr>}
+              {job.links?.result && (
+                <tr><td>Résultat</td><td><code>{job.links.result}</code></td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -137,38 +113,50 @@ export default function JobsView({ onBack }) {
     <div className="content">
       <h2>Jobs</h2>
       <small>
-        Traitements de données incendie (ingestion VIIRS/MODIS, détection de clusters, exports FRP)
+        Tâches réelles de l'API PyroLens : harmonisation, analyse de zone FIRMS,
+        historique archive, entraînement du modèle de risque.
       </small>
-      <table className="jl" style={{ marginTop: "1.4rem" }}>
-        <thead>
-          <tr>
-            <th>Job ID</th>
-            <th>Nom</th>
-            <th>Utilisateur</th>
-            <th>Partition</th>
-            <th>Priorité</th>
-            <th>État</th>
-          </tr>
-        </thead>
-        <tbody>
-          {JOBS.map((j) => (
-            <tr
-              key={j.id}
-              tabIndex={0}
-              aria-label={`Ouvrir le job ${j.id}`}
-              onClick={() => setSelectedId(j.id)}
-              onKeyDown={(e) => { if (e.key === "Enter") setSelectedId(j.id); }}
-            >
-              <td>{j.id}</td>
-              <td>{j.name}</td>
-              <td>{j.user}</td>
-              <td>{j.part}</td>
-              <td>{j.prio}</td>
-              <td><span className={`badge ${j.state}`}>{j.state}</span></td>
+      {loading && <p className="empty">Chargement…</p>}
+      {error && <div className="banner err">API indisponible : {error}</div>}
+      {!loading && !error && items.length === 0 && (
+        <p className="empty">Aucun job pour le moment — lance une analyse de zone ou une prédiction depuis la carte.</p>
+      )}
+      {items.length > 0 && (
+        <table className="jl" style={{ marginTop: "1.4rem" }}>
+          <thead>
+            <tr>
+              <th>Job ID</th>
+              <th>Type</th>
+              <th>Statut</th>
+              <th>Progression</th>
+              <th>Créé le</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((j) => {
+              const badge =
+                j.status === "succeeded" ? "COMPLETED" :
+                j.status === "failed" ? "FAILED" :
+                j.status === "running" ? "RUNNING" : "PENDING";
+              return (
+                <tr
+                  key={j.job_id}
+                  tabIndex={0}
+                  aria-label={`Ouvrir le job ${j.job_id}`}
+                  onClick={() => setSelectedId(j.job_id)}
+                  onKeyDown={(e) => { if (e.key === "Enter") setSelectedId(j.job_id); }}
+                >
+                  <td><code>{j.job_id}</code></td>
+                  <td>{KIND_LABEL[j.kind] || j.kind}</td>
+                  <td><span className={`badge ${badge}`}>{STATUS_LABEL[j.status] || j.status}</span></td>
+                  <td>{j.progress?.step ? `${j.progress.step} ${Math.round(j.progress.pct || 0)}%` : "—"}</td>
+                  <td>{fmtDate(j.created_at)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

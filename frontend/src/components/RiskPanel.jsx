@@ -15,6 +15,7 @@
 import { useState, useEffect } from "react";
 import Icons from "./icons.jsx";
 import useRiskData from "../hooks/useRiskData.js";
+import useApi from "../hooks/useApi.js";
 
 const GRID_OPTS = ["0.10", "0.25", "0.50"];
 const WIN_OPTS = ["1", "4", "8", "16"];
@@ -32,6 +33,7 @@ export default function RiskPanel({ open, onClose }) {
 
   const { riskData, loading, reload, metrics, cellsCount, highCells, origin, generatedAt } =
     useRiskData();
+  const api = useApi();
 
   useEffect(() => {
     if (open && !riskData && !loading) reload();
@@ -50,15 +52,54 @@ export default function RiskPanel({ open, onClose }) {
         ? "Chargement…"
         : "Indisponible";
 
-  const handleRun = () => {
+  const handleRun = async () => {
     setRunning(true);
     setShowLog(true);
     setLog(
-      "Le module src/pyrolens/prediction.py sera connecté ici.\n" +
-      "En attente de l'implémentation backend.\n\n" +
-      "Commande attendue :\n" +
-      `  PYTHONPATH=src python3 -m pyrolens.cli predict\n    --grid ${grid} --window ${window}`
+      `Lancement : grille ${grid}°, fenêtre ${window} j, référence ${date || "max données"}\n` +
+      "(job backend — peut durer ~10 min sur données réelles)\n"
     );
+    try {
+      const job = await api.predict({
+        grid_deg: +grid,
+        window: +window,
+        reference_date: date || null,
+      });
+      setLog((prev) => prev + `\nTâche ${job.job_id} — ${job.status}\n`);
+      const poll = async () => {
+        try {
+          const j = await api.getPredictJob(job.job_id);
+          const p = j.progress || {};
+          setLog(
+            (prev) =>
+              prev
+                .split("\n")
+                .filter((l) => !l.startsWith("→"))
+                .join("\n") +
+              `\n→ ${p.step || j.status} ${Math.round(p.pct || 0)}% ${p.detail || ""}`.trimEnd()
+          );
+          if (j.status === "succeeded") {
+            setLog((prev) => prev + "\n✓ Entraînement terminé — rechargement de l'artefact…");
+            await reload();
+            setRunning(false);
+            return;
+          }
+          if (j.status === "failed") {
+            setLog((prev) => prev + `\n✗ Échec : ${j.error || "erreur inconnue"}`);
+            setRunning(false);
+            return;
+          }
+          setTimeout(poll, 5000);
+        } catch (e) {
+          setLog((prev) => prev + `\n✗ Polling : ${e.message}`);
+          setRunning(false);
+        }
+      };
+      poll();
+    } catch (e) {
+      setLog((prev) => prev + `\n✗ Lancement refusé : ${e.message}`);
+      setRunning(false);
+    }
   };
 
   const handleLoad = async () => {

@@ -46,6 +46,7 @@ from api.routers import experiments as experiments_router
 from api.routers import firms as firms_router
 from api.routers import fire_calendar as fire_calendar_router
 from api.routers import methodology as methodology_router
+from api.routers import predict as predict_router
 from api.routers import system as system_router
 from api.routers import validation as validation_router
 from api.settings import Settings
@@ -76,6 +77,7 @@ ROUTERS = (
     (validation_router.router, "validation"),
     (experiments_router.router, "expériences"),
     (firms_router.router, "analyse de zone FIRMS"),
+    (predict_router.router, "prédiction de risque"),
 )
 
 

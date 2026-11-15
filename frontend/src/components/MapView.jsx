@@ -14,7 +14,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { MapContainer, TileLayer, useMap, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { VIEWS, GIBS_DATE, CAM_BBOX, RISK_GRID, RISK_LEVELS } from "../../data/constants.js";
+import { VIEWS, GIBS_DATE, CAM_BBOX, RISK_GRID, RISK_LEVELS } from "../data/constants.js";
 
 /* ── helpers risque ── */
 function riskLabel(prob) {

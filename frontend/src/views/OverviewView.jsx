@@ -28,10 +28,11 @@ const MOCK_OBS = {
   states: { green: 12, yellow: 3, orange: 1, red: 0 },
 };
 
-function readArtifact(path, fallback) {
+async function readArtifact(path, fallback) {
   try {
-    const mod = await import(`../../public/artifacts/${path}?t=${Date.now()}`);
-    return mod.default || fallback;
+    const r = await fetch(`/artifacts/${path}?t=${Date.now()}`);
+    if (!r.ok) return fallback;
+    return await r.json();
   } catch {
     return fallback;
   }

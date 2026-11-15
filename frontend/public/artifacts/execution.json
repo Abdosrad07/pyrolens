@@ -1,0 +1,1921 @@
+{
+  "steps": [
+    {
+      "step": "doctor",
+      "status": "ok",
+      "detail": "environnement inspecté",
+      "at": "2026-10-16T11:24:33+00:00"
+    },
+    {
+      "step": "geo",
+      "status": "ok",
+      "detail": "polygone administratif acquis : ne_110m_admin_0_countries.geojson",
+      "at": "2026-10-16T11:25:05+00:00"
+    },
+    {
+      "step": "fixture",
+      "status": "ok",
+      "detail": "échantillon synthétique 2019-01-01 → 2019-12-31 (4 fichiers, graine 20260101)",
+      "at": "2026-10-16T11:25:05+00:00"
+    },
+    {
+      "step": "inventory",
+      "status": "ok",
+      "detail": "CMR : versions et granules par année vérifiés (35019 granules bbox cumulés)",
+      "at": "2026-10-16T11:25:54+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-16T11:25:54+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "bloqué",
+      "detail": "FIRMS_MAP_KEY absent : API FIRMS inaccessible sans clé",
+      "at": "2026-10-16T11:25:54+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-16T11:25:55+00:00"
+    },
+    {
+      "step": "audit",
+      "status": "ok",
+      "detail": "3 fichiers audités, 598 anomalies, origine=synthetic_fixture",
+      "at": "2026-10-16T11:26:24+00:00"
+    },
+    {
+      "step": "observability",
+      "status": "ok",
+      "detail": "états classés (détection / observabilité inconnue / indéterminé) — aucun état « pas de feu »",
+      "at": "2026-10-16T11:26:24+00:00"
+    },
+    {
+      "step": "figures",
+      "status": "ok",
+      "detail": "3 figures générées",
+      "at": "2026-10-16T11:26:25+00:00"
+    },
+    {
+      "step": "report",
+      "status": "ok",
+      "detail": "rapport généré (DOCX: oui)",
+      "at": "2026-10-16T11:26:26+00:00"
+    },
+    {
+      "step": "fixture",
+      "status": "ok",
+      "detail": "échantillon synthétique 2019-01-01 → 2019-12-31 (4 fichiers, graine 20260101)",
+      "at": "2026-10-16T11:28:52+00:00"
+    },
+    {
+      "step": "audit",
+      "status": "ok",
+      "detail": "3 fichiers audités, 12 anomalies, origine=synthetic_fixture",
+      "at": "2026-10-16T11:28:52+00:00"
+    },
+    {
+      "step": "baselines",
+      "status": "ok",
+      "detail": "24 configurations comparées, origine=synthetic_fixture",
+      "at": "2026-10-16T11:28:53+00:00"
+    },
+    {
+      "step": "observability",
+      "status": "ok",
+      "detail": "états classés (détection / observabilité inconnue / indéterminé) — aucun état « pas de feu »",
+      "at": "2026-10-16T11:28:53+00:00"
+    },
+    {
+      "step": "figures",
+      "status": "ok",
+      "detail": "5 figures générées",
+      "at": "2026-10-16T11:28:54+00:00"
+    },
+    {
+      "step": "report",
+      "status": "ok",
+      "detail": "rapport généré (DOCX: oui)",
+      "at": "2026-10-16T11:28:55+00:00"
+    },
+    {
+      "step": "figures",
+      "status": "ok",
+      "detail": "6 figures générées",
+      "at": "2026-10-16T11:29:31+00:00"
+    },
+    {
+      "step": "fixture",
+      "status": "ok",
+      "detail": "échantillon synthétique 2019-01-01 → 2019-12-31 (4 fichiers, graine 20260101)",
+      "at": "2026-10-16T11:30:26+00:00"
+    },
+    {
+      "step": "audit",
+      "status": "ok",
+      "detail": "3 fichiers audités, 25 anomalies, origine=synthetic_fixture",
+      "at": "2026-10-16T11:30:27+00:00"
+    },
+    {
+      "step": "baselines",
+      "status": "ok",
+      "detail": "24 configurations comparées, origine=synthetic_fixture",
+      "at": "2026-10-16T11:30:27+00:00"
+    },
+    {
+      "step": "observability",
+      "status": "ok",
+      "detail": "états classés (détection / observabilité inconnue / indéterminé) — aucun état « pas de feu »",
+      "at": "2026-10-16T11:30:27+00:00"
+    },
+    {
+      "step": "figures",
+      "status": "ok",
+      "detail": "6 figures générées",
+      "at": "2026-10-16T11:30:29+00:00"
+    },
+    {
+      "step": "report",
+      "status": "ok",
+      "detail": "rapport généré (DOCX: oui)",
+      "at": "2026-10-16T11:30:29+00:00"
+    },
+    {
+      "step": "report",
+      "status": "ok",
+      "detail": "rapport généré (DOCX: oui)",
+      "at": "2026-10-18T08:14:53+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:26:28+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:26:28+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:26:29+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:26:56+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:26:57+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:26:57+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:26:58+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:26:59+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:27:00+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:27:34+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:27:35+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:27:35+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:27:35+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:27:36+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:27:36+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:30:07+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "6 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:31:15+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:31:15+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:39:36+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "6 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:40:33+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:40:34+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:41:23+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "38 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:42:55+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:42:56+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:44:24+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "74 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:44:38+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:44:38+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:45:21+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "74 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:45:53+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:45:53+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:45:54+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "71 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:47:10+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:47:11+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:47:11+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:50:36+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "74 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:50:37+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:50:38+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:50:38+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "74 fichiers FIRMS acquis",
+      "at": "2026-10-18T10:51:57+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:51:58+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:51:58+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T10:56:42+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "377 nouveaux fichiers ; 580 erreurs, 0 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-10-18T10:58:50+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T10:58:50+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T11:01:06+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "126 nouveaux fichiers ; 8 erreurs, 514 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-10-18T11:03:17+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T11:03:17+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T11:03:38+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "18 nouveaux fichiers ; 25 erreurs, 401 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-10-18T11:06:18+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T11:06:19+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T11:07:48+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "230 nouveaux fichiers ; 0 erreurs, 198 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-10-18T11:09:57+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T11:09:57+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T11:13:46+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "91 nouveaux fichiers ; 0 erreurs, 99 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-10-18T11:16:33+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T11:16:34+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T11:43:45+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "31 nouveaux fichiers ; 0 erreurs, 62 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-10-18T11:46:13+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T11:46:14+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T11:47:06+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "60 nouveaux fichiers FIRMS (total session 1111 déjà présents)",
+      "at": "2026-10-18T11:48:25+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T11:48:25+00:00"
+    },
+    {
+      "step": "audit",
+      "status": "ok",
+      "detail": "1432 fichiers audités, 2954573 anomalies, origine=nasa_firms",
+      "at": "2026-10-18T12:20:45+00:00"
+    },
+    {
+      "step": "normalize",
+      "status": "ok",
+      "detail": "1432 → 1160 fenêtres canoniques ; 557292 doublons supprimés (comptabilité vérifiée : 5017580 = 4460288 + doublons)",
+      "at": "2026-10-18T12:29:51+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-10-18T12:30:43+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "10 nouveaux fichiers FIRMS (total session 1161 déjà présents)",
+      "at": "2026-10-18T12:30:45+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-10-18T12:30:45+00:00"
+    },
+    {
+      "step": "audit",
+      "status": "ok",
+      "detail": "1170 fichiers audités, 2634700 anomalies, origine=nasa_firms",
+      "at": "2026-10-18T12:33:27+00:00"
+    },
+    {
+      "step": "baselines",
+      "status": "ok",
+      "detail": "24 configurations comparées, origine=nasa_firms",
+      "at": "2026-10-18T12:39:06+00:00"
+    },
+    {
+      "step": "observability",
+      "status": "ok",
+      "detail": "états classés (détection / observabilité inconnue / indéterminé) — aucun état « pas de feu »",
+      "at": "2026-10-18T12:43:24+00:00"
+    },
+    {
+      "step": "figures",
+      "status": "ok",
+      "detail": "6 figures générées",
+      "at": "2026-10-19T09:08:07+00:00"
+    },
+    {
+      "step": "report",
+      "status": "ok",
+      "detail": "rapport généré (DOCX: oui)",
+      "at": "2026-10-19T09:08:13+00:00"
+    },
+    {
+      "step": "report",
+      "status": "ok",
+      "detail": "rapport généré (DOCX: oui)",
+      "at": "2026-10-20T07:19:01+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T04:49:00+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "11 nouveaux fichiers ; 0 erreurs, 1151 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T04:51:57+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T04:52:00+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T05:09:21+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "51 nouveaux fichiers ; 0 erreurs, 1092 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T05:14:13+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T05:14:20+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T05:14:23+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "57 nouveaux fichiers ; 0 erreurs, 1027 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T05:17:46+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T05:18:02+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T05:18:04+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "8 nouveaux fichiers ; 0 erreurs, 1011 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T05:21:19+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T05:21:22+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T05:21:24+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "61 nouveaux fichiers ; 0 erreurs, 942 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T05:24:54+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T05:24:57+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T05:24:59+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "63 nouveaux fichiers ; 0 erreurs, 871 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T05:28:27+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T05:28:33+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T05:28:36+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "64 nouveaux fichiers ; 0 erreurs, 799 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T05:31:56+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T05:32:00+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T05:32:03+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "60 nouveaux fichiers ; 1 erreurs, 730 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T10:58:13+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T10:58:17+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 35 erreurs, 696 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T12:46:02+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T12:46:08+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 73 erreurs, 658 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T12:48:52+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T12:48:57+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 73 erreurs, 658 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T12:51:46+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T12:51:49+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 79 erreurs, 651 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T12:54:34+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T12:54:37+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 75 erreurs, 656 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T12:57:24+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T12:57:27+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 73 erreurs, 658 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:00:12+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:00:15+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 74 erreurs, 657 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:03:03+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:03:06+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "6 nouveaux fichiers ; 2 erreurs, 723 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:06:55+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T13:06:59+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:07:01+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "65 nouveaux fichiers ; 0 erreurs, 652 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:11:09+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T13:11:12+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:11:15+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "63 nouveaux fichiers ; 0 erreurs, 581 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:18:20+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T13:18:25+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:18:28+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "2 nouveaux fichiers ; 0 erreurs, 571 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:22:48+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T13:22:51+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:22:54+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "51 nouveaux fichiers ; 0 erreurs, 512 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:30:18+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T13:30:22+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:30:25+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 503 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:40:46+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T13:40:49+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:40:52+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "42 nouveaux fichiers ; 0 erreurs, 453 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:44:33+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T13:44:37+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:44:42+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "7 nouveaux fichiers ; 0 erreurs, 438 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T13:51:08+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T13:51:11+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T13:51:15+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 429 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T14:03:45+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T14:03:49+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T14:03:52+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "30 nouveaux fichiers ; 0 erreurs, 391 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T14:06:29+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T14:06:34+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T14:06:37+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "19 nouveaux fichiers ; 0 erreurs, 364 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T14:22:06+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T14:22:40+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 1 erreurs, 356 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T14:37:06+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T14:37:46+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T14:37:50+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 1 erreurs, 356 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T14:59:56+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T15:00:03+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T15:00:06+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 354 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T15:10:02+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T15:10:06+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T15:10:09+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "48 nouveaux fichiers ; 0 erreurs, 298 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T15:16:36+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T15:16:41+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T15:16:45+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 289 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T15:42:43+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T15:42:50+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T15:42:57+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 1 erreurs, 284 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T16:20:50+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T16:21:13+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T16:21:16+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 1 erreurs, 282 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T19:34:04+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T19:34:08+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 75 erreurs, 208 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T19:36:52+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T19:36:56+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 76 erreurs, 207 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T19:39:41+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T19:39:45+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "0 nouveaux fichiers ; 76 erreurs, 207 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T19:42:29+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T19:42:32+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "6 nouveaux fichiers ; 8 erreurs, 269 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T19:50:16+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T19:50:22+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T19:50:26+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 282 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T20:16:24+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T20:16:30+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T20:16:34+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "27 nouveaux fichiers ; 0 erreurs, 237 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T20:34:25+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T20:34:31+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T20:34:35+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 230 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T20:46:26+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T20:46:31+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T20:46:35+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 221 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T21:09:42+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T21:10:19+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T21:10:23+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 214 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T21:39:45+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T21:39:51+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T21:39:55+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "1 nouveaux fichiers ; 0 erreurs, 212 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T22:08:36+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:08:44+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:08:48+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "2 nouveaux fichiers ; 0 erreurs, 205 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T22:15:53+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "erreur",
+      "detail": "[Errno 11001] getaddrinfo failed",
+      "at": "2026-11-14T22:15:53+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:15:57+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "attention",
+      "detail": "159 nouveaux fichiers ; 0 erreurs, 44 reportés (rejouer la commande reprend l'acquisition)",
+      "at": "2026-11-14T22:18:34+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:18:45+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:19:23+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "44 nouveaux fichiers FIRMS (total session 1127 déjà présents)",
+      "at": "2026-11-14T22:20:30+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:20:41+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:21:27+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 nouveaux fichiers FIRMS (total session 1171 déjà présents)",
+      "at": "2026-11-14T22:21:36+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:21:49+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:22:35+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 nouveaux fichiers FIRMS (total session 1171 déjà présents)",
+      "at": "2026-11-14T22:22:43+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:23:00+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:23:31+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 nouveaux fichiers FIRMS (total session 1171 déjà présents)",
+      "at": "2026-11-14T22:23:36+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:23:45+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:24:07+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 nouveaux fichiers FIRMS (total session 1171 déjà présents)",
+      "at": "2026-11-14T22:24:11+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:24:31+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:24:55+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 nouveaux fichiers FIRMS (total session 1171 déjà présents)",
+      "at": "2026-11-14T22:24:59+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:25:22+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:25:52+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 nouveaux fichiers FIRMS (total session 1171 déjà présents)",
+      "at": "2026-11-14T22:25:56+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:26:16+00:00"
+    },
+    {
+      "step": "download:geo",
+      "status": "ok",
+      "detail": "emprise acquise (ne_110m_admin_0_countries.geojson)",
+      "at": "2026-11-14T22:42:58+00:00"
+    },
+    {
+      "step": "download:firms",
+      "status": "ok",
+      "detail": "0 nouveaux fichiers FIRMS (total session 1171 déjà présents)",
+      "at": "2026-11-14T22:43:02+00:00"
+    },
+    {
+      "step": "download:earthdata",
+      "status": "bloqué",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "at": "2026-11-14T22:43:07+00:00"
+    },
+    {
+      "step": "predict",
+      "status": "ok",
+      "detail": "fire_risk.json — random_forest, origine=nasa_firms",
+      "at": "2026-11-14T22:43:44+00:00"
+    }
+  ],
+  "blockers": [
+    {
+      "what": "FIRMS API (CSV par emprise)",
+      "detail": "FIRMS_MAP_KEY absent : API FIRMS inaccessible sans clé",
+      "http_status": null,
+      "action": "fournir FIRMS_MAP_KEY via Settings → Environment (clé gratuite FIRMS)",
+      "at": "2026-10-16T11:25:54+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-16T11:25:55+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:26:29+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:26:57+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:27:00+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:27:35+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:27:36+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:31:15+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:40:34+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:42:56+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:44:38+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:45:53+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:47:11+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:50:38+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:51:58+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T10:58:50+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T11:03:17+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T11:06:19+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T11:09:57+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T11:16:34+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T11:46:14+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T11:48:25+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-10-18T12:30:45+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T04:52:00+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T05:14:20+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T05:18:02+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T05:21:22+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T05:24:57+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T05:28:33+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T05:32:00+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T13:06:59+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T13:11:12+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T13:18:25+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T13:22:51+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T13:30:22+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T13:40:49+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T13:44:37+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T13:51:11+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T14:03:49+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T14:06:34+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": null,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T14:37:46+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T15:00:03+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T15:10:06+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T15:16:41+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T15:42:50+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T16:21:13+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T19:50:22+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T20:16:30+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T20:34:31+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T20:46:31+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": null,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T21:10:19+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T21:39:51+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:08:44+00:00"
+    },
+    {
+      "what": "Archives standard",
+      "detail": "[Errno 11001] getaddrinfo failed",
+      "http_status": null,
+      "action": "vérifier l'accès réseau CMR",
+      "at": "2026-11-14T22:15:53+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:18:45+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:20:41+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:21:49+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:23:00+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:23:45+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:24:31+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:25:22+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:26:16+00:00"
+    },
+    {
+      "what": "Archives standard (MOD14/MYD14/VNP14IMG)",
+      "detail": "Redirection vers Earthdata Login : granule standard non accessible sans authentification",
+      "http_status": 302,
+      "action": "fournir EARTHDATA_USER+EARTHDATA_PASSWORD ou EARTHDATA_TOKEN (ou ~/.netrc)",
+      "at": "2026-11-14T22:43:07+00:00"
+    }
+  ],
+  "commands": [],
+  "period_start": "2013-01-01",
+  "period_end": "2020-12-31",
+  "project_version": "0.2.0"
+}

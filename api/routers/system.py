@@ -163,6 +163,53 @@ def fire_risk(request: Request, response: Response) -> dict:
     return payload
 
 
+@router.post(
+    "/chat",
+    summary="Assistant — réponse déterministe depuis les artefacts",
+    description=(
+        "Pas de LLM configuré : renvoie un résumé factuel construit depuis "
+        "fire_risk.json / meta.json (modèle, métriques, période, provenance). "
+        "Honnête par construction — aucune génération inventée."
+    ),
+)
+def chat(request: Request, body: dict) -> dict:
+    store = get_store(request)
+    risk = store.get_json("fire_risk.json") or {}
+    meta = store.get_json("meta.json") or {}
+    metrics = risk.get("metrics") or {}
+    period = risk.get("period") or {}
+    lines = []
+    if risk:
+        lines.append(
+            f"Modèle de risque : {risk.get('model', {}).get('type', '?')} — "
+            f"{len(risk.get('cells', []))} cellules, référence "
+            f"{risk.get('reference_date', '?')}, origine {risk.get('data_origin', '?')}."
+        )
+        if metrics:
+            lines.append(
+                f"Métriques test : PR-AUC {metrics.get('pr_auc', '?')}, "
+                f"F1 {metrics.get('f1', '?')}, rappel {metrics.get('recall', '?')}, "
+                f"Brier {metrics.get('brier', '?')}."
+            )
+        lines.append(
+            "Attention : il s'agit d'un backtest sur détections satellite passées "
+            "(fenêtre "
+            f"{risk.get('model', {}).get('horizon_days', '?')} j), pas d'une alerte incendie."
+        )
+    else:
+        lines.append("Aucun artefact fire_risk.json pour le moment.")
+    if period:
+        lines.append(f"Couverture : {period.get('start', '?')} → {period.get('end', '?')}.")
+    last_user = ""
+    messages = body.get("messages") or []
+    if messages:
+        last_user = str(messages[-1].get("content", ""))[:200]
+    reply = "\n".join(lines)
+    if last_user:
+        reply = f"(question: « {last_user} »)\n\n" + reply
+    return {"reply": reply}
+
+
 @router.get(
     "/report",
     summary="Rapport scientifique",

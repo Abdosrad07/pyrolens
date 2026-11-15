@@ -41,6 +41,30 @@ export default function useApi() {
     }
   }, []);
 
+  /** Lance un entraînement predict (job async — ~10 min sur données réelles). */
+  const predict = useCallback(async ({ grid_deg = 0.25, window = 8, reference_date = null }) => {
+    return apiPost("/api/v1/predict", { grid_deg, window, reference_date });
+  }, []);
+
+  const getPredictJob = useCallback(async (jobId) => {
+    return apiGet(`/api/v1/predict/${jobId}`);
+  }, []);
+
+  /** Liste tous les jobs (harmonization, firms_analyze, firms_history, predict). */
+  const listJobs = useCallback(async () => {
+    return apiGet("/api/v1/experiments");
+  }, []);
+
+  /** Série quotidienne du calendrier des feux (vraies données pipeline). */
+  const fireCalendarDaily = useCallback(async ({ pair, start, end, limit = 20000 } = {}) => {
+    const q = new URLSearchParams();
+    if (pair) q.set("pair", pair);
+    if (start) q.set("start", start);
+    if (end) q.set("end", end);
+    q.set("limit", String(limit));
+    return apiGet(`/api/v1/fire-calendar/daily?${q}`);
+  }, []);
+
   const geocode = useCallback(async (q) => {
     try {
       const r = await fetch(
@@ -54,5 +78,5 @@ export default function useApi() {
     }
   }, []);
 
-  return { loading, error, getFireRisk, chat, geocode };
+  return { loading, error, getFireRisk, chat, predict, getPredictJob, listJobs, fireCalendarDaily, geocode };
 }
