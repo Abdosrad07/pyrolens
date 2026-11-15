@@ -6,10 +6,12 @@
  */
 
 import { useState, useEffect } from "react";
+import { useI18n } from "../i18n/index.jsx";
 
 const PAGE = 15;
 
 export default function DqView({ onClose }) {
+  const { t } = useI18n();
   const [audit, setAudit] = useState(null);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
@@ -25,7 +27,7 @@ export default function DqView({ onClose }) {
     return (
       <div className="dq-card">
         <div className="dq-top">
-          <h3>Rapport de qualité des données</h3>
+          <h3>{t("dq.title")}</h3>
           <button className="ibtn" type="button" aria-label="Fermer" onClick={onClose}>✕</button>
         </div>
         <div className="banner err">Artefact audit.json indisponible : {error}</div>
@@ -35,10 +37,10 @@ export default function DqView({ onClose }) {
     return (
       <div className="dq-card">
         <div className="dq-top">
-          <h3>Rapport de qualité des données</h3>
+          <h3>{t("dq.title")}</h3>
           <button className="ibtn" type="button" aria-label="Fermer" onClick={onClose}>✕</button>
         </div>
-        <p className="empty">Chargement…</p>
+        <p className="empty">{t("dq.loading", "Chargement…")}</p>
       </div>
     );
 

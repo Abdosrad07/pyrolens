@@ -11,9 +11,12 @@
  */
 
 import { useState } from "react";
+import { useI18n } from "../i18n/index.jsx";
 import Icons from "./icons.jsx";
+import LangToggle from "./LangToggle.jsx";
 
-export default function TopBar({ onSearch, onOpenMenu, onOpenRisk, onOpenAi, onAnnounce, onContact }) {
+export default function TopBar({ onSearch, onOpenMenu, onOpenRisk, onOpenAi, onAnnounce, onContact, onToggleLang }) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -33,37 +36,38 @@ export default function TopBar({ onSearch, onOpenMenu, onOpenRisk, onOpenAi, onA
           <Icons name="flame" className="ic" ariaHidden size={22} />
         </span>
         <div>
-          <h1>Fire Monitor</h1>
-          <small>Feux actifs · données NASA FIRMS</small>
+          <h1>{t("brand.title", "PyroLens")}</h1>
+          <small>{t("brand.subtitle", "Feux actifs · données NASA FIRMS")}</small>
         </div>
       </div>
       <span className="sp" />
       <form className="search-form" role="search" onSubmit={handleSubmit}>
         <Icons name="search" className="ic" ariaHidden size={18} />
-        <label className="sr-only" htmlFor="searchInput">Rechercher un lieu</label>
+        <label className="sr-only" htmlFor="searchInput">{t("search.label")}</label>
         <input
           id="searchInput"
           type="search"
-          placeholder="Rechercher un lieu…"
+          placeholder={t("search.placeholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoComplete="off"
           enterKeyHint="search"
         />
-        <button type="submit" disabled={busy}>Aller</button>
+        <button type="submit" disabled={busy}>{t("search.go")}</button>
       </form>
-      <button className="ibtn btn-search" type="button" title="Rechercher un lieu" aria-label="Rechercher un lieu" onClick={onOpenMenu}>
+      <button className="ibtn btn-search" type="button" title={t("searchBtn")} aria-label={t("searchBtn")} onClick={onOpenMenu}>
         <Icons name="search" className="ic" ariaHidden size={18} />
       </button>
-      <button className="ibtn" type="button" title="Annonces" aria-label="Annonces" onClick={onAnnounce}>
+      <button className="ibtn" type="button" title={t("announcements")} aria-label={t("announcements")} onClick={onAnnounce}>
         <Icons name="megaphone" className="ic" ariaHidden size={18} />
       </button>
-      <button className="ibtn" type="button" title="Contacter la NASA Earthdata" aria-label="Contact" onClick={onContact}>
+      <button className="ibtn" type="button" title={t("contact")} aria-label={t("contact")} onClick={onContact}>
         <Icons name="chat" className="ic" ariaHidden size={18} />
       </button>
-      <button className="ibtn" type="button" title="Ouvrir le menu principal" aria-label="Ouvrir le menu principal" onClick={onOpenMenu}>
+      <button className="ibtn" type="button" title={t("menu")} aria-label={t("menu")} onClick={onOpenMenu}>
         <Icons name="menu" className="ic" ariaHidden size={18} />
       </button>
+      <LangToggle />
     </header>
   );
 }

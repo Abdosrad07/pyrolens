@@ -13,6 +13,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useI18n } from "../i18n/index.jsx";
 import Icons from "./icons.jsx";
 import useRiskData from "../hooks/useRiskData.js";
 import useApi from "../hooks/useApi.js";
@@ -21,6 +22,7 @@ const GRID_OPTS = ["0.10", "0.25", "0.50"];
 const WIN_OPTS = ["1", "4", "8", "16"];
 
 export default function RiskPanel({ open, onClose }) {
+  const { t } = useI18n();
   const [showLayer, setShowLayer] = useState(true);
   const [grid, setGrid] = useState("0.25");
   const [window, setWindow] = useState("8");
@@ -47,10 +49,10 @@ export default function RiskPanel({ open, onClose }) {
         : "rp-status err";
   const statusText =
     riskData && !loading
-      ? "Données charagées"
+      ? t("riskPanel.status.ok")
       : loading
-        ? "Chargement…"
-        : "Indisponible";
+        ? t("riskPanel.status.loading")
+        : t("riskPanel.status.error");
 
   const handleRun = async () => {
     setRunning(true);
@@ -128,7 +130,7 @@ export default function RiskPanel({ open, onClose }) {
     >
       <div className="rp-head">
         <Icons name="flame" className="ic" ariaHidden size={18} />
-        <h2>Analyse de risque de feu</h2>
+        <h2>{t("riskPanel.title", "Analyse de risque de feu")}</h2>
         <span className={statusCls}>{statusText}</span>
         <button className="ibtn" type="button" title="Fermer" aria-label="Fermer le panneau risque" onClick={onClose}>
           <Icons name="x" className="ic" ariaHidden size={18} />
@@ -138,7 +140,7 @@ export default function RiskPanel({ open, onClose }) {
       <div className="rp-scroll">
         {/* Configuration */}
         <div className="rp-section">
-          <h3>Configuration</h3>
+          <h3>{t("riskPanel.config", "Configuration")}</h3>
           <div className="rp-toggle">
             <input
               type="checkbox"
@@ -147,10 +149,10 @@ export default function RiskPanel({ open, onClose }) {
               checked={showLayer}
               onChange={(e) => setShowLayer(e.target.checked)}
             />
-            <label htmlFor="rpToggle">Afficher la couche risque</label>
+            <label htmlFor="rpToggle">{t("riskPanel.toggleLayer", "Afficher la couche risque")}</label>
           </div>
           <div className="rp-row">
-            <label htmlFor="rpGrid">Grille (°)</label>
+            <label htmlFor="rpGrid">{t("riskPanel.grid", "Grille (°)")}</label>
             <select id="rpGrid" value={grid} onChange={(e) => setGrid(e.target.value)}>
               {GRID_OPTS.map((g) => (
                 <option key={g} value={g}>{g}°</option>
@@ -158,15 +160,15 @@ export default function RiskPanel({ open, onClose }) {
             </select>
           </div>
           <div className="rp-row">
-            <label htmlFor="rpWindow">Fenêtre (jours)</label>
+            <label htmlFor="rpWindow">{t("riskPanel.window", "Fenêtre (jours)")}</label>
             <select id="rpWindow" value={window} onChange={(e) => setWindow(e.target.value)}>
               {WIN_OPTS.map((w) => (
-                <option key={w} value={w}>{w} jour{w !== "1" ? "s" : ""}</option>
+                <option key={w} value={w}>{w} {t("riskPanel.windowDays", "jours")}</option>
               ))}
             </select>
           </div>
           <div className="rp-row">
-            <label htmlFor="rpDate">Date de référence</label>
+            <label htmlFor="rpDate">{t("riskPanel.date", "Date de référence")}</label>
             <input
               id="rpDate"
               type="date"
@@ -175,7 +177,7 @@ export default function RiskPanel({ open, onClose }) {
             />
           </div>
           <div className="rp-row">
-            <label htmlFor="rpThreshold">Seuil d&apos;affichage</label>
+            <label htmlFor="rpThreshold">{t("riskPanel.threshold", "Seuil d'affichage")}</label>
             <input
               id="rpThreshold"
               type="range"
@@ -190,27 +192,27 @@ export default function RiskPanel({ open, onClose }) {
           <div className="rp-actions">
             <button className="rp-btn" type="button" onClick={handleRun}>
               <Icons name="cpu" className="ic" ariaHidden size={16} />
-              Exécuter prédiction
+              {t("riskPanel.run", "Exécuter prédiction")}
             </button>
             <button className="rp-btn rp-btn-secondary" type="button" onClick={handleLoad}>
               <Icons name="download" className="ic" ariaHidden size={16} />
-              Charger artefact
+              {t("riskPanel.load", "Charger artefact")}
             </button>
           </div>
         </div>
 
         {/* Bandeau honnêteté */}
         <div className="rp-section">
-          <h3>Bandeau honnêteté</h3>
+          <h3>{t("riskPanel.honesty", "Bandeau honnêteté")}</h3>
           <div className="honesty">
-            <b>Estimation du risque d&apos;activité de feu détectée</b> — pas une alerte incendie
+            <b>{t("riskPanel.honestyText", "Estimation du risque d'activité de feu détectée").replace("<b>", "").replace("</b>", "")} </b>— {t("riskPanel.honestyTail", "pas une alerte incendie")}
             <small>
               {riskData
-                ? `données ${origin} · généré le ${generatedAt}` +
+                ? `${t("riskPanel.honestyData", "données {origin} · généré le {generatedAt}", { origin, generatedAt })}` +
                   (prAuc != null ? ` · PR-AUC ${prAuc.toFixed(3)}` : "") +
                   (f1 != null ? ` · F1 ${f1.toFixed(3)}` : "") +
                   (baseline != null ? ` · baseline ${baseline.toFixed(3)}` : "")
-                : "Module de prédiction en attente de données"}
+                : t("riskPanel.waiting", "Module de prédiction en attente de données")}
             </small>
           </div>
         </div>
@@ -218,23 +220,23 @@ export default function RiskPanel({ open, onClose }) {
         {/* Métriques */}
         {riskData && (prAuc != null || f1 != null) && (
           <div className="rp-section">
-            <h3>Métriques du modèle</h3>
+            <h3>{t("riskPanel.metrics", "Métriques du modèle")}</h3>
             <div className="metrics-grid">
               {prAuc != null && (
                 <div className="metric-card">
-                  <div className="mk">PR-AUC</div>
+                  <div className="mk">{t("riskPanel.metricPR", "PR-AUC")}</div>
                   <div className="mv">{prAuc.toFixed(3)}</div>
                 </div>
               )}
               {f1 != null && (
                 <div className="metric-card">
-                  <div className="mk">F1</div>
+                  <div className="mk">{t("riskPanel.metricF1", "F1")}</div>
                   <div className="mv">{f1.toFixed(3)}</div>
                 </div>
               )}
               {baseline != null && (
                 <div className="metric-card">
-                  <div className="mk">Baseline</div>
+                  <div className="mk">{t("riskPanel.metricBaseline", "Baseline")}</div>
                   <div className="mv">{baseline.toFixed(3)}</div>
                 </div>
               )}
@@ -245,7 +247,7 @@ export default function RiskPanel({ open, onClose }) {
         {/* Journal d'exécution */}
         {showLog && (
           <div className="rp-section">
-            <h3>Journal d&apos;exécution</h3>
+            <h3>{t("riskPanel.log", "Journal d'exécution")}</h3>
             <pre className="risk-log">{log}</pre>
           </div>
         )}
