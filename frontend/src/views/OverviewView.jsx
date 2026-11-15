@@ -41,7 +41,7 @@ async function readArtifact(path, fallback) {
 
 import { useI18n } from "../i18n/index.jsx";
 
-export default function OverviewView() {
+export default function OverviewView({ onBack }) {
   const { t } = useI18n();
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);

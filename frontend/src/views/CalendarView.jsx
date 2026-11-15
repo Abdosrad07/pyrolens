@@ -10,9 +10,9 @@ import { useState, useEffect, useMemo } from "react";
 import { useI18n } from "../i18n/index.jsx";
 import useApi from "../hooks/useApi.js";
 
-export default function CalendarView() {
+export default function CalendarView({ onBack }) {
   const { t } = useI18n();
-  const api = useApi();
+  const { fireCalendarDaily } = useApi(); // callback stable (useCallback [])
   const today = new Date();
   const [year, setYear] = useState(2020);
   const [month, setMonth] = useState(11);
@@ -67,6 +67,11 @@ export default function CalendarView() {
 
   return (
     <div className="content">
+      {onBack && (
+        <button className="btn-back" type="button" onClick={onBack} style={{ marginBottom: "0.8rem" }}>
+          ← {t("common.backToMap", "Retour à la carte")}
+        </button>
+      )}
       <h2>{t("calendar.title", "Calendrier des feux")}</h2>
       <small>{t("calendar.subtitle", "Données réelles du pipeline…")}</small>
       {error && <div className="banner err">{t("calendar.apiError", "API indisponible :")} {error}</div>}
