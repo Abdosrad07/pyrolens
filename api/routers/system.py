@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, Request, Response
 
-from api.routers.deps import apply_cache_headers, cache_guard, get_store
+from api.routers.deps import apply_cache_headers, cache_guard, get_jobs, get_store
 from api.services.queries import known_pairs
 from api.store import ArtifactStore
 from api import __doc__ as _  # noqa: F401 — maintient l'import paquet explicite
@@ -165,49 +165,36 @@ def fire_risk(request: Request, response: Response) -> dict:
 
 @router.post(
     "/chat",
-    summary="Assistant — réponse déterministe depuis les artefacts",
+    summary="Assistant — réponses factuelles sur l'application",
     description=(
-        "Pas de LLM configuré : renvoie un résumé factuel construit depuis "
-        "fire_risk.json / meta.json (modèle, métriques, période, provenance). "
-        "Honnête par construction — aucune génération inventée."
+        "Assistant déterministe (pas de LLM) : intentions métier sur les "
+        "données, le pipeline, les vues, le modèle de risque, les jobs et les "
+        "limites scientifiques. Chaque réponse s'appuie sur les artefacts "
+        "réels et l'état des jobs — jamais de contenu inventé."
     ),
 )
 def chat(request: Request, body: dict) -> dict:
+    from api.services.chat import answer
+
     store = get_store(request)
-    risk = store.get_json("fire_risk.json") or {}
-    meta = store.get_json("meta.json") or {}
-    metrics = risk.get("metrics") or {}
-    period = risk.get("period") or {}
-    lines = []
-    if risk:
-        lines.append(
-            f"Modèle de risque : {risk.get('model', {}).get('type', '?')} — "
-            f"{len(risk.get('cells', []))} cellules, référence "
-            f"{risk.get('reference_date', '?')}, origine {risk.get('data_origin', '?')}."
-        )
-        if metrics:
-            lines.append(
-                f"Métriques test : PR-AUC {metrics.get('pr_auc', '?')}, "
-                f"F1 {metrics.get('f1', '?')}, rappel {metrics.get('recall', '?')}, "
-                f"Brier {metrics.get('brier', '?')}."
-            )
-        lines.append(
-            "Attention : il s'agit d'un backtest sur détections satellite passées "
-            "(fenêtre "
-            f"{risk.get('model', {}).get('horizon_days', '?')} j), pas d'une alerte incendie."
-        )
-    else:
-        lines.append("Aucun artefact fire_risk.json pour le moment.")
-    if period:
-        lines.append(f"Couverture : {period.get('start', '?')} → {period.get('end', '?')}.")
-    last_user = ""
+    jobs = get_jobs(request).list()[:10]
+    firms = store.get_json("firms.json") or {}
+    downloads = {}
+    dl_path = Path(__file__).resolve().parents[2] / "data" / "manifests" / "downloads.json"
+    try:
+        if dl_path.exists():
+            downloads = {"manifest_entries": len(json.loads(dl_path.read_text(encoding="utf-8")).get("entries", []))}
+    except Exception:  # noqa: BLE001
+        pass
     messages = body.get("messages") or []
-    if messages:
-        last_user = str(messages[-1].get("content", ""))[:200]
-    reply = "\n".join(lines)
-    if last_user:
-        reply = f"(question: « {last_user} »)\n\n" + reply
-    return {"reply": reply}
+    last = str(messages[-1].get("content", "")) if messages else ""
+    ctx = {
+        "risk": store.get_json("fire_risk.json") or {},
+        "meta": store.get_json("meta.json") or firms,
+        "jobs": [j.view() for j in jobs],
+        "downloads": downloads,
+    }
+    return {"reply": answer(last, ctx)}
 
 
 @router.get(
