@@ -1,5 +1,9 @@
 # PyroLens — Phase 2 (recherche & analyse MODIS / VIIRS, pilote Cameroun)
 
+> **📖 Documentation complète** : [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
+> — architecture, données, API, frontend, **modèle de prédiction expliqué**,
+> limites scientifiques et lancement.
+
 Pipeline Python reproductible d'audit, de baselines de concordance et d'analyse
 d'observabilité entre **MODIS Terra**, **MODIS Aqua** et **VIIRS Suomi-NPP 375 m**,
 avec rapports scientifiques servis en web (Vite + React + Recharts).

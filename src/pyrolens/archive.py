@@ -123,15 +123,19 @@ def archive_path(archive_dir: str | Path, sensor_key: str, year: int, country_sl
 
 
 def _probe(url: str) -> int | None:
-    """HEAD léger : code HTTP ou None si injoignable."""
-    try:
-        req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=30) as resp:  # noqa: S310
-            return resp.status
-    except urllib.error.HTTPError as exc:
-        return exc.code
-    except Exception:  # noqa: BLE001
-        return None
+    """HEAD léger : code HTTP ou None si injoignable (retry ×2 — le serveur
+    throttle les sondes en rafale et un timeout ne doit pas valoir 404)."""
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=30) as resp:  # noqa: S310
+                return resp.status
+        except urllib.error.HTTPError as exc:
+            return exc.code
+        except Exception:  # noqa: BLE001
+            if attempt == 0:
+                time.sleep(1.5)
+    return None
 
 
 def resolve_country_file(
