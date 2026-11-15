@@ -6,20 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { apiGet } from "../services/api.js";
-
-const KIND_LABEL = {
-  harmonization: "Harmonisation",
-  firms_analyze: "Analyse zone FIRMS",
-  firms_history: "Historique archive",
-  predict: "Prédiction risque",
-};
-
-const STATUS_LABEL = {
-  pending: "En attente",
-  running: "En cours",
-  succeeded: "Terminé",
-  failed: "Échoué",
-};
+import { useI18n } from "../i18n/index.jsx";
 
 const PARAM_LABEL = {
   grid_deg: "Grille (°)",
@@ -36,12 +23,6 @@ const PARAM_LABEL = {
   grid: "Grille",
   window_days: "Fenêtre (jours)",
 };
-
-function fmtDate(iso) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
-}
 
 function fmtParamValue(v) {
   if (v == null) return "—";
@@ -81,6 +62,7 @@ function JobParams({ params }) {
 }
 
 export default function JobsView({ onBack }) {
+  const { t, lang } = useI18n();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);   // vrai seulement au 1er fetch
   const [refreshing, setRefreshing] = useState(false);
@@ -114,15 +96,11 @@ export default function JobsView({ onBack }) {
 
   const job = items.find((j) => j.job_id === selectedId);
 
-  function fmtDate(iso) {
+  const fmtDateLoc = (iso) => {
     if (!iso) return "—";
-    const d = new Date(iso);
-    const loc = t("lang.fr") === "Français" ? "fr-FR" : "en-US";
-    return d.toLocaleString(loc, { dateStyle: "short", timeStyle: "short" });
-  }
-
-  const TL = (s) => s[0] ? t(`jobs.timeline.${s[0]}`, s[0]) : "";
-  const SK = (s) => s[0] ? t(`jobs.kind.${s[0]}`, s[0]) : "";
+    const loc = lang === "en" ? "en-US" : "fr-FR";
+    return new Date(iso).toLocaleString(loc, { dateStyle: "short", timeStyle: "short" });
+  };
 
   if (job) {
     const p = job.progress || {};
@@ -143,10 +121,10 @@ export default function JobsView({ onBack }) {
         <div className="jgrid">
           <div className="tl">
             {[
-              ["created", fmtDate(job.created_at), "done"],
-              ["started", fmtDate(job.started_at), job.started_at ? "done" : "cur"],
+              ["created", fmtDateLoc(job.created_at), "done"],
+              ["started", fmtDateLoc(job.started_at), job.started_at ? "done" : "cur"],
               ["progress", p.step ? `${p.step} — ${Math.round(p.pct || 0)}% ${p.detail || ""}` : "—", job.status === "running" ? "cur" : "done"],
-              ["finished", fmtDate(job.finished_at), job.finished_at ? "done" : "pend"],
+              ["finished", fmtDateLoc(job.finished_at), job.finished_at ? "done" : "pend"],
             ].map((s, i) => (
               <div key={i} className={`st ${s[2]}`}>
                 <div className="c">
@@ -161,9 +139,9 @@ export default function JobsView({ onBack }) {
           </div>
           <table className="dt">
             <tbody>
-              <tr><td>Type</td><td><code>{job.kind}</code></td></tr>
-              <tr><td>Paramètres</td><td><JobParams params={job.params} /></td></tr>
-              {job.error && <tr><td>Erreur</td><td><code style={{ whiteSpace: "pre-wrap" }}>{job.error}</code></td></tr>}
+              <tr><td>{t("jobs.table.type", "Type")}</td><td><code>{job.kind}</code></td></tr>
+              <tr><td>{t("jobs.table.params", "Paramètres")}</td><td><JobParams params={job.params} /></td></tr>
+              {job.error && <tr><td>{t("jobs.table.error", "Erreur")}</td><td><code style={{ whiteSpace: "pre-wrap" }}>{job.error}</code></td></tr>}
               {job.links?.result && (
                 <tr><td>{t("jobs.table.result")}</td><td><code>{job.links.result}</code></td></tr>
               )}
@@ -176,6 +154,11 @@ export default function JobsView({ onBack }) {
 
   return (
     <div className="content">
+      {onBack && (
+        <button className="btn-back" type="button" onClick={onBack} style={{ marginBottom: "0.8rem" }}>
+          {t("common.backToMap", "← Retour à la carte")}
+        </button>
+      )}
       <h2>{t("jobs.title")}</h2>
       <small>{t("jobs.subtitle")}</small>
       {loading && <p className="empty">{t("jobs.loading")}</p>}
@@ -212,7 +195,7 @@ export default function JobsView({ onBack }) {
                   <td>{t(`jobs.kind.${j.kind}`, j.kind)}</td>
                   <td><span className={`badge ${badge}`}>{t(`jobs.status.${j.status}`, j.status)}</span></td>
                   <td>{j.progress?.step ? `${j.progress.step} ${Math.round(j.progress.pct || 0)}%` : "—"}</td>
-                  <td>{fmtDate(j.created_at)}</td>
+                  <td>{fmtDateLoc(j.created_at)}</td>
                 </tr>
               );
             })}

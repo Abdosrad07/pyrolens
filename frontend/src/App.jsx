@@ -166,22 +166,20 @@ function InnerApp() {
         </div>
       )}
 
-      {(isMap || isRiskView) && (
-        <div style={{
-          position: "absolute", left: "50%", bottom: "max(1rem,env(safe-area-inset-bottom))",
-          transform: "translateX(-50%)", zIndex: 1450,
-        }}>
-          <DockNav active={isRiskView ? "risk" : view} onSelect={handleNavSelect} />
-        </div>
-      )}
+      {/* Dock de navigation — visible sur toutes les vues */}
+      <div style={{
+        position: "absolute", left: "50%", bottom: "max(1rem,env(safe-area-inset-bottom))",
+        transform: "translateX(-50%)", zIndex: 1450,
+      }}>
+        <DockNav active={isRiskView ? "risk" : view} onSelect={handleNavSelect} />
+      </div>
 
-      {(isMap || isRiskView) && (
-        <RiskSphere
-          open={aiOpen}
-          onClick={() => setAiOpen((v) => !v)}
-          hasData={!!riskData}
-        />
-      )}
+      {/* Sphère flottante — ouvre l'assistant IA (toutes vues) */}
+      <RiskSphere
+        open={aiOpen}
+        onClick={() => setAiOpen((v) => !v)}
+        hasData={!!riskData}
+      />
 
       {(isMap || isRiskView) && (
         <div style={{ position: "absolute", inset: 0, zIndex: 1060, pointerEvents: riskOpen ? "auto" : "none" }}>
@@ -192,13 +190,12 @@ function InnerApp() {
         </div>
       )}
 
-      {(isMap || isRiskView) && (
-        <AiPanel
-          open={aiOpen}
-          onClose={() => setAiOpen(false)}
-          onSend={handleAiSend}
-        />
-      )}
+      {/* Panneau IA — accessible depuis toutes les vues */}
+      <AiPanel
+        open={aiOpen}
+        onClose={() => setAiOpen(false)}
+        onSend={handleAiSend}
+      />
 
       <Toast message={toastMsg} onDone={hideToast} />
     </div>
