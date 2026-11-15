@@ -1,5 +1,5 @@
 /**
- * useApi — hook utilitaire pour interroger l'API Fire Monitor.
+ * useApi — hook utilitaire pour interroger l'API PyroLens.
  *
  * Fournit des helpers typés pour :
  *  - /api/v1/fire-risk (données risque)

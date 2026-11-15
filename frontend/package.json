@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Fire Monitor — interface Fire Monitor modulaire React (carte Leaflet + GIBS, vues Aperçu/Calendrier/Jobs/Qualité/Risque, panneau risque)",
+  "description": "PyroLens — interface modulaire React (carte Leaflet + GIBS, vues Aperçu/Calendrier/Jobs/Qualité/Risque, panneau risque)",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

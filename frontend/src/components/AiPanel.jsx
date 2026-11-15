@@ -6,11 +6,13 @@
  */
 
 import { useState, useEffect, useRef } from "react";
+import { useI18n } from "../i18n/index.jsx";
 import Icons from "../components/icons.jsx";
 
 export default function AiPanel({ open, onClose, onSend }) {
+  const { t } = useI18n();
   const [messages, setMessages] = useState([
-    { role: "bot", text: "Bonjour, je peux vous aider à lire la carte, comprendre les niveaux de risque et les données FIRMS. Que souhaitez-vous savoir ?" },
+    { role: "bot", text: t("ai.welcome") },
   ]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -30,13 +32,13 @@ export default function AiPanel({ open, onClose, onSend }) {
     const reply = await onSend(q);
     setBusy(false);
     if (reply) setMessages((m) => [...m, { role: "bot", text: reply }]);
-    else setMessages((m) => [...m, { role: "bot", text: "Assistant non connecté : le backend /api/v1/chat est requis.", cls: "err" }]);
+    else setMessages((m) => [...m, { role: "bot", text: t("ai.notConnected", "Assistant non connecté : le backend /api/v1/chat est requis."), cls: "err" }]);
   };
 
   const suggestions = [
-    "Résume la zone affichée sur la carte.",
-    "Que signifient les niveaux de risque et les couleurs ?",
-    "Quelle est la différence entre MODIS et VIIRS ?",
+    t("ai.suggestions.summarize"),
+    t("ai.suggestions.colors"),
+    t("ai.suggestions.modisViirs"),
   ];
 
   return (
@@ -48,9 +50,9 @@ export default function AiPanel({ open, onClose, onSend }) {
     >
       <div className="rp-head">
         <Icons name="spark" className="ic" ariaHidden size={18} />
-        <h2>Assistant IA</h2>
-        <button className="ibtn" type="button" title="Nouvelle conversation" aria-label="Nouvelle conversation"
-          onClick={() => setMessages([{ role: "bot", text: "Nouvelle conversation. Que souhaitez-vous savoir ?" }])}
+        <h2>{t("ai.title", "Assistant IA")}</h2>
+        <button className="ibtn" type="button" title={t("ai.newChat")} aria-label={t("ai.newChat")}
+          onClick={() => setMessages([{ role: "bot", text: t("ai.welcomeNew") }])}
         >
           <Icons name="plus" className="ic" ariaHidden size={18} />
         </button>
@@ -65,7 +67,7 @@ export default function AiPanel({ open, onClose, onSend }) {
             {m.text}
           </div>
         ))}
-        {busy && <div className="ai-msg bot typing">Réflexion en cours…</div>}
+        {busy && <div className="ai-msg bot typing">{t("ai.thinking", "Réflexion en cours…")}</div>}
       </div>
 
       <div className="ai-suggest" style={{ display: messages.length <= 1 ? "flex" : "none" }}>
@@ -79,14 +81,14 @@ export default function AiPanel({ open, onClose, onSend }) {
         <textarea
           id="aiInput"
           rows={1}
-          placeholder="Posez votre question…"
+          placeholder={t("ai.placeholder", "Posez votre question…")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); handleSubmit(e); }
           }}
         />
-        <button className="ai-send" type="submit" aria-label="Envoyer" disabled={busy || !input.trim()}>
+        <button className="ai-send" type="submit" aria-label={t("ai.send", "Envoyer")} disabled={busy || !input.trim()}>
           <Icons name="send" className="ic" ariaHidden size={18} />
         </button>
       </form>
