@@ -169,18 +169,22 @@ spatiale du modèle.
 - **Génération de contenu** : aucun contenu marketing/généré par IA
   identifié dans le produit
 
-**Déclaration proposée (anglais)** :
+**Déclaration confirmée par l'équipe (2026-11-15)** — répartition officielle :
+- **Freebuff** — backend : pose des briques (scaffolding, architecture API)
+- **Claude** — peaufinage de l'UI/UX frontend
+- **ChatGPT** — brainstorming et supervision du projet
+- **Devin (Cognition)** — amélioration du backend et conception du
+  modèle de prédiction de risque
 
-> AI-assisted development tools (Devin by Cognition, Freebuff, and an AI
-> coding assistant via the Claude IDE configuration) were used to assist
-> code generation, debugging and documentation during development. The
-> delivered product contains NO generative AI component: the in-app
+**Déclaration à coller dans le formulaire (anglais)** :
+
+> AI-assisted development tools were used during development, with the
+> following roles: Freebuff for backend scaffolding, Claude for UI/UX
+> refinement, ChatGPT for brainstorming and project supervision, and Devin
+> (Cognition) for backend improvements and the fire-risk prediction model.
+> The delivered product contains NO generative AI component: the in-app
 > assistant is a deterministic, rules-based responder built from project
-> artifacts. No AI-generated images, videos or branding assets are used.
-
-**Point d'attention** : `À CONFIRMER PAR L'ÉQUIPE` — vérifier si d'autres
-outils IA ont été utilisés (ChatGPT, Copilot, etc.) et si les co-auteurs
-souhaitent être crédités. Le branding "NASA" n'apparaît que dans des
+> artifacts. No AI-generated images, videos or branding assets are used. Le branding "NASA" n'apparaît que dans des
 attributions de données (correct) — vérifier qu'aucun logo NASA n'est
 reproduit dans les visuels maison (les tuiles GIBS portent leur
 attribution, c'est conforme).
@@ -347,8 +351,10 @@ Socle technique/scientifique excellent et honnête. Le projet est
 
 ### Informations attendues de l'équipe
 - `À CONFIRMER` : hébergement choisi pour la démo publique
-- `À CONFIRMER` : liste complète des outils IA utilisés (au-delà de Devin/Freebuff/Claude IDE)
-- `À CONFIRMER` : crédits des co-auteurs (Abdosrad07, LEMOBENG TANKEU, Freebuff)
+- ~~`À CONFIRMER` : liste complète des outils IA utilisés~~ → **confirmé** :
+  Freebuff (backend), Claude (UI/UX), ChatGPT (brainstorming/supervision),
+  Devin (backend + modèle de prédiction)
+- `À CONFIRMER` : crédits des co-auteurs (Abdosrad07, LEMOBENG TANKEU)
 - `À CONFIRMER` : identifiants Earthdata disponibles ou renoncement assumé
 - `À CONFIRMER` : qui produit la vidéo et qui la monte
 - `À CONFIRMER` : nom exact du défi/track Space Apps 2026 visé

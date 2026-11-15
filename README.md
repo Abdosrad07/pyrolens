@@ -1,208 +1,186 @@
-# PyroLens — Phase 2 (recherche & analyse MODIS / VIIRS, pilote Cameroun)
+<div align="center">
 
-> **📖 Documentation complète** : [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md)
-> — architecture, données, API, frontend, **modèle de prédiction expliqué**,
-> limites scientifiques et lancement.
+# PyroLens
 
-Pipeline Python reproductible d'audit, de baselines de concordance et d'analyse
-d'observabilité entre **MODIS Terra**, **MODIS Aqua** et **VIIRS Suomi-NPP 375 m**,
-avec rapports scientifiques servis en web (Vite + React + Recharts).
+**Reproducible comparison, harmonization and risk modeling of MODIS and VIIRS thermal anomaly detections**
 
-> **Origine des données.** L'API FIRMS est acquise avec la clé `FIRMS_MAP_KEY` fournie :
-> `data/raw/firms/` contient **1 170 fenêtres canoniques de 5 jours (585 MODIS + 585 VIIRS),
-> 2013-01-01 → 2020-12-31, 0 jour manquant**, et tous les rapports récents portent
-> `data_origin = nasa_firms`. Les archives **Earthdata Login** (granules standard,
-> produits de couverture/nuages) restent **bloquées sans identifiants** (HTTP 302,
-> `docs/data_inventory.md` §5) : sans ces produits, l'observabilité classe par défaut
-> « observabilité inconnue » et **jamais** « pas de feu ». L'échantillon synthétique
-> (`data/fixture/`, `synthetic_fixture`) reste utilisable pour la démo et les tests.
+*NASA Space Apps Challenge 2026*
 
 ---
 
-## 0. Démarrage rapide (interface + API)
+### Important Note
 
-Trois processus suffisent pour tout faire tourner en local :
+PyroLens does **not** predict wildfires. It predicts the probability that a satellite will *detect* at least one fire hotspot in a grid cell — and it says so, everywhere, with full provenance.
+
+---
+
+[![tests](https://img.shields.io/badge/tests-119%20passing-brightgreen)]()
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![data](https://img.shields.io/badge/data-NASA%20FIRMS%20%C2%B7%20GIBS%20%C2%B7%20CMR-orange)]()
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)]()
+[![React](https://img.shields.io/badge/react-18%2B-blue)]()
+
+</div>
+
+---
+
+## What It Does
+
+PyroLens answers three questions about satellite fire detections over Cameroon and West Africa:
+
+### 1. Do the sensors agree?
+
+VIIRS vs MODIS are compared on a common 0.25° grid with canonical time windows, measured by **Jaccard set overlap** (never called "accuracy").
+
+### 2. What happened in this area?
+
+On-demand zone analysis from the map: near-real-time (~5 days) **or** multi-year history from yearly FIRMS country archives (2013 → today, no API key needed).
+
+### 3. Where will detected activity continue?
+
+A calibrated **RandomForest** estimates `P(≥1 FIRMS detection within 8 days)` per cell — a documented *historical backtest*, not an operational forecast.
+
+## The Golden Rule
+
+> A satellite detection is an **observation**, not a wildfire.
+> An empty cell **never** means "no fire" — clouds, night, viewing angles and overpass times create blind spots. Every output carries `data_origin` (`nasa_firms` / `firms_archive_sp` / `synthetic_fixture`) and `estimate_kind` (`historical_backtest`).
+
+---
+
+## Quickstart
+
+Three processes are enough to run everything locally:
 
 ```powershell
-# 1) Clés (une seule fois) : copier le gabarit puis remplir
+# 1) Keys (once): copy the template, then fill in
 Copy-Item env.example .env.local   # FIRMS_MAP_KEY, EARTHDATA_*, PYROLENS_API_TOKEN…
-#    .env.local est gitignoré — ne JAMAIS mettre de clé dans env.example (versionné)
+#    .env.local is gitignored — NEVER put a key in env.example (versioned)
 
-# 2) Backend API FastAPI — port 8010 (8010 évite les conflits courants sur 8000)
+# 2) Backend API (FastAPI) — port 8010
+$env:PYTHONPATH='src'
 python -m uvicorn api.index:app --host 127.0.0.1 --port 8010
 
-# 3) Frontend Vite — port 5173, proxy /api → 8010
-$env:PYROLENS_API_ORIGIN='http://127.0.0.1:8010'   # ou via web/.env.local
-npm --prefix web run dev
+# 3) Frontend (React + Vite) — port 5174, proxies /api → 8010
+cd frontend; npm install; npm run dev   # → http://localhost:5174
 ```
 
-| Interface | URL | Contenu |
+| Interface | URL | Content |
 | --- | --- | --- |
-| **Fire Monitor** (recommandée) | `http://localhost:5173/fire-monitor.html` | Carte Leaflet + tuiles NASA GIBS, vues Aperçu / Calendrier / Expériences / Données / Méthodologie / Qualité, **analyse de zone FIRMS** : NRT ~5 j (clic carte → jauge → Jaccard) **et historique archive 2019→aujourd'hui** (CSV annuels par pays, cache `data/raw/archive/`) |
-| React (historique) | `http://localhost:5173/` | Les 6 écrans de rapport + Harmonization Lab sur artefacts |
-| API | `http://127.0.0.1:8010/api/v1` | Docs interactives : `/api/v1/docs` — OpenAPI : `/api/v1/openapi.json` |
+| **React app** (main) | `http://localhost:5174` | Map + risk layer, Overview, Calendar, Jobs, Data Quality, bilingual FR/EN AI assistant |
+| **Fire Monitor** (standalone) | `web/public/fire-monitor.html` | Zero-build vanilla JS version, same features |
+| **API docs** | `http://127.0.0.1:8010/api/v1/docs` | Interactive OpenAPI |
 
-**Sans backend** : les vues artefacts (Aperçu, Calendrier pipeline, Qualité) fonctionnent
-en mode statique ; Expériences, Données, Méthodologie et l'analyse de zone affichent un
-message « API requise ».
+**Without the backend**: artifact views still work in static mode; job-based
+features show an "API required" message.
 
-**Variables utiles** (`.env.local`, lues par le pipeline ET l'API) :
-`FIRMS_MAP_KEY` (analyse de zone + `pyrolens download`), `EARTHDATA_*` (granules),
-`PYROLENS_API_TOKEN` (protège les POST), `PYROLENS_CORS_ORIGINS`, `PYROLENS_SOURCE_DIR`,
-`PYROLENS_ARCHIVE_DIR` (cache des CSV annuels archive, défaut `data/raw/archive`).
+### Environment variables
 
-**Historique par zone** : la section « Historique archive » du panneau zone
-(`/firms/history`) couvre n'importe quelle bbox via les fichiers annuels
-`/data/country/{sensor}/{year}/{Pays}.csv` de FIRMS — **sans clé**, qualité
-standard processing (VIIRS-SNPP dès 2012, MODIS dès 2000). Les pays sont
-résolus par intersection bbox/polygones Natural Earth ; chaque fichier est
-téléchargé une fois (parallèle par plages HTTP) puis filtré sur la bbox.
-Le serveur archive est lent (~Ko/s par connexion) : le premier appel peut
-durer longtemps, les suivants sont servis depuis le cache.
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `FIRMS_MAP_KEY` | pipeline + `/firms/analyze` | FIRMS NRT API key (free, email signup) |
+| `EARTHDATA_USER` / `EARTHDATA_PASSWORD` / `EARTHDATA_TOKEN` | pipeline | Standard granules (currently credential-blocked, documented) |
+| `PYROLENS_API_TOKEN` | API | Protects POST endpoints (`Authorization: Bearer`) |
+| `PYROLENS_ALLOWED_POSTS` | API | Public-demo whitelist, e.g. `chat,firms/analyze,firms/history` |
+| `PYROLENS_CORS_ORIGINS` | API | Allowed origins (comma-separated) |
+| `PYROLENS_SOURCE_DIR` / `PYROLENS_ARCHIVE_DIR` / `PYROLENS_ARTIFACTS_DIR` | API | Data locations |
 
 ---
 
-## 1. Installation
+## Data
 
-```bash
-pip install -r requirements.txt     # Python 3.10+ (constaté : 3.10.12)
-python3 -m pytest                   # 91 tests (31 pipeline + 60 API)
-python3 -m pyrolens.cli doctor      # état de l'environnement (noms de clés, jamais de valeurs)
-```
+| Source | Content | Access |
+| --- | --- | --- |
+| **NASA FIRMS NRT API** | Last ~5 days of detections per bbox | `FIRMS_MAP_KEY` required |
+| **NASA FIRMS country archives** | Full years per country, standard processing | **open, no key** |
+| **Natural Earth 110m** | Country polygons → bbox intersection | local |
+| **`data/fixture/`** | Deterministic synthetic CSVs (seeded) | tests/demo only, `data_origin` marked |
 
-Les commandes s'exécutent avec `PYTHONPATH=src python3 -m pyrolens.cli …`
-(abrégé `pyrolens` ci-dessous).
+**Real volumes acquired**: 1,171 canonical 5-day CSV windows
+(2013-01 → 2020-12, ~1.8 M detections) + West Africa archive bulk download
+(18 countries × 2 sensors × 2013–2025) + a validated 2019–2020 zone comparison
+(410k VIIRS + 80k MODIS detections, Jaccard 0.335).
 
-## 2. Commandes
+---
 
-| Commande | Rôle |
-|---|---|
-| `pyrolens doctor` | versions, bibliothèques, présence des clés (noms uniquement) |
-| `pyrolens geo` | télécharge la géométrie d'emprise documentée (Natural Earth) |
-| `pyrolens inventory` | inventaire **réel** produits/périodes via l'API CMR (sans clé) |
-| `pyrolens download` | emprise + API FIRMS + probe de granule standard ; enregistre succès **et** échecs |
-| `pyrolens fixture` | génère l'échantillon **synthétique** déterministe (démo/tests) |
-| `pyrolens audit [--source DIR]` | audit qualité → `reports/`, CSV d'anomalies, journal |
-| `pyrolens baselines` | baselines A/B/C → `baselines/` + artefacts JSON |
-| `pyrolens observability` | classification en 4 états d'observabilité |
-| `pyrolens figures` | figures PNG → `figures/` (+ artefacts web) |
-| `pyrolens report` | `reports/scientific_report.md` **et** `.docx` |
-| `pyrolens run` | séquence complète (geo → inventaire → acquisition → audit → baselines → figures → rapport) |
-| `pyrolens web-artifacts` | vérifie les JSON consommés par le frontend |
+## The Risk Model — In Short
 
-Reproduction intégrale :
+Module: `src/pyrolens/prediction.py` · CLI: `pyrolens predict`
 
-```bash
-PYTHONPATH=src python3 -m pyrolens.cli run
-python3 -m pytest
-```
+- **Label**: `y=1` if ≥1 FIRMS detection (any sensor) in the cell within
+  `]t, t+8 days]` — a *detection* probability, not a fire probability.
+- **Features**: 24 trailing-only features (per-sensor detection counts over
+  8/16/32-day windows, FRP stats, active-day fraction, native confidence
+  classes, seasonality, position) — nothing after `t` is ever used.
+- **Split**: chronological train 2013–16 / validation 2017–18 / test 2019–20
+  with an 8-day purge at boundaries — the test set was never touched before
+  the final report.
+- **Models**: smoothed-frequency baseline vs RandomForest (200 trees,
+  `class_weight="balanced_subsample"`, `random_state=42`), isotonic calibration
+  on validation only. RF retained by rule (PR-AUC > baseline × 1.05).
 
-## 3. Accès aux données NASA (à fournir par vous, jamais dans le chat)
+**Real-data results** (`fire_risk.json`, reference 2020-12-31,
+`estimate_kind=historical_backtest`):
 
-| Variable d'environnement | Usage | Où l'obtenir |
-|---|---|---|
-| `FIRMS_MAP_KEY` | API FIRMS (CSV par emprise, ≤ 5 jours/requête) | https://firms.modaps.eosdis.nasa.gov/api/map_key/ (gratuit, envoyé par e-mail) |
-| `EARTHDATA_USER` + `EARTHDATA_PASSWORD` **ou** `EARTHDATA_TOKEN` | granules standard MOD14 / MYD14 / VNP14IMG et produits d'observabilité | https://www.earthdata.nasa.gov/data/earthdata-login (gratuit) — alternative : un `~/.netrc` avec `urs.earthdata.nasa.gov` |
+| Metric | Value |
+| --- | --- |
+| Cells / samples | 1,215 / 489,645 (test n=122,715, prevalence 31.8%) |
+| **PR-AUC test** | **0.926** (baseline val 0.875 → RF val 0.928) |
+| F1 / recall / precision | 0.841 / 0.844 / 0.837 |
+| Brier score | 0.072 |
 
-Renseignez-les dans **Settings → Environment** (ou `.env.local`) : le pipeline les lit via
-`os.environ`, aucun secret n'est écrit dans Git ni affiché. Aucun mécanisme
-d'authentification n'est contourné.
+Full documentation: [`docs/FIRE_RISK_PREDICTION.md`](docs/FIRE_RISK_PREDICTION.md)
+(FR) · [`docs/en/FIRE_RISK_PREDICTION.md`](docs/en/FIRE_RISK_PREDICTION.md) (EN).
 
-Une fois les clés fournies :
+---
 
-```bash
-PYTHONPATH=src python3 -m pyrolens.cli download
-PYTHONPATH=src python3 -m pyrolens.cli run --source data/raw/firms
-```
-
-Les CSV réels sont alors prioritaires sur `data/fixture` (détection automatique).
-
-## 4. Rapports web
-
-Deux interfaces coexistent :
-
-- **`web/public/fire-monitor.html`** — interface « Fire Monitor » (socle maquette
-  `fire-monitor-aurel.html`) : carte + toutes les vues métier + analyse de zone
-  FIRMS (`POST /api/v1/firms/analyze`, voir `docs/phase2/api_contract.md`).
-- **`web/` (Vite + React + Recharts)** — les 6 écrans de rapport + Harmonization Lab.
-
-Les deux lisent les artefacts statiques JSON/PNG (`web/public/artifacts/`) : aucune
-base de données, aucun calcul côté client. Une **API FastAPI** (`api/`, contrat
-`docs/api.md`, OpenAPI `docs/openapi.json`) sert les mêmes artefacts en JSON —
-exports, validation de fichiers téléversés, expériences de comparaison et analyses
-de zone en tâche de fond. Les fronts restent fonctionnels sans elle (mode statique).
-Commandes depuis la racine du projet :
-
-```bash
-npm --prefix web install   # installation des dépendances du frontend
-npm --prefix web run dev   # serveur de développement (0.0.0.0, port injecté par Freebuff)
-npm --prefix web run build # build statique -> web/dist/
-```
-
-Les commandes enregistrées pour Freebuff sont exactement ces trois-là (`freebuff-preview
-set-install` / `set` / `set-build`).
-
-Après toute exécution du pipeline : `pyrolens figures` et `pyrolens report` rafraîchissent
-les artefacts consommés par l'interface.
-
-## 5. Comparer avec l'exploratoire v0.3
-
-Les chiffres v0.3 (grille 0,25°, fenêtres 1 j / 8 j / 1 mois) **ne sont pas fournis dans
-cet environnement** : le dépôt ne contient aucun résultat antérieur. Ils ne sont ni repris
-ni recalculés (`reports/scientific_report.md` §11 les liste comme « valeurs de référence »).
-Pour une comparaison : déposer les CSV v0.3 et les documenter dans `docs/` — puis confronter
-`baselines/summary.csv` (configurations 0,25° × {1, 8} j) aux valeurs de référence, en
-conservant l'étiquetage calculé/référence.
-
-## 6. Structure du dépôt
+## Repository Layout
 
 ```
-config/pipeline.yaml     paramètres de traitement versionnés (aucun secret)
-src/pyrolens/            modules : cmr, download, ingest, audit, grids, baselines,
-                         observability, harmonization, figures, report, fixture, cli
-tests/                   91 tests pytest — 31 pipeline (audit, grilles, Jaccard,
-                         observabilité, immuabilité de data/raw, rapport/DOCX)
-                         + 60 API (dossier tests/api/)
-api/                     API FastAPI v1 (lecture seule + jobs) — docs/api.md
-docs/                    index README.md, methodology.md, data_inventory.md,
-                         references.md, technical.md, api.md, openapi.json,
-                         limitations.md
-docs/phase2/             dossier de phase 2 : validation des données (rapport A),
-                         méthode scientifique, plan de validation, périmètre MVP,
-                         architecture/API/frontend, décisions à valider, plan de lot
-frontend-handoff/        handoff UI : écrans, design system, parcours, mockups
-data/                    raw/ (brut, immuable), fixture/ (synthétique), manifests/ (SHA-256)
-reports/                 audit Markdown, anomalies CSV, journaux, rapport .md/.docx
-baselines/               CSV des baselines et sensibilités
-figures/                 PNG
-web/                     frontend Vite + React + Recharts
+api/                  FastAPI — routers, services, async JobManager, ETag store
+src/pyrolens/         pipeline CLI: ingest, audit, baselines, normalize,
+                      observability, archive, prediction, report
+frontend/             React 18 + Vite + Leaflet + Recharts (main UI, port 5174)
+web/                  legacy React app + standalone fire-monitor.html
+prototypes/           original HTML design prototypes (reference only)
+scripts/              one-off utilities (archive bulk downloader, …)
+data/                 raw FIRMS CSVs (gitignored), geo, fixture, manifests
+docs/                 documentation (FR) + docs/en/ (EN translations)
+tests/                119 pytest tests — pipeline, API, prediction, archive
+models/               serialized model (~300 MB, gitignored, regenerable)
 ```
 
-## 7. Ce qui a réellement été exécuté (octobre 2026)
+---
 
-- inventaire CMR **réel** : 35 019 granules dans la bbox 2013-2020 (MOD14 10 878,
-  MYD14 11 083, VNP14IMG 13 058) — voir `docs/data_inventory.md` §3 ;
-- emprise Natural Earth réelle (SHA-256 documenté) ;
-- **acquisition FIRMS réelle** (clé `FIRMS_MAP_KEY`, 9 802 requêtes journalisées dans
-  `data/manifests/downloads.json`) : 1 170 fenêtres canoniques, 0 jour manquant,
-  aucun échec résiduel ; fermeture Earthdata toujours bloquée (sans identifiants) ;
-- **normalisation** : 1 432 fichiers → 1 170 fenêtres canoniques dédoublonnées —
-  557 292 doublons stricts supprimés (5 017 580 → 4 460 288 lignes, comptabilité
-  vérifiée, `data/manifests/normalize.json`) ;
-- audit **sur données réelles** (1 170 fichiers, 2 634 700 anomalies classées),
-  24 configurations de baselines, observabilité (4 états, aucun « pas de feu »),
-  6 figures, rapport MD + DOCX, **91 tests verts** — `data_origin = nasa_firms`.
+## Documentation
 
-## 8. État, décisions et suite
+- 🇫🇷 French (primary): [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md),
+  [`docs/README.md`](docs/README.md) (full index)
+- 🇬🇧 English: [`docs/en/PROJECT_OVERVIEW.md`](docs/en/PROJECT_OVERVIEW.md),
+  [`docs/en/FIRE_RISK_PREDICTION.md`](docs/en/FIRE_RISK_PREDICTION.md)
+- NASA submission audit: [`docs/NASA_SUBMISSION_AUDIT.md`](docs/NASA_SUBMISSION_AUDIT.md)
 
-- **D1 validée (21/10/2026)** : source unique des chiffres = `baselines/summary.csv`
-  (aucune valeur de phase 1 republicée) — `docs/phase2/decisions_to_validate.md`.
-- **API v1 livrée** : `api/` (lecture seule + expériences), contrat `docs/api.md`,
-  spécification `docs/openapi.json`, 60 tests dédiés.
-- **Reste à trancher** : D2-D8 (`docs/phase2/decisions_to_validate.md`) puis lots S1-S4
-  (`docs/phase2/implementation_plan.md`). Point de blocage scientifique principal :
-  `EARTHDATA_USER`/`EARTHDATA_PASSWORD` (ou `EARTHDATA_TOKEN`) dans **Settings →
-  Environment** pour les granules standard et les produits de couverture/nuages (D4),
-  faute de quoi l'observabilité reste par défaut en « observabilité inconnue ».
-- L'état actuel est intégralement reproductible avec `pyrolens run` +
-  `python3 -m pytest` ; la documentation est indexée dans `docs/README.md`.
+## AI-Assisted Development
+
+This project was built with AI coding assistants, used as follows:
+
+| Tool | Role |
+|------|------|
+| **Freebuff** | Backend scaffolding and initial infrastructure pieces |
+| **Claude** | UI/UX refinement of the frontend |
+| **ChatGPT** | Brainstorming and project supervision |
+| **Devin (Cognition)** | Backend improvements and the fire-risk prediction model |
+
+The delivered product contains **no generative AI component**: the in-app assistant is a deterministic, rules-based responder built from project artifacts (FR/EN).
+
+## Scientific Honesty
+
+- Detection ≠ wildfire; empty cell ≠ absence of fire
+- Jaccard = set overlap between sensors, not an accuracy score
+- All model figures are **backtests** on historical data — never presented as
+  operational forecasts
+- Provenance (`data_origin`, `generated_at`, SHA-256 manifests) is propagated
+  into every artifact and visible in the UI
+
+## License
+
+MIT — see [LICENSE](LICENSE).

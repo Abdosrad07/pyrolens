@@ -5,6 +5,11 @@ Toute la documentation du projet, par famille. **Convention D1 (validée le
 `baselines/summary.csv` (et ses dérivés horodatés) — aucune valeur de phase 1
 n'est republicée.
 
+> **Languages** : the two flagship documents are available in English under
+> [`en/`](en/) — [`en/PROJECT_OVERVIEW.md`](en/PROJECT_OVERVIEW.md) and
+> [`en/FIRE_RISK_PREDICTION.md`](en/FIRE_RISK_PREDICTION.md). All other
+> documents are in French (team working language).
+
 ---
 
 ## 1. Scientifique (comment les chiffres sont produits et ce qu'ils valent)
@@ -44,9 +49,16 @@ n'est republicée.
 
 ## 4. Autres entrées
 
-- Racine : [`../README.md`](../README.md) (installation, commandes, état
-  d'exécution), [`../CONTRIBUTING.md`](../CONTRIBUTING.md) (règles D1),
-  [`../LICENSE`](../LICENSE) (MIT).
+- Racine : [`../README.md`](../README.md) (**anglais** — installation,
+  commandes, état d'exécution), [`../CONTRIBUTING.md`](../CONTRIBUTING.md)
+  (règles D1), [`../LICENSE`](../LICENSE) (MIT).
+- [`NASA_SUBMISSION_AUDIT.md`](NASA_SUBMISSION_AUDIT.md) — audit de
+  soumission NASA (prêt à l'emploi, sections validées).
+- Documents de cadrage déplacés à la racine de `docs/` :
+  `AUREL_SPECS_REVIEW.md`, `Pyrolens_Specification_Frontend.md`,
+  `FRONTEND_IMPLEMENTATION_REPORT.md`, `PROMPT_MODEL_CHAT_IMPROVEMENT.md`.
+- Prototypes HTML d'origine : [`../prototypes/`](../prototypes/)
+  (référence design, non maintenus).
 - Handoff UI détaillé (écrans, design system, parcours, mockups) :
   [`../frontend-handoff/`](../frontend-handoff/README.md).
 - Artefacts publiés (source de vérité des chiffres) :
