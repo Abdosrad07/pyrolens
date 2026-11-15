@@ -86,6 +86,8 @@ function InnerApp() {
 
   const handleNavSelect = useCallback((v) => {
     if (v === "risk") {
+      // « Risque » ramène sur la carte et ouvre le panneau de risque.
+      setView("map");
       setRiskOpen(true);
       if (!riskData) reloadRisk();
       return;
