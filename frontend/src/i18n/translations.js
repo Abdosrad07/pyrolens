@@ -33,6 +33,11 @@ export const TRANSLATIONS = {
     risk: { fr: "Risque", en: "Risk" },
   },
 
+  hamburger: {
+    title: { fr: "Modes de visualisation", en: "Display modes" },
+    close: { fr: "Fermer", en: "Close" },
+  },
+
   overview: {
     title: { fr: "Aperçu des observations", en: "Observation overview" },
     subtitle: { fr: "Résumé synthétique du pipeline de traitement. Données mockées si les artefacts publics ne sont pas disponibles.", en: "Synthetic summary of the processing pipeline. Mock data if public artifacts are unavailable." },

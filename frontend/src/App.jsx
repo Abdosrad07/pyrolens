@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback } from "react";
 import MapView from "./components/MapView.jsx";
 import TopBar from "./components/TopBar.jsx";
 import DockNav from "./components/DockNav.jsx";
+import HamburgerMenu from "./components/HamburgerMenu.jsx";
 import RiskSphere from "./components/RiskSphere.jsx";
 import RiskPanel from "./components/RiskPanel.jsx";
 import AiPanel from "./components/AiPanel.jsx";
@@ -41,6 +42,7 @@ function InnerApp() {
   const [view, setView] = useState("map");
   const [aiOpen, setAiOpen] = useState(false);
   const [riskOpen, setRiskOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState(null);
   const [showRisk, setShowRisk] = useState(true);
   const [riskThreshold, setRiskThreshold] = useState(0);
@@ -123,12 +125,19 @@ function InnerApp() {
     <div className="app-root">
       <TopBar
         onSearch={handleSearch}
-        onOpenMenu={() => {}}
+        onOpenMenu={() => setMenuOpen((v) => !v)}
         onOpenRisk={() => setRiskOpen(true)}
         onOpenAi={() => setAiOpen(true)}
         onAnnounce={() => showToast("toast.announce")}
         onContact={() => window.open("https://earthdata.nasa.gov/contact", "_blank")}
         onToggleLang={toggle}
+      />
+
+      <HamburgerMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onSelect={handleNavSelect}
+        active={view}
       />
 
       {(isMap || isRiskView) && (
