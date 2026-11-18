@@ -102,6 +102,17 @@ export const TRANSLATIONS = {
   },
 
   jobs: {
+    harmTitle: { fr: "Comment fonctionne l'harmonisation ?", en: "How does harmonization work?" },
+    harmDesc: { fr: "PyroLens compare les détections de deux capteurs (VIIRS et MODIS) sur une grille commune de 0,25°. Pour chaque cellule et chaque fenêtre temporelle, le système calcule :", en: "PyroLens compares detections from two sensors (VIIRS and MODIS) on a common 0.25° grid. For each cell and time window, the system computes:" },
+    harmStep1: { fr: "Normalisation", en: "Normalization" },
+    harmStep2: { fr: "Grille commune", en: "Common grid" },
+    harmStep3: { fr: "Comparaison d'ensembles", en: "Set comparison" },
+    harmStep4: { fr: "Séries mensuelles", en: "Monthly series" },
+    harmNote: { fr: "Note : le Jaccard mesure un recouvrement d'ensembles, pas une précision. Aucune référence indépendante n'est mobilisée (H4/H6 non exécutés).", en: "Note: Jaccard measures set overlap, not accuracy. No independent reference is mobilized (H4/H6 not run)." },
+    harmToggle: { fr: "Procédé d'harmonisation", en: "Harmonization process" },
+  },
+
+  jobs: {
     title: { fr: "Jobs", en: "Jobs" },
     subtitle: { fr: "Tâches réelles de l'API PyroLens : harmonisation, analyse de zone FIRMS, historique archive, entraînement du modèle de risque.", en: "Real tasks from the PyroLens API: harmonization, FIRMS zone analysis, archive history, risk model training." },
     loading: { fr: "Chargement…", en: "Loading…" },
