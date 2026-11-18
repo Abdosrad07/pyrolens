@@ -38,6 +38,25 @@ export const TRANSLATIONS = {
     close: { fr: "Fermer", en: "Close" },
   },
 
+  harmonization: {
+    title: { fr: "Harmonisation Lab", en: "Harmonization Lab" },
+    subtitle: { fr: "Recouvrement inter-capteurs (Jaccard) et harmonisation sur grille commune.", en: "Inter-sensor overlap (Jaccard) and harmonization on common grid." },
+    pair: { fr: "Paire", en: "Pair" },
+    grid: { fr: "Grille", en: "Grid" },
+    window: { fr: "Fenêtre", en: "Window" },
+    jaccard: { fr: "JACCARD", en: "JACCARD" },
+    detectionsA: { fr: "DÉTECTIONS A", en: "DETECTIONS A" },
+    detectionsB: { fr: "DÉTECTIONS B", en: "DETECTIONS B" },
+    intersection: { fr: "INTERSECTION", en: "INTERSECTION" },
+    noData: { fr: "Pas de données", en: "No data" },
+    loading: { fr: "Chargement des artefacts…", en: "Loading artifacts…" },
+    spatialTitle: { fr: "Distribution spatiale", en: "Spatial distribution" },
+    methodNote: {
+      fr: "Le Jaccard mesure le recouvrement d'ensembles de cellules (cellule × date), pas la précision. Il ne doit pas être interprété comme une « fiabilité des détections ». Une référence indépendante n'est pas mobilisée (H4/H6 non exécutés).",
+      en: "Jaccard measures set overlap of cells (cell × date), not accuracy. It must not be interpreted as 'detection reliability'. No independent reference is mobilized (H4/H6 not run).",
+    },
+  },
+
   overview: {
     title: { fr: "Aperçu des observations", en: "Observation overview" },
     subtitle: { fr: "Résumé synthétique du pipeline de traitement. Données mockées si les artefacts publics ne sont pas disponibles.", en: "Synthetic summary of the processing pipeline. Mock data if public artifacts are unavailable." },

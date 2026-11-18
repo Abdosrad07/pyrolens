@@ -23,6 +23,7 @@ import CalendarView from "./views/CalendarView.jsx";
 import JobsView from "./views/JobsView.jsx";
 import DqView from "./views/DqView.jsx";
 import RiskView from "./views/RiskView.jsx";
+import HarmonizationLabView from "./views/HarmonizationLabView.jsx";
 import useMap from "./hooks/useMap.js";
 import useRiskData from "./hooks/useRiskData.js";
 import useApi from "./hooks/useApi.js";
@@ -35,6 +36,7 @@ const VIEWS = {
   jobs: { fr: "Jobs", en: "Jobs" },
   dq: { fr: "Qualité des données", en: "Data quality" },
   risk: { fr: "Risque de feu", en: "Fire risk" },
+  harmonization: { fr: "Harmonisation", en: "Harmonization" },
 };
 
 function InnerApp() {
@@ -174,6 +176,11 @@ function InnerApp() {
           display: "flex", alignItems: "center", justifyContent: "center", padding: "1.2rem",
         }}>
           <DqView onClose={() => setView("map")} />
+        </div>
+      )}
+      {view === "harmonization" && (
+        <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
+          <HarmonizationLabView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
 
