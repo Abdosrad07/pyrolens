@@ -155,6 +155,11 @@ export const TRANSLATIONS = {
   dq: {
     title: { fr: "Rapport de qualité des données", en: "Data quality report" },
     loading: { fr: "Chargement…", en: "Loading…" },
+    sensorCharts: { fr: "Fonctionnement des capteurs MODIS / VIIRS", en: "MODIS / VIIRS sensor performance" },
+    sensorChartsSub: { fr: "Séries mensuelles issues des artefacts du pipeline (grille 0,25° · fenêtre 8 j).", en: "Monthly series from pipeline artifacts (0.25° grid · 8-day window)." },
+    sensorChartsErr: { fr: "Séries capteurs indisponibles :", en: "Sensor series unavailable:" },
+    jaccard: { fr: "Recouvrement Jaccard", en: "Jaccard overlap" },
+    divergence: { fr: "Divergence inter-capteurs", en: "Inter-sensor divergence" },
   },
 
   risk: {
