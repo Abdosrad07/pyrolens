@@ -78,3 +78,37 @@ reconstruction:
   # Aucune règle de reconstruction par défaut. Toute reconstruction doit être
   # démontrable et déclarée ici (fichier, colonne, motif, justification).
   rules: []
+
+
+# ── Afrique centrale — extension du jeu de données (2019 → 2025) ──────────
+# Les 8 pays ci-dessous sont disponibles via l'archive FIRMS open-access
+# (fichier annuel par pays, sans clé API). La période 2019-2025 correspond
+# à la couverture VIIRS SNPP + MODIS SP. Les années 2013-2018 (pilot CMR)
+# restent sur le mode FIRMS API (clé requise).
+#
+# Pour activer l'analyse multi-pays, utiliser :
+#   pyrolens analyze --preset central-africa
+# ou directement :
+#   POST /api/v1/firms/analyze { "region_preset": "central_africa" }
+
+central_africa:
+  name: "Afrique centrale"
+  countries:
+    - Cameroon
+    - Chad
+    - Central_African_Republic
+    - Gabon
+    - Republic_of_Congo
+    - Democratic_Republic_of_the_Congo
+    - Equatorial_Guinea
+    - Sao_Tome_and_Principe
+  sensors:
+    viirs: viirs-snpp
+    modis: modis
+  period:
+    start: "2019-01-01"
+    end: "2025-12-31"
+  grid_deg: 0.25
+  window_days: 8
+  data_origin: nasa_firms_open_access
+

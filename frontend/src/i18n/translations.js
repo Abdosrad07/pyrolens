@@ -33,6 +33,30 @@ export const TRANSLATIONS = {
     risk: { fr: "Risque", en: "Risk" },
   },
 
+  hamburger: {
+    title: { fr: "Modes de visualisation", en: "Display modes" },
+    close: { fr: "Fermer", en: "Close" },
+  },
+
+  harmonization: {
+    title: { fr: "Harmonisation Lab", en: "Harmonization Lab" },
+    subtitle: { fr: "Recouvrement inter-capteurs (Jaccard) et harmonisation sur grille commune.", en: "Inter-sensor overlap (Jaccard) and harmonization on common grid." },
+    pair: { fr: "Paire", en: "Pair" },
+    grid: { fr: "Grille", en: "Grid" },
+    window: { fr: "Fenêtre", en: "Window" },
+    jaccard: { fr: "JACCARD", en: "JACCARD" },
+    detectionsA: { fr: "DÉTECTIONS A", en: "DETECTIONS A" },
+    detectionsB: { fr: "DÉTECTIONS B", en: "DETECTIONS B" },
+    intersection: { fr: "INTERSECTION", en: "INTERSECTION" },
+    noData: { fr: "Pas de données", en: "No data" },
+    loading: { fr: "Chargement des artefacts…", en: "Loading artifacts…" },
+    spatialTitle: { fr: "Distribution spatiale", en: "Spatial distribution" },
+    methodNote: {
+      fr: "Le Jaccard mesure le recouvrement d'ensembles de cellules (cellule × date), pas la précision. Il ne doit pas être interprété comme une « fiabilité des détections ». Une référence indépendante n'est pas mobilisée (H4/H6 non exécutés).",
+      en: "Jaccard measures set overlap of cells (cell × date), not accuracy. It must not be interpreted as 'detection reliability'. No independent reference is mobilized (H4/H6 not run).",
+    },
+  },
+
   overview: {
     title: { fr: "Aperçu des observations", en: "Observation overview" },
     subtitle: { fr: "Résumé synthétique du pipeline de traitement. Données mockées si les artefacts publics ne sont pas disponibles.", en: "Synthetic summary of the processing pipeline. Mock data if public artifacts are unavailable." },
@@ -78,6 +102,17 @@ export const TRANSLATIONS = {
   },
 
   jobs: {
+    harmTitle: { fr: "Comment fonctionne l'harmonisation ?", en: "How does harmonization work?" },
+    harmDesc: { fr: "PyroLens compare les détections de deux capteurs (VIIRS et MODIS) sur une grille commune de 0,25°. Pour chaque cellule et chaque fenêtre temporelle, le système calcule :", en: "PyroLens compares detections from two sensors (VIIRS and MODIS) on a common 0.25° grid. For each cell and time window, the system computes:" },
+    harmStep1: { fr: "Normalisation", en: "Normalization" },
+    harmStep2: { fr: "Grille commune", en: "Common grid" },
+    harmStep3: { fr: "Comparaison d'ensembles", en: "Set comparison" },
+    harmStep4: { fr: "Séries mensuelles", en: "Monthly series" },
+    harmNote: { fr: "Note : le Jaccard mesure un recouvrement d'ensembles, pas une précision. Aucune référence indépendante n'est mobilisée (H4/H6 non exécutés).", en: "Note: Jaccard measures set overlap, not accuracy. No independent reference is mobilized (H4/H6 not run)." },
+    harmToggle: { fr: "Procédé d'harmonisation", en: "Harmonization process" },
+  },
+
+  jobs: {
     title: { fr: "Jobs", en: "Jobs" },
     subtitle: { fr: "Tâches réelles de l'API PyroLens : harmonisation, analyse de zone FIRMS, historique archive, entraînement du modèle de risque.", en: "Real tasks from the PyroLens API: harmonization, FIRMS zone analysis, archive history, risk model training." },
     loading: { fr: "Chargement…", en: "Loading…" },
@@ -120,6 +155,11 @@ export const TRANSLATIONS = {
   dq: {
     title: { fr: "Rapport de qualité des données", en: "Data quality report" },
     loading: { fr: "Chargement…", en: "Loading…" },
+    sensorCharts: { fr: "Fonctionnement des capteurs MODIS / VIIRS", en: "MODIS / VIIRS sensor performance" },
+    sensorChartsSub: { fr: "Séries mensuelles issues des artefacts du pipeline (grille 0,25° · fenêtre 8 j).", en: "Monthly series from pipeline artifacts (0.25° grid · 8-day window)." },
+    sensorChartsErr: { fr: "Séries capteurs indisponibles :", en: "Sensor series unavailable:" },
+    jaccard: { fr: "Recouvrement Jaccard", en: "Jaccard overlap" },
+    divergence: { fr: "Divergence inter-capteurs", en: "Inter-sensor divergence" },
   },
 
   risk: {

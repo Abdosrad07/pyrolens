@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback } from "react";
 import MapView from "./components/MapView.jsx";
 import TopBar from "./components/TopBar.jsx";
 import DockNav from "./components/DockNav.jsx";
+import HamburgerMenu from "./components/HamburgerMenu.jsx";
 import RiskSphere from "./components/RiskSphere.jsx";
 import RiskPanel from "./components/RiskPanel.jsx";
 import AiPanel from "./components/AiPanel.jsx";
@@ -22,6 +23,7 @@ import CalendarView from "./views/CalendarView.jsx";
 import JobsView from "./views/JobsView.jsx";
 import DqView from "./views/DqView.jsx";
 import RiskView from "./views/RiskView.jsx";
+import HarmonizationLabView from "./views/HarmonizationLabView.jsx";
 import useMap from "./hooks/useMap.js";
 import useRiskData from "./hooks/useRiskData.js";
 import useApi from "./hooks/useApi.js";
@@ -34,6 +36,7 @@ const VIEWS = {
   jobs: { fr: "Jobs", en: "Jobs" },
   dq: { fr: "Qualité des données", en: "Data quality" },
   risk: { fr: "Risque de feu", en: "Fire risk" },
+  harmonization: { fr: "Harmonisation", en: "Harmonization" },
 };
 
 function InnerApp() {
@@ -41,6 +44,7 @@ function InnerApp() {
   const [view, setView] = useState("map");
   const [aiOpen, setAiOpen] = useState(false);
   const [riskOpen, setRiskOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState(null);
   const [showRisk, setShowRisk] = useState(true);
   const [riskThreshold, setRiskThreshold] = useState(0);
@@ -123,12 +127,19 @@ function InnerApp() {
     <div className="app-root">
       <TopBar
         onSearch={handleSearch}
-        onOpenMenu={() => {}}
+        onOpenMenu={() => setMenuOpen((v) => !v)}
         onOpenRisk={() => setRiskOpen(true)}
         onOpenAi={() => setAiOpen(true)}
         onAnnounce={() => showToast("toast.announce")}
         onContact={() => window.open("https://earthdata.nasa.gov/contact", "_blank")}
         onToggleLang={toggle}
+      />
+
+      <HamburgerMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onSelect={handleNavSelect}
+        active={view}
       />
 
       {(isMap || isRiskView) && (
@@ -165,6 +176,11 @@ function InnerApp() {
           display: "flex", alignItems: "center", justifyContent: "center", padding: "1.2rem",
         }}>
           <DqView onClose={() => setView("map")} />
+        </div>
+      )}
+      {view === "harmonization" && (
+        <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
+          <HarmonizationLabView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
 
