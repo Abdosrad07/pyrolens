@@ -58,7 +58,20 @@ const TILES = {
   },
 };
 
-/* ── marqueurs capteurs (VIIRS + MODIS) ── */
+/* ── marqueurs capteurs (VIIRS + MODIS) par pays d'Afrique centrale ── */
+// Centres approximatifs des 8 pays du jeu de données FIRMS (slugs validés).
+// Les capteurs VIIRS SNPP + MODIS Terra/Aqua couvrent l'ensemble de ces emprises.
+const SENSOR_COUNTRIES = [
+  { lat: 7.37,  lon: 12.35,  country: "Cameroun",             slug: "Cameroon" },
+  { lat: 14.50, lon: 18.50,  country: "Tchad",                slug: "Chad" },
+  { lat: 9.00,  lon: 20.00,  country: "RCA",                  slug: "Central_African_Republic" },
+  { lat: 0.60,  lon: 11.40,  country: "Gabon",                slug: "Gabon" },
+  { lat: 0.50,  lon: 15.20,  country: "Congo (Brazzaville)",  slug: "Republic_of_Congo" },
+  { lat: -3.00, lon: 21.50,  country: "DRC",                  slug: "Democratic_Republic_of_the_Congo" },
+  { lat: 1.80,  lon: 9.50,   country: "Guinée équatoriale",   slug: "Equatorial_Guinea" },
+  { lat: 0.20,  lon: 6.60,   country: "São Tomé-et-Principe", slug: "Sao_Tome_and_Principe" },
+];
+
 function SensorMarkers({ show = false }) {
   const map = useMap();
   const ref = useRef(null);
@@ -67,26 +80,22 @@ function SensorMarkers({ show = false }) {
     if (ref.current) { ref.current.eachLayer((l) => map.removeLayer(l)); ref.current = null; }
     if (!show) return;
 
-    // Positions des satellites / stations de référence pour l'emprise Cameroun
-    const markers = [
-      { lat: 12.0, lon: 9.0, sensor: "VIIRS SNPP", color: "#f08232", desc: "VIIRS Suomi-NPP 375 m — détections thermiques" },
-      { lat: 7.5, lon: 14.0, sensor: "MODIS Terra", color: "#4ecdc4", desc: "MODIS Terra — IR36/IR38" },
-      { lat: 4.5, lon: 11.0, sensor: "MODIS Aqua", color: "#88d4d4", desc: "MODIS Aqua — IR36/IR38" },
-    ];
+    const VIIRS = "#f08232"; // orange — VIIRS SNPP
+    const MODIS = "#4ecdc4"; // turquoise — MODIS Terra/Aqua
 
     ref.current = L.layerGroup(
-      markers.map((m, i) =>
-        L.circleMarker([m.lat, m.lon], {
-          radius: 8,
-          color: m.color,
-          fillColor: m.color,
-          fillOpacity: 0.6,
+      SENSOR_COUNTRIES.map((c) =>
+        L.circleMarker([c.lat, c.lon], {
+          radius: 9,
+          color: MODIS,
+          fillColor: VIIRS,
+          fillOpacity: 0.55,
           weight: 2,
         })
           .bindPopup(
-            `<b style="color:${m.color}">${m.sensor}</b><br>` +
-            `<small>${m.desc}</small><br>` +
-            `<small style="opacity:0.6">Station de référence — emprise Cameroun</small>`
+            `<b style="color:${VIIRS}">${c.country}</b><br>` +
+            `<small>VIIRS SNPP 375 m · MODIS Terra/Aqua (IR36/IR38)</small><br>` +
+            `<small style="opacity:0.6">FIRMS open-access · 2019–2025 · 2 capteurs</small>`
           )
       )
     ).addTo(map);
