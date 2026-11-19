@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { useI18n } from "../i18n/index.jsx";
+import SensorCharts from "../components/SensorCharts.jsx";
 
 const PAGE = 15;
 
@@ -150,6 +151,9 @@ export default function DqView({ onClose }) {
         <button type="button" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>›</button>
         <button type="button" disabled={page >= totalPages} onClick={() => setPage(totalPages)}>»</button>
       </div>
+
+      {/* Courbes de fonctionnement des capteurs MODIS/VIIRS */}
+      <SensorCharts />
     </div>
   );
 }

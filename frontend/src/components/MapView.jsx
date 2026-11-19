@@ -58,6 +58,56 @@ const TILES = {
   },
 };
 
+/* ── marqueurs capteurs (VIIRS + MODIS) par pays d'Afrique centrale ── */
+// Centres approximatifs des 8 pays du jeu de données FIRMS (slugs validés).
+// Les capteurs VIIRS SNPP + MODIS Terra/Aqua couvrent l'ensemble de ces emprises.
+const SENSOR_COUNTRIES = [
+  { lat: 7.37,  lon: 12.35,  country: "Cameroun",             slug: "Cameroon" },
+  { lat: 14.50, lon: 18.50,  country: "Tchad",                slug: "Chad" },
+  { lat: 9.00,  lon: 20.00,  country: "RCA",                  slug: "Central_African_Republic" },
+  { lat: 0.60,  lon: 11.40,  country: "Gabon",                slug: "Gabon" },
+  { lat: 0.50,  lon: 15.20,  country: "Congo (Brazzaville)",  slug: "Republic_of_Congo" },
+  { lat: -3.00, lon: 21.50,  country: "DRC",                  slug: "Democratic_Republic_of_the_Congo" },
+  { lat: 1.80,  lon: 9.50,   country: "Guinée équatoriale",   slug: "Equatorial_Guinea" },
+  { lat: 0.20,  lon: 6.60,   country: "São Tomé-et-Principe", slug: "Sao_Tome_and_Principe" },
+];
+
+function SensorMarkers({ show = false }) {
+  const map = useMap();
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) { ref.current.eachLayer((l) => map.removeLayer(l)); ref.current = null; }
+    if (!show) return;
+
+    const VIIRS = "#f08232"; // orange — VIIRS SNPP
+    const MODIS = "#4ecdc4"; // turquoise — MODIS Terra/Aqua
+
+    ref.current = L.layerGroup(
+      SENSOR_COUNTRIES.map((c) =>
+        L.circleMarker([c.lat, c.lon], {
+          radius: 9,
+          color: MODIS,
+          fillColor: VIIRS,
+          fillOpacity: 0.55,
+          weight: 2,
+        })
+          .bindPopup(
+            `<b style="color:${VIIRS}">${c.country}</b><br>` +
+            `<small>VIIRS SNPP 375 m · MODIS Terra/Aqua (IR36/IR38)</small><br>` +
+            `<small style="opacity:0.6">FIRMS open-access · 2019–2025 · 2 capteurs</small>`
+          )
+      )
+    ).addTo(map);
+
+    return () => {
+      if (ref.current) { ref.current.eachLayer((l) => map.removeLayer(l)); ref.current = null; }
+    };
+  }, [show, map]);
+
+  return null;
+}
+
 /* ── composant interne qui expose la map Leaflet native ── */
 function MapReady({ onReady }) {
   const map = useMap();
@@ -137,7 +187,7 @@ export function buildRiskGeoJSON(cells, threshold) {
   return { type: "FeatureCollection", features };
 }
 
-export default function MapView({ activeBase, showRisk, riskThreshold, riskData, mapRef, onViewChange }) {
+export default function MapView({ activeBase, showRisk, riskThreshold, riskData, mapRef, onViewChange, showSensorMarkers = true }) {
   const resolvedRef = mapRef || useRef(null);
   const handleReady = useCallback(
     (m) => { resolvedRef.current = m; },
@@ -174,6 +224,9 @@ export default function MapView({ activeBase, showRisk, riskThreshold, riskData,
 
       {/* risque */}
       <RiskGeoJSONLayer geoJSON={showRisk ? riskGeoJSON : null} riskData={riskData} />
+
+      {/* marqueurs capteurs */}
+      <SensorMarkers show={showSensorMarkers} />
 
       <MapReady onReady={handleReady} />
       <ZoomControl position="bottomright" />

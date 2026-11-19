@@ -1,0 +1,23 @@
+1
+00:00:00,000 --> 00:00:05,000
+PyroLens — a reproducible platform for comparing NASA MODIS and VIIRS fire observations.
+
+2
+00:00:05,000 --> 00:00:10,000
+MODIS and VIIRS see different things. Jaccard overlap quantifies their agreement — not accuracy.
+
+3
+00:00:10,000 --> 00:00:15,000
+Historical calendar: inter-sensor divergence per day, 2013 to 2020.
+
+4
+00:00:15,000 --> 00:00:20,000
+Detection-probability model: Random Forest, isotonic calibration, PR-AUC 0.926.
+
+5
+00:00:20,000 --> 00:00:25,000
+Live pipeline: jobs, data quality, and full provenance of every artifact.
+
+6
+00:00:25,000 --> 00:00:30,000
+No detection does not mean no fire. PyroLens keeps that honesty visible in every view.

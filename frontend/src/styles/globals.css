@@ -1816,3 +1816,82 @@ img { max-width: 100%; height: auto; display: block; }
 .view-header small {
   color: var(--muted);
 }
+
+/* =========================================================
+   RESPONSIVE GLOBAL — couverture complète
+   ========================================================= */
+
+/* Petits écrans (mobile ≤ 600px) */
+@media (max-width: 600px) {
+  :root { --hh: 3.75rem; }
+
+  /* TopBar : cache la recherche et les boutons d'action, garde marque + menu */
+  .topbar { gap: 0.2rem; padding-inline: 0.5rem; }
+  .topbar .btn-search, .topbar [title] .ibtn { display: none; }
+  .brand .mark { width: 2.1rem; height: 2.1rem; }
+  .brand h1 { font-size: 1rem; }
+  .brand small { display: none; }
+
+  /* DockNav : compacter — icônes seulement, pas de libellés */
+  .dock {
+    gap: 0;
+    padding: 0.2rem;
+    max-width: calc(100vw - 1rem);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .dock::-webkit-scrollbar { display: none; }
+  .navbtn { padding: 0 0.7rem; font-size: 0.78rem; }
+  .navbtn .lbl { display: none; }
+  .navbtn { height: 2.6rem; }
+  .navbtn .ic { flex: none; }
+
+  /* Contenu : réduire le padding, les tableaux scrollent en X */
+  .content { padding: 1rem 0.75rem 5.5rem; }
+  .content > h2 { font-size: 1.3rem; }
+  .content > small { font-size: 0.8rem; }
+
+  /* Tables : conteneur de défilement horizontal */
+  .dt, .jl {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+  .dt table, .jl table { min-width: 40rem; }
+  .jl th, .jl td { white-space: nowrap; }
+
+  /* Grilles : 1 colonne */
+  .cards { grid-template-columns: 1fr; gap: 0.6rem; }
+  .jgrid { grid-template-columns: 1fr; gap: 1rem; }
+  .ov-grid, .ov-stats { grid-template-columns: 1fr; }
+
+  /* Panneaux : pleine largeur sur mobile */
+  .risk-panel { width: 100%; }
+  .side { width: 100%; }
+  .dq-card { width: 100%; max-height: 80vh; overflow: auto; }
+
+  /* Calendrier : cellules plus petites */
+  .cal-cell { min-height: 2.6rem; padding: 0.2rem; }
+  .cal-grid { gap: 0.2rem; }
+}
+
+/* Tablettes (601px – 1024px) */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .content { padding: 1.4rem; }
+  .cards { grid-template-columns: repeat(2, 1fr); }
+  /* DockNav : garder les libellés mais compact */
+  .navbtn { padding: 0 0.85rem; font-size: 0.8rem; }
+  .dt, .jl { max-width: 100%; }
+}
+
+/* Grandes largeurs : rien à corriger (défaut desktop) */
+@media (min-width: 1025px) {
+  .content { padding: 2rem 2rem 6.5rem; }
+}
+
+/* Écrans très courts (paysage mobile) */
+@media (max-height: 480px) {
+  :root { --hh: 3.25rem; }
+  .content { padding-bottom: 4.5rem; }
+}
