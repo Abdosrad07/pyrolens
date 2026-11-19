@@ -58,6 +58,47 @@ const TILES = {
   },
 };
 
+/* ── marqueurs capteurs (VIIRS + MODIS) ── */
+function SensorMarkers({ show = false }) {
+  const map = useMap();
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) { ref.current.eachLayer((l) => map.removeLayer(l)); ref.current = null; }
+    if (!show) return;
+
+    // Positions des satellites / stations de référence pour l'emprise Cameroun
+    const markers = [
+      { lat: 12.0, lon: 9.0, sensor: "VIIRS SNPP", color: "#f08232", desc: "VIIRS Suomi-NPP 375 m — détections thermiques" },
+      { lat: 7.5, lon: 14.0, sensor: "MODIS Terra", color: "#4ecdc4", desc: "MODIS Terra — IR36/IR38" },
+      { lat: 4.5, lon: 11.0, sensor: "MODIS Aqua", color: "#88d4d4", desc: "MODIS Aqua — IR36/IR38" },
+    ];
+
+    ref.current = L.layerGroup(
+      markers.map((m, i) =>
+        L.circleMarker([m.lat, m.lon], {
+          radius: 8,
+          color: m.color,
+          fillColor: m.color,
+          fillOpacity: 0.6,
+          weight: 2,
+        })
+          .bindPopup(
+            `<b style="color:${m.color}">${m.sensor}</b><br>` +
+            `<small>${m.desc}</small><br>` +
+            `<small style="opacity:0.6">Station de référence — emprise Cameroun</small>`
+          )
+      )
+    ).addTo(map);
+
+    return () => {
+      if (ref.current) { ref.current.eachLayer((l) => map.removeLayer(l)); ref.current = null; }
+    };
+  }, [show, map]);
+
+  return null;
+}
+
 /* ── composant interne qui expose la map Leaflet native ── */
 function MapReady({ onReady }) {
   const map = useMap();
@@ -137,7 +178,7 @@ export function buildRiskGeoJSON(cells, threshold) {
   return { type: "FeatureCollection", features };
 }
 
-export default function MapView({ activeBase, showRisk, riskThreshold, riskData, mapRef, onViewChange }) {
+export default function MapView({ activeBase, showRisk, riskThreshold, riskData, mapRef, onViewChange, showSensorMarkers = true }) {
   const resolvedRef = mapRef || useRef(null);
   const handleReady = useCallback(
     (m) => { resolvedRef.current = m; },
@@ -174,6 +215,9 @@ export default function MapView({ activeBase, showRisk, riskThreshold, riskData,
 
       {/* risque */}
       <RiskGeoJSONLayer geoJSON={showRisk ? riskGeoJSON : null} riskData={riskData} />
+
+      {/* marqueurs capteurs */}
+      <SensorMarkers show={showSensorMarkers} />
 
       <MapReady onReady={handleReady} />
       <ZoomControl position="bottomright" />
