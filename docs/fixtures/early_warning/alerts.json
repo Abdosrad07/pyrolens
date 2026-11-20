@@ -1,0 +1,1325 @@
+{
+  "generated_at": "2026-11-20T10:19:48+00:00",
+  "estimate_kind": "historical_backtest",
+  "data_origin": "synthetic_fixture",
+  "params": {
+    "grid_deg": 0.25,
+    "recent_days": 14,
+    "baseline_days": 730,
+    "reference_date": null,
+    "thresholds": {
+      "watch": 0.55,
+      "moderate": 0.72,
+      "high": 0.88
+    },
+    "min_detections": {
+      "watch": 3,
+      "moderate": 6,
+      "high": 12
+    }
+  },
+  "period": {
+    "data_start": "2019-01-02",
+    "data_end": "2019-12-31",
+    "recent_start": "2019-12-18",
+    "recent_end": "2019-12-31",
+    "baseline_end": "2019-12-17"
+  },
+  "summary": {
+    "n_cells_evaluated": 264,
+    "n_cells_total": 357,
+    "n_alerts": 11,
+    "by_severity": {
+      "NORMAL": 253,
+      "WATCH": 11,
+      "MODERATE": 0,
+      "HIGH": 0
+    }
+  },
+  "filters": {
+    "severity": null,
+    "min_score": null,
+    "limit": 50,
+    "cell_id": null,
+    "matched": 264
+  },
+  "alerts": [
+    {
+      "cell_id": "765:385",
+      "cell_i": 765,
+      "cell_j": 385,
+      "lon": 11.375,
+      "lat": 6.375,
+      "severity": "WATCH",
+      "score": 0.85,
+      "ratio": 17.714,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "ratio_17.7x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "773:391",
+      "cell_i": 773,
+      "cell_j": 391,
+      "lon": 13.375,
+      "lat": 7.875,
+      "severity": "WATCH",
+      "score": 0.85,
+      "ratio": 17.714,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "ratio_17.7x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "773:399",
+      "cell_i": 773,
+      "cell_j": 399,
+      "lon": 13.375,
+      "lat": 9.875,
+      "severity": "WATCH",
+      "score": 0.85,
+      "ratio": 29.524,
+      "recent": {
+        "days": 14,
+        "detections": 5,
+        "daily_mean": 0.357
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "ratio_29.5x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "760:381",
+      "cell_i": 760,
+      "cell_j": 381,
+      "lon": 10.125,
+      "lat": 5.375,
+      "severity": "WATCH",
+      "score": 0.85,
+      "ratio": 17.714,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "ratio_17.7x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "775:386",
+      "cell_i": 775,
+      "cell_j": 386,
+      "lon": 13.875,
+      "lat": 6.625,
+      "severity": "WATCH",
+      "score": 0.85,
+      "ratio": 17.714,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "ratio_17.7x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "761:380",
+      "cell_i": 761,
+      "cell_j": 380,
+      "lon": 10.375,
+      "lat": 5.125,
+      "severity": "WATCH",
+      "score": 0.85,
+      "ratio": 17.714,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 9
+      },
+      "reasons": [
+        "ratio_17.7x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "763:377",
+      "cell_i": 763,
+      "cell_j": 377,
+      "lon": 10.875,
+      "lat": 4.375,
+      "severity": "WATCH",
+      "score": 0.8,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 5
+      },
+      "reasons": [
+        "baseline_nulle_activite_nouvelle"
+      ]
+    },
+    {
+      "cell_id": "763:379",
+      "cell_i": 763,
+      "cell_j": 379,
+      "lon": 10.875,
+      "lat": 4.875,
+      "severity": "WATCH",
+      "score": 0.8,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 2
+      },
+      "reasons": [
+        "baseline_nulle_activite_nouvelle"
+      ]
+    },
+    {
+      "cell_id": "776:379",
+      "cell_i": 776,
+      "cell_j": 379,
+      "lon": 14.125,
+      "lat": 4.875,
+      "severity": "WATCH",
+      "score": 0.8,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "baseline_nulle_activite_nouvelle"
+      ]
+    },
+    {
+      "cell_id": "779:376",
+      "cell_i": 779,
+      "cell_j": 376,
+      "lon": 14.875,
+      "lat": 4.125,
+      "severity": "WATCH",
+      "score": 0.8,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 5
+      },
+      "reasons": [
+        "baseline_nulle_activite_nouvelle"
+      ]
+    },
+    {
+      "cell_id": "773:400",
+      "cell_i": 773,
+      "cell_j": 400,
+      "lon": 13.375,
+      "lat": 10.125,
+      "severity": "WATCH",
+      "score": 0.8,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 3,
+        "daily_mean": 0.214
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 2
+      },
+      "reasons": [
+        "baseline_nulle_activite_nouvelle"
+      ]
+    },
+    {
+      "cell_id": "776:381",
+      "cell_i": 776,
+      "cell_j": 381,
+      "lon": 14.125,
+      "lat": 5.375,
+      "severity": "NORMAL",
+      "score": 0.85,
+      "ratio": 11.81,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 6
+      },
+      "reasons": [
+        "ratio_11.8x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "771:386",
+      "cell_i": 771,
+      "cell_j": 386,
+      "lon": 12.875,
+      "lat": 6.625,
+      "severity": "NORMAL",
+      "score": 0.85,
+      "ratio": 11.81,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "ratio_11.8x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "768:390",
+      "cell_i": 768,
+      "cell_j": 390,
+      "lon": 12.125,
+      "lat": 7.625,
+      "severity": "NORMAL",
+      "score": 0.85,
+      "ratio": 11.81,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 6
+      },
+      "reasons": [
+        "ratio_11.8x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "776:380",
+      "cell_i": 776,
+      "cell_j": 380,
+      "lon": 14.125,
+      "lat": 5.125,
+      "severity": "NORMAL",
+      "score": 0.85,
+      "ratio": 11.81,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "ratio_11.8x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "778:393",
+      "cell_i": 778,
+      "cell_j": 393,
+      "lon": 14.625,
+      "lat": 8.375,
+      "severity": "NORMAL",
+      "score": 0.85,
+      "ratio": 11.81,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "ratio_11.8x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "777:381",
+      "cell_i": 777,
+      "cell_j": 381,
+      "lon": 14.375,
+      "lat": 5.375,
+      "severity": "NORMAL",
+      "score": 0.85,
+      "ratio": 11.81,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 5
+      },
+      "reasons": [
+        "ratio_11.8x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "767:388",
+      "cell_i": 767,
+      "cell_j": 388,
+      "lon": 11.875,
+      "lat": 7.125,
+      "severity": "NORMAL",
+      "score": 0.85,
+      "ratio": 11.81,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "ratio_11.8x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "767:382",
+      "cell_i": 767,
+      "cell_j": 382,
+      "lon": 11.875,
+      "lat": 5.625,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 5
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "770:392",
+      "cell_i": 770,
+      "cell_j": 392,
+      "lon": 12.625,
+      "lat": 8.125,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 5
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "776:384",
+      "cell_i": 776,
+      "cell_j": 384,
+      "lon": 14.125,
+      "lat": 6.125,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 5
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "768:382",
+      "cell_i": 768,
+      "cell_j": 382,
+      "lon": 12.125,
+      "lat": 5.625,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "769:392",
+      "cell_i": 769,
+      "cell_j": 392,
+      "lon": 12.375,
+      "lat": 8.125,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 8
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "770:386",
+      "cell_i": 770,
+      "cell_j": 386,
+      "lon": 12.625,
+      "lat": 6.625,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "772:383",
+      "cell_i": 772,
+      "cell_j": 383,
+      "lon": 13.125,
+      "lat": 5.875,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "767:390",
+      "cell_i": 767,
+      "cell_j": 390,
+      "lon": 11.875,
+      "lat": 7.625,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 2
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "764:384",
+      "cell_i": 764,
+      "cell_j": 384,
+      "lon": 11.125,
+      "lat": 6.125,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 6
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "777:392",
+      "cell_i": 777,
+      "cell_j": 392,
+      "lon": 14.375,
+      "lat": 8.125,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "770:382",
+      "cell_i": 770,
+      "cell_j": 382,
+      "lon": 12.625,
+      "lat": 5.625,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 1
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "775:387",
+      "cell_i": 775,
+      "cell_j": 387,
+      "lon": 13.875,
+      "lat": 6.875,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 1
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "757:384",
+      "cell_i": 757,
+      "cell_j": 384,
+      "lon": 9.375,
+      "lat": 6.125,
+      "severity": "NORMAL",
+      "score": 0.6618,
+      "ratio": 5.905,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 1
+      },
+      "reasons": [
+        "ratio_5.9x",
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "776:376",
+      "cell_i": 776,
+      "cell_j": 376,
+      "lon": 14.125,
+      "lat": 4.125,
+      "severity": "NORMAL",
+      "score": 0.4,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 6
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "764:378",
+      "cell_i": 764,
+      "cell_j": 378,
+      "lon": 11.125,
+      "lat": 4.625,
+      "severity": "NORMAL",
+      "score": 0.4,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "760:379",
+      "cell_i": 760,
+      "cell_j": 379,
+      "lon": 10.125,
+      "lat": 4.875,
+      "severity": "NORMAL",
+      "score": 0.4,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 5
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "769:378",
+      "cell_i": 769,
+      "cell_j": 378,
+      "lon": 12.375,
+      "lat": 4.625,
+      "severity": "NORMAL",
+      "score": 0.4,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 2
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "757:378",
+      "cell_i": 757,
+      "cell_j": 378,
+      "lon": 9.375,
+      "lat": 4.625,
+      "severity": "NORMAL",
+      "score": 0.4,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 2,
+        "daily_mean": 0.143
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 2
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "777:379",
+      "cell_i": 777,
+      "cell_j": 379,
+      "lon": 14.375,
+      "lat": 4.875,
+      "severity": "NORMAL",
+      "score": 0.35,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 7
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "778:376",
+      "cell_i": 778,
+      "cell_j": 376,
+      "lon": 14.625,
+      "lat": 4.125,
+      "severity": "NORMAL",
+      "score": 0.35,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 5
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "774:378",
+      "cell_i": 774,
+      "cell_j": 378,
+      "lon": 13.625,
+      "lat": 4.625,
+      "severity": "NORMAL",
+      "score": 0.35,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "775:379",
+      "cell_i": 775,
+      "cell_j": 379,
+      "lon": 13.875,
+      "lat": 4.875,
+      "severity": "NORMAL",
+      "score": 0.35,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "757:377",
+      "cell_i": 757,
+      "cell_j": 377,
+      "lon": 9.375,
+      "lat": 4.375,
+      "severity": "NORMAL",
+      "score": 0.35,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 1
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "760:377",
+      "cell_i": 760,
+      "cell_j": 377,
+      "lon": 10.125,
+      "lat": 4.375,
+      "severity": "NORMAL",
+      "score": 0.35,
+      "ratio": null,
+      "recent": {
+        "days": 14,
+        "detections": 1,
+        "daily_mean": 0.071
+      },
+      "baseline": {
+        "median_daily": 0.0,
+        "q90_daily": 0.0471,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 1
+      },
+      "reasons": [
+        "baseline_nulle_activite_faible"
+      ]
+    },
+    {
+      "cell_id": "777:391",
+      "cell_i": 777,
+      "cell_j": 391,
+      "lon": 14.375,
+      "lat": 7.875,
+      "severity": "NORMAL",
+      "score": 0.0,
+      "ratio": 0.0,
+      "recent": {
+        "days": 14,
+        "detections": 0,
+        "daily_mean": 0.0
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 2
+      },
+      "reasons": [
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "771:388",
+      "cell_i": 771,
+      "cell_j": 388,
+      "lon": 12.875,
+      "lat": 7.125,
+      "severity": "NORMAL",
+      "score": 0.0,
+      "ratio": 0.0,
+      "recent": {
+        "days": 14,
+        "detections": 0,
+        "daily_mean": 0.0
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 6
+      },
+      "reasons": [
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "770:390",
+      "cell_i": 770,
+      "cell_j": 390,
+      "lon": 12.625,
+      "lat": 7.625,
+      "severity": "NORMAL",
+      "score": 0.0,
+      "ratio": 0.0,
+      "recent": {
+        "days": 14,
+        "detections": 0,
+        "daily_mean": 0.0
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 6
+      },
+      "reasons": [
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "775:397",
+      "cell_i": 775,
+      "cell_j": 397,
+      "lon": 13.875,
+      "lat": 9.375,
+      "severity": "NORMAL",
+      "score": 0.0,
+      "ratio": 0.0,
+      "recent": {
+        "days": 14,
+        "detections": 0,
+        "daily_mean": 0.0
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "764:383",
+      "cell_i": 764,
+      "cell_j": 383,
+      "lon": 11.125,
+      "lat": 5.875,
+      "severity": "NORMAL",
+      "score": 0.0,
+      "ratio": 0.0,
+      "recent": {
+        "days": 14,
+        "detections": 0,
+        "daily_mean": 0.0
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 6
+      },
+      "reasons": [
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "756:381",
+      "cell_i": 756,
+      "cell_j": 381,
+      "lon": 9.125,
+      "lat": 5.375,
+      "severity": "NORMAL",
+      "score": 0.0,
+      "ratio": 0.0,
+      "recent": {
+        "days": 14,
+        "detections": 0,
+        "daily_mean": 0.0
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 3
+      },
+      "reasons": [
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "774:383",
+      "cell_i": 774,
+      "cell_j": 383,
+      "lon": 13.625,
+      "lat": 5.875,
+      "severity": "NORMAL",
+      "score": 0.0,
+      "ratio": 0.0,
+      "recent": {
+        "days": 14,
+        "detections": 0,
+        "daily_mean": 0.0
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 6
+      },
+      "reasons": [
+        "baseline_insuffisante"
+      ]
+    },
+    {
+      "cell_id": "771:391",
+      "cell_i": 771,
+      "cell_j": 391,
+      "lon": 12.875,
+      "lat": 7.875,
+      "severity": "NORMAL",
+      "score": 0.0,
+      "ratio": 0.0,
+      "recent": {
+        "days": 14,
+        "detections": 0,
+        "daily_mean": 0.0
+      },
+      "baseline": {
+        "median_daily": 0.0121,
+        "q90_daily": 0.0323,
+        "level": "region",
+        "sufficient": false,
+        "n_days_with_detection": 4
+      },
+      "reasons": [
+        "baseline_insuffisante"
+      ]
+    }
+  ],
+  "notes": "Score d'anomalie = force statistique d'excès d'activité détectée vs baseline historique (Poisson sur-dispersé + ratio robuste). Ce n'est PAS une probabilité d'incendie réel ni une alerte opérationnelle : les données FIRMS sont historiques avec latence, et une cellule sans détection n'implique jamais l'absence de feu."
+}

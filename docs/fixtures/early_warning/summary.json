@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-11-20T10:19:48+00:00",
+  "estimate_kind": "historical_backtest",
+  "data_origin": "synthetic_fixture",
+  "params": {
+    "grid_deg": 0.25,
+    "recent_days": 14,
+    "baseline_days": 730,
+    "reference_date": null,
+    "thresholds": {
+      "watch": 0.55,
+      "moderate": 0.72,
+      "high": 0.88
+    },
+    "min_detections": {
+      "watch": 3,
+      "moderate": 6,
+      "high": 12
+    }
+  },
+  "period": {
+    "data_start": "2019-01-02",
+    "data_end": "2019-12-31",
+    "recent_start": "2019-12-18",
+    "recent_end": "2019-12-31",
+    "baseline_end": "2019-12-17"
+  },
+  "summary": {
+    "n_cells_evaluated": 264,
+    "n_cells_total": 357,
+    "n_alerts": 11,
+    "by_severity": {
+      "NORMAL": 253,
+      "WATCH": 11,
+      "MODERATE": 0,
+      "HIGH": 0
+    }
+  },
+  "source": {
+    "n_files": 3,
+    "digest_sha256": "b736f3eef6f0cee2b2bdb60e6326b4b445c2a8f18e39a6417967865938a14823",
+    "source_dir_kind": "fixture"
+  },
+  "notes": "Score d'anomalie = force statistique d'excès d'activité détectée vs baseline historique (Poisson sur-dispersé + ratio robuste). Ce n'est PAS une probabilité d'incendie réel ni une alerte opérationnelle : les données FIRMS sont historiques avec latence, et une cellule sans détection n'implique jamais l'absence de feu.",
+  "elapsed_s": 0.93
+}
