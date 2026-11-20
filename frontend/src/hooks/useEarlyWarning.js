@@ -18,7 +18,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import useEwFactory from "../services/earlyWarning.js";
 
 export default function useEarlyWarning() {
-  const ew = useEwFactory();
+  // useMemo stabilise l'objet service (la factory crée un nouvel objet à chaque render)
+  const ew = useMemo(() => useEwFactory(), []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
