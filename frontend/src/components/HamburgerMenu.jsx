@@ -14,6 +14,7 @@ const MODES = [
   { id: "overview", icon: "target", desc: "Tableau de bord d'exploration — synthèse du pipeline" },
   { id: "calendar", icon: "cal", desc: "Calendrier des feux — divergence inter-capteurs par jour" },
   { id: "harmonization", icon: "sliders", desc: "Harmonisation Lab — graphes de recouvrement VIIRS/MODIS" },
+  { id: "earlyWarning", icon: "alert", desc: "Pré-alerte — anomalies statistiques d'activité de feu détectée" },
   { id: "jobs", icon: "cpu", desc: "Tâches asynchrones — harmonisation, analyse FIRMS, entraînement" },
   { id: "dq", icon: "checks", desc: "Qualité des données — rapport de contrôle et anomalies" },
   { id: "risk", icon: "flame", desc: "Risque de feu — modèle RF calibré, probabilités par cellule" },

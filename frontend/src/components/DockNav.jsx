@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { id: "jobs", key: "nav.jobs", icon: "cpu" },
   { id: "dq", key: "nav.quality", icon: "checks" },
   { id: "risk", key: "nav.risk", icon: "flame" },
+  { id: "earlyWarning", key: "nav.earlyWarning", icon: "alert" },
 ];
 
 export default function DockNav({ active, onSelect }) {
