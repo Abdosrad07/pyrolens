@@ -61,15 +61,17 @@ const TILES = {
 /* ── marqueurs capteurs (VIIRS + MODIS) par pays d'Afrique centrale ── */
 // Centres approximatifs des 8 pays du jeu de données FIRMS (slugs validés).
 // Les capteurs VIIRS SNPP + MODIS Terra/Aqua couvrent l'ensemble de ces emprises.
+/* Centres géographiques calculés depuis les bounding boxes réelles (GADM/Natural Earth).
+   Format : [lat, lon] = centre géodésique du pays. */
 const SENSOR_COUNTRIES = [
-  { lat: 7.37,  lon: 12.35,  country: "Cameroun",             slug: "Cameroon" },
-  { lat: 14.50, lon: 18.50,  country: "Tchad",                slug: "Chad" },
-  { lat: 9.00,  lon: 20.00,  country: "RCA",                  slug: "Central_African_Republic" },
-  { lat: 0.60,  lon: 11.40,  country: "Gabon",                slug: "Gabon" },
-  { lat: 0.50,  lon: 15.20,  country: "Congo (Brazzaville)",  slug: "Republic_of_Congo" },
-  { lat: -3.00, lon: 21.50,  country: "DRC",                  slug: "Democratic_Republic_of_the_Congo" },
-  { lat: 1.80,  lon: 9.50,   country: "Guinée équatoriale",   slug: "Equatorial_Guinea" },
-  { lat: 0.20,  lon: 6.60,   country: "São Tomé-et-Principe", slug: "Sao_Tome_and_Principe" },
+  { lat:  8.00, lon: 12.40,  country: "Cameroun",             slug: "Cameroon" },
+  { lat: 15.50, lon: 19.00,  country: "Tchad",                slug: "Chad" },
+  { lat:  6.75, lon: 21.00,  country: "RCA",                  slug: "Central_African_Republic" },
+  { lat:  0.60, lon: 11.50,  country: "Gabon",                slug: "Gabon" },
+  { lat: -0.25, lon: 17.50,  country: "Congo (Brazzaville)",  slug: "Republic_of_Congo" },
+  { lat: -4.05, lon: 21.75,  country: "DRC",                  slug: "Democratic_Republic_of_the_Congo" },
+  { lat:  1.80, lon:  8.50,  country: "Guinée équatoriale",   slug: "Equatorial_Guinea" },
+  { lat:  0.95, lon:  6.90,  country: "São Tomé-et-Principe", slug: "Sao_Tome_and_Principe" },
 ];
 
 /* 4 capteurs distincts — couleur + forme propres (pas de chevauchement).
