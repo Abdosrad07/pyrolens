@@ -54,6 +54,100 @@
         }
       }
     },
+    "/api/v1/downloads/status": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "État des téléchargements FIRMS (pipeline + archive)",
+        "description": "Lecture légère des manifests et du disque : progression du pipeline data/raw/firms et volume du cache archive data/raw/archive. Aucun appel réseau — interrogeable en continu.",
+        "operationId": "downloads_status_api_v1_downloads_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Downloads Status Api V1 Downloads Status Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fire-risk": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Risque d'activité de feu détectée (backtest)",
+        "description": "Sert l'artefact `fire_risk.json` produit par `pyrolens predict`. Probabilités calibrées par cellule — estimation d'activité détectée, jamais une alerte incendie. 404 propre si l'artefact n'existe pas ; l'API ne recalcule jamais le modèle.",
+        "operationId": "fire_risk_api_v1_fire_risk_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Fire Risk Api V1 Fire Risk Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat": {
+      "post": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Assistant — réponses factuelles sur l'application",
+        "description": "Assistant déterministe (pas de LLM) : intentions métier sur les données, le pipeline, les vues, le modèle de risque, les jobs et les limites scientifiques. Chaque réponse s'appuie sur les artefacts réels et l'état des jobs — jamais de contenu inventé.",
+        "operationId": "chat_api_v1_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Chat Api V1 Chat Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/report": {
       "get": {
         "tags": [
@@ -677,6 +771,472 @@
         }
       }
     },
+    "/api/v1/fire-calendar/daily": {
+      "get": {
+        "tags": [
+          "calendrier des feux",
+          "Fire Calendar"
+        ],
+        "summary": "Série quotidienne de divergence par paire",
+        "description": "Comptages quotidiens ``a_only`` / ``b_only`` / ``both`` par paire de capteurs (configuration primaire). ``total`` = a_only + b_only ; les dates sont en UTC.",
+        "operationId": "daily_api_v1_fire_calendar_daily_get",
+        "parameters": [
+          {
+            "name": "pair",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "terra__aqua | aqua__viirs_snpp",
+              "title": "Pair"
+            },
+            "description": "terra__aqua | aqua__viirs_snpp"
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Début YYYY-MM-DD ou YYYY-MM (UTC).",
+              "title": "Start"
+            },
+            "description": "Début YYYY-MM-DD ou YYYY-MM (UTC)."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin YYYY-MM-DD ou YYYY-MM (UTC).",
+              "title": "End"
+            },
+            "description": "Fin YYYY-MM-DD ou YYYY-MM (UTC)."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20000,
+              "minimum": 1,
+              "description": "Jours les plus récents retournés.",
+              "default": 4000,
+              "title": "Limit"
+            },
+            "description": "Jours les plus récents retournés."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Daily Api V1 Fire Calendar Daily Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fire-calendar/weekly": {
+      "get": {
+        "tags": [
+          "calendrier des feux",
+          "Fire Calendar"
+        ],
+        "summary": "Série hebdomadaire (semaines ISO) par paire",
+        "description": "Agrège les comptages quotidiens en semaines ISO ``YYYY-Www``. ``total`` = a_only + b_only sur la semaine.",
+        "operationId": "weekly_api_v1_fire_calendar_weekly_get",
+        "parameters": [
+          {
+            "name": "pair",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "terra__aqua | aqua__viirs_snpp",
+              "title": "Pair"
+            },
+            "description": "terra__aqua | aqua__viirs_snpp"
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Début YYYY-MM-DD ou YYYY-MM (UTC).",
+              "title": "Start"
+            },
+            "description": "Début YYYY-MM-DD ou YYYY-MM (UTC)."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin YYYY-MM-DD ou YYYY-MM (UTC).",
+              "title": "End"
+            },
+            "description": "Fin YYYY-MM-DD ou YYYY-MM (UTC)."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 2000,
+              "minimum": 1,
+              "description": "Semaines les plus récentes retournées.",
+              "default": 400,
+              "title": "Limit"
+            },
+            "description": "Semaines les plus récentes retournées."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Weekly Api V1 Fire Calendar Weekly Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fire-calendar/monthly": {
+      "get": {
+        "tags": [
+          "calendrier des feux",
+          "Fire Calendar"
+        ],
+        "summary": "Séries mensuelles de divergence et de Jaccard",
+        "description": "Comptages mensuels ``a_only`` / ``b_only`` / ``both`` par paire, plus la série de Jaccard de la configuration primaire (``grid_deg`` / ``window_days``).",
+        "operationId": "monthly_api_v1_fire_calendar_monthly_get",
+        "parameters": [
+          {
+            "name": "pair",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "terra__aqua | aqua__viirs_snpp",
+              "title": "Pair"
+            },
+            "description": "terra__aqua | aqua__viirs_snpp"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 600,
+              "minimum": 1,
+              "description": "Mois les plus récents retournés.",
+              "default": 120,
+              "title": "Limit"
+            },
+            "description": "Mois les plus récents retournés."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Monthly Api V1 Fire Calendar Monthly Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fire-calendar/timeseries": {
+      "get": {
+        "tags": [
+          "calendrier des feux",
+          "Fire Calendar"
+        ],
+        "summary": "Série temporelle pour graphiques (observations, Jaccard, divergence)",
+        "description": "``metric=observation`` : séries quotidiennes par paire. ``metric=jaccard`` : Jaccard mensuel de la configuration primaire. ``metric=monthly`` : comptages mensuels de divergence par paire.",
+        "operationId": "timeseries_api_v1_fire_calendar_timeseries_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Début YYYY-MM-DD ou YYYY-MM (UTC).",
+              "title": "Start"
+            },
+            "description": "Début YYYY-MM-DD ou YYYY-MM (UTC)."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fin YYYY-MM-DD ou YYYY-MM (UTC).",
+              "title": "End"
+            },
+            "description": "Fin YYYY-MM-DD ou YYYY-MM (UTC)."
+          },
+          {
+            "name": "pair",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "terra__aqua | aqua__viirs_snpp",
+              "title": "Pair"
+            },
+            "description": "terra__aqua | aqua__viirs_snpp"
+          },
+          {
+            "name": "metric",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "observation | jaccard | monthly",
+              "default": "observation",
+              "title": "Metric"
+            },
+            "description": "observation | jaccard | monthly"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 20000,
+              "minimum": 1,
+              "default": 4000,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Timeseries Api V1 Fire Calendar Timeseries Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/methodology": {
+      "get": {
+        "tags": [
+          "méthodologie",
+          "Methodology"
+        ],
+        "summary": "Documentation méthodologique complète",
+        "description": "Le document ``docs/methodology.md`` en Markdown brut (``text/markdown``), identique au fichier servi en mode statique.",
+        "operationId": "methodology_api_v1_methodology_get",
+        "responses": {
+          "200": {
+            "description": "Document méthodologique.",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {}
+              },
+              "text/markdown": {}
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/methodology/satellites": {
+      "get": {
+        "tags": [
+          "méthodologie",
+          "Methodology"
+        ],
+        "summary": "Capteurs couverts par l'étude",
+        "description": "Liste des capteurs de l'inventaire (MODIS Terra, MODIS Aqua, VIIRS S-NPP) avec libellé, nom court et version retenue.",
+        "operationId": "satellites_api_v1_methodology_satellites_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Satellites Api V1 Methodology Satellites Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/methodology/processing-steps": {
+      "get": {
+        "tags": [
+          "méthodologie",
+          "Methodology"
+        ],
+        "summary": "Étapes de la méthode (titres du document)",
+        "description": "Sections numérotées de ``docs/methodology.md`` extraites dynamiquement : aucune liste codée en dur, le document fait foi.",
+        "operationId": "processing_steps_api_v1_methodology_processing_steps_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Processing Steps Api V1 Methodology Processing Steps Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/datasets/validate": {
       "post": {
         "tags": [
@@ -850,6 +1410,870 @@
               "application/json; charset=utf-8": {
                 "schema": {
                   "$ref": "#/components/schemas/ExperimentResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/firms/analyze": {
+      "get": {
+        "tags": [
+          "analyse de zone FIRMS"
+        ],
+        "summary": "Lister les analyses de zone",
+        "description": "Tâches firms_analyze connues du processus courant (+ résultats persistés).",
+        "operationId": "list_zone_analyses_api_v1_firms_analyze_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobListView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "analyse de zone FIRMS"
+        ],
+        "summary": "Analyser une zone : détections VIIRS vs MODIS (FIRMS)",
+        "description": "Lance une tâche de fond : téléchargement FIRMS (sources SP, fenêtre ~5 jours), normalisation et appariement par cellule/date → Jaccard de recouvrement. Nécessite FIRMS_MAP_KEY côté serveur. L'avancement réel est visible sur GET /firms/analyze/{job_id} (champ progress).",
+        "operationId": "create_zone_analysis_api_v1_firms_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZoneAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/firms/analyze/{job_id}": {
+      "get": {
+        "tags": [
+          "analyse de zone FIRMS"
+        ],
+        "summary": "Suivi d'une analyse de zone",
+        "description": "Statut : queued → running → succeeded | failed. Le champ `progress` porte l'étape courante.",
+        "operationId": "get_zone_analysis_api_v1_firms_analyze__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/firms/analyze/{job_id}/result": {
+      "get": {
+        "tags": [
+          "analyse de zone FIRMS"
+        ],
+        "summary": "Résultat d'une analyse de zone",
+        "description": "Compteurs par capteur, Jaccard, série quotidienne, échantillon de points (carte) et provenance. 409 tant que la tâche n'est pas terminée.",
+        "operationId": "get_zone_analysis_result_api_v1_firms_analyze__job_id__result_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/firms/history": {
+      "get": {
+        "tags": [
+          "analyse de zone FIRMS"
+        ],
+        "summary": "Lister les historiques de zone",
+        "operationId": "list_zone_histories_api_v1_firms_history_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobListView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "analyse de zone FIRMS"
+        ],
+        "summary": "Historique FIRMS d'une zone (archive annuelle par pays)",
+        "description": "Lance une tâche de fond : résolution des pays intersectés, téléchargement des CSV annuels `/data/country/` (ouverts, sans clé, cache local), filtre bbox, agrégation cellule/jour VIIRS vs MODIS → série chronologique + Jaccard. Fenêtre par années (défaut 2019→actuel).",
+        "operationId": "create_zone_history_api_v1_firms_history_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZoneHistoryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/firms/history/{job_id}": {
+      "get": {
+        "tags": [
+          "analyse de zone FIRMS"
+        ],
+        "summary": "Suivi d'un historique de zone",
+        "operationId": "get_zone_history_api_v1_firms_history__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/firms/history/{job_id}/result": {
+      "get": {
+        "tags": [
+          "analyse de zone FIRMS"
+        ],
+        "summary": "Résultat d'un historique de zone",
+        "operationId": "get_zone_history_result_api_v1_firms_history__job_id__result_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/predict": {
+      "get": {
+        "tags": [
+          "prédiction de risque"
+        ],
+        "summary": "Lister les exécutions predict",
+        "operationId": "list_predicts_api_v1_predict_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobListView"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "prédiction de risque"
+        ],
+        "summary": "Entraîner/mettre à jour le modèle de risque de feu",
+        "description": "Lance `pyrolens predict` en tâche de fond (peut durer ~10 min sur données réelles — un seul worker). Réécrit fire_risk.json à la fin. Source : data/raw/firms par défaut, data/fixture si absente.",
+        "operationId": "create_predict_api_v1_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PredictRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/predict/{job_id}": {
+      "get": {
+        "tags": [
+          "prédiction de risque"
+        ],
+        "summary": "Suivi d'une exécution predict",
+        "operationId": "get_predict_api_v1_predict__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobView"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/predict/{job_id}/result": {
+      "get": {
+        "tags": [
+          "prédiction de risque"
+        ],
+        "summary": "Résultat d'une exécution predict",
+        "operationId": "get_predict_result_api_v1_predict__job_id__result_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperimentResultResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/early-warning/summary": {
+      "get": {
+        "tags": [
+          "early warning",
+          "Early Warning"
+        ],
+        "summary": "Résumé des alertes d'anomalie par sévérité",
+        "description": "Compteurs NORMAL/WATCH/MODERATE/HIGH sur la fenêtre récente, avec paramètres, période et provenance. `estimate_kind=historical_backtest` : pas une alerte temps réel.",
+        "operationId": "summary_api_v1_early_warning_summary_get",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "auto (réel sinon fixture) | fixture (synthétique) | raw (FIRMS normalisées)",
+              "default": "auto",
+              "title": "Source"
+            },
+            "description": "auto (réel sinon fixture) | fixture (synthétique) | raw (FIRMS normalisées)"
+          },
+          {
+            "name": "grid_deg",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 2.0,
+              "exclusiveMinimum": 0.0,
+              "default": 0.25,
+              "title": "Grid Deg"
+            }
+          },
+          {
+            "name": "recent_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "default": 14,
+              "title": "Recent Days"
+            }
+          },
+          {
+            "name": "baseline_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 3650,
+              "minimum": 1,
+              "default": 730,
+              "title": "Baseline Days"
+            }
+          },
+          {
+            "name": "reference_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "AAAA-MM-JJ (défaut : max des données).",
+              "title": "Reference Date"
+            },
+            "description": "AAAA-MM-JJ (défaut : max des données)."
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtre : NORMAL | WATCH | MODERATE | HIGH.",
+              "title": "Severity"
+            },
+            "description": "Filtre : NORMAL | WATCH | MODERATE | HIGH."
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 1.0,
+                  "minimum": 0.0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Score"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 5000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Summary Api V1 Early Warning Summary Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/early-warning/alerts": {
+      "get": {
+        "tags": [
+          "early warning",
+          "Early Warning"
+        ],
+        "summary": "Liste des cellules évaluées avec leur sévérité",
+        "description": "Chaque alerte porte cell_id, coordonnées, severity, score, ratio, compteurs récents et baseline (niveau de lissage, suffisance). Tri : sévérité décroissante puis score décroissant.",
+        "operationId": "alerts_api_v1_early_warning_alerts_get",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "auto (réel sinon fixture) | fixture (synthétique) | raw (FIRMS normalisées)",
+              "default": "auto",
+              "title": "Source"
+            },
+            "description": "auto (réel sinon fixture) | fixture (synthétique) | raw (FIRMS normalisées)"
+          },
+          {
+            "name": "grid_deg",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 2.0,
+              "exclusiveMinimum": 0.0,
+              "default": 0.25,
+              "title": "Grid Deg"
+            }
+          },
+          {
+            "name": "recent_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "default": 14,
+              "title": "Recent Days"
+            }
+          },
+          {
+            "name": "baseline_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 3650,
+              "minimum": 1,
+              "default": 730,
+              "title": "Baseline Days"
+            }
+          },
+          {
+            "name": "reference_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "AAAA-MM-JJ (défaut : max des données).",
+              "title": "Reference Date"
+            },
+            "description": "AAAA-MM-JJ (défaut : max des données)."
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtre : NORMAL | WATCH | MODERATE | HIGH.",
+              "title": "Severity"
+            },
+            "description": "Filtre : NORMAL | WATCH | MODERATE | HIGH."
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "maximum": 1.0,
+                  "minimum": 0.0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Score"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 5000,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Alerts Api V1 Early Warning Alerts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/early-warning/alerts/{cell_id}": {
+      "get": {
+        "tags": [
+          "early warning",
+          "Early Warning"
+        ],
+        "summary": "Détail d'une cellule (score, baseline, raisons)",
+        "description": "cell_id au format `ci:cj` (index de grille, origine -180/-90). 404 si la cellule n'a pas été évaluée (aucune activité récente ni baseline non nulle).",
+        "operationId": "alert_cell_api_v1_early_warning_alerts__cell_id__get",
+        "parameters": [
+          {
+            "name": "cell_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cell Id"
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "auto (réel sinon fixture) | fixture (synthétique) | raw (FIRMS normalisées)",
+              "default": "auto",
+              "title": "Source"
+            },
+            "description": "auto (réel sinon fixture) | fixture (synthétique) | raw (FIRMS normalisées)"
+          },
+          {
+            "name": "grid_deg",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 2.0,
+              "exclusiveMinimum": 0.0,
+              "default": 0.25,
+              "title": "Grid Deg"
+            }
+          },
+          {
+            "name": "recent_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "default": 14,
+              "title": "Recent Days"
+            }
+          },
+          {
+            "name": "baseline_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 3650,
+              "minimum": 1,
+              "default": 730,
+              "title": "Baseline Days"
+            }
+          },
+          {
+            "name": "reference_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "AAAA-MM-JJ (défaut : max des données).",
+              "title": "Reference Date"
+            },
+            "description": "AAAA-MM-JJ (défaut : max des données)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Alert Cell Api V1 Early Warning Alerts  Cell Id  Get"
                 }
               }
             }
@@ -1070,6 +2494,12 @@
             ],
             "title": "Error"
           },
+          "progress": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Progress",
+            "description": "Avancement temps réel : {step, pct, detail, at} pendant l'exécution."
+          },
           "links": {
             "additionalProperties": {
               "type": "string"
@@ -1136,6 +2566,46 @@
         "type": "object",
         "title": "Meta",
         "description": "Métadonnées communes : horodatage de l'artefact et origine des données."
+      },
+      "PredictRequest": {
+        "properties": {
+          "grid_deg": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Grid Deg",
+            "default": 0.25
+          },
+          "window": {
+            "type": "integer",
+            "maximum": 60.0,
+            "minimum": 1.0,
+            "title": "Window",
+            "description": "horizon en jours",
+            "default": 8
+          },
+          "reference_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Date",
+            "description": "AAAA-MM-JJ (défaut : max des données)"
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^(auto|raw|fixture)$",
+            "title": "Source",
+            "default": "auto"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "PredictRequest"
       },
       "RowsResponse": {
         "properties": {
@@ -1270,6 +2740,87 @@
           "note"
         ],
         "title": "ValidationResponse"
+      },
+      "ZoneAnalysisRequest": {
+        "properties": {
+          "bbox": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Bbox",
+            "description": "[min_lon, min_lat, max_lon, max_lat] en degrés (WGS84)."
+          },
+          "window": {
+            "type": "string",
+            "enum": [
+              "nrt",
+              "archive"
+            ],
+            "title": "Window",
+            "description": "Fenêtre : nrt (récent ~5 jours, FIRMS SP) | archive (non supporté par zone).",
+            "default": "nrt"
+          },
+          "grid_deg": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Grid Deg",
+            "description": "Maille d'appariement en degrés (défaut 0.05 ≈ 5 km).",
+            "default": 0.05
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "bbox"
+        ],
+        "title": "ZoneAnalysisRequest",
+        "description": "Demande d'analyse FIRMS sur une bbox arbitraire (VIIRS vs MODIS)."
+      },
+      "ZoneHistoryRequest": {
+        "properties": {
+          "bbox": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Bbox",
+            "description": "[min_lon, min_lat, max_lon, max_lat] en degrés (WGS84)."
+          },
+          "start_year": {
+            "type": "integer",
+            "maximum": 2100.0,
+            "minimum": 2000.0,
+            "title": "Start Year",
+            "default": 2019
+          },
+          "end_year": {
+            "type": "integer",
+            "maximum": 2100.0,
+            "minimum": 2000.0,
+            "title": "End Year",
+            "default": 2026
+          },
+          "grid_deg": {
+            "type": "number",
+            "maximum": 1.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Grid Deg",
+            "default": 0.25
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "bbox"
+        ],
+        "title": "ZoneHistoryRequest",
+        "description": "Demande d'historique FIRMS archive sur une bbox (VIIRS vs MODIS, par années)."
       }
     }
   }

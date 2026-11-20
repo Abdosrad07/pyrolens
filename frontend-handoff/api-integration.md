@@ -43,6 +43,9 @@ contrat** : les vues ne doivent pas changer.
 | — | `GET /export?dataset=…` | téléchargement CSV/JSON (bouton « Exporter ») |
 | — | `POST /datasets/validate` | validation de fichier (Jeton si configuré) |
 | — | `POST /experiments` → suivi → `/result` | calcul à la demande (202 → polling) |
+| — | `GET /early-warning/summary` | compteurs d'alertes par sévérité |
+| — | `GET /early-warning/alerts?severity&min_score&limit` | liste des cellules évaluées |
+| — | `GET /early-warning/alerts/{cell_id}` | détail d'une cellule (`ci:cj`) |
 
 ## 3. Exemple de bascule (data.js)
 
@@ -65,7 +68,41 @@ async function apiGet(path, params) {
 - Les GET renvoient `ETag` + `Cache-Control: max-age=60` : un
   `If-None-Match: <etag>` retourne 304 sans corps — réutiliser l'état en mémoire.
 
-## 4. Ajouts progressifs possibles sans toucher aux vues
+## 4. Early Warning — détection d'anomalies
+
+Trois GET en lecture seule, calculées à la demande puis mises en cache
+(indexé sur l'empreinte de la source + paramètres). **Première exécution
+coûteuse sur la pleine archive (~70 s) ; les suivantes sont servies depuis le
+cache** — prévoir un état de chargement côté UI.
+
+| Besoin UI | Endpoint | Paramètres utiles |
+|---|---|---|
+| Bandeau « X alertes » | `GET /early-warning/summary` | `source`, `grid_deg`, `recent_days`, `baseline_days`, `reference_date` |
+| Liste/carte des alertes | `GET /early-warning/alerts` | + `severity` (`NORMAL\|WATCH\|MODERATE\|HIGH`), `min_score` ([0,1]), `limit` (≤5000) |
+| Fiche cellule | `GET /early-warning/alerts/{cell_id}` | `cell_id` = `ci:cj` (ex. `765:385`) ; mêmes paramètres de calcul, pas de filtres |
+
+Champs clés d'une alerte : `cell_id`, `lon`, `lat`, `severity`, `score` ∈
+[0,1], `ratio`, `recent` (détections, moyenne journalière), `baseline`
+(médiane/q90, `level` ∈ `cell|region|global`, `sufficient`), `reasons[]`
+(explications lisibles).
+
+**Garde-fous éditoriaux (non négociables)** :
+
+- `estimate_kind` vaut toujours `"historical_backtest"` — afficher la mention
+  « backtest historique, pas d'alerte temps réel » près des scores.
+- `score` est une **force statistique d'excès d'activité**, pas une
+  probabilité d'incendie : ne jamais l'afficher comme « % de risque ».
+- Une cellule absente de la liste n'implique **pas** l'absence de feu.
+- `data_origin` ∈ `nasa_firms | synthetic_fixture | custom_source` :
+  l'afficher comme les autres écrans (provenance visible).
+- Erreurs : 400 (paramètre invalide), 404 (cellule non évaluée), 409 (source
+  vide) — même canal `data.errors[]`.
+
+Exemples de réponses réelles pour le mode statique / tests :
+`docs/fixtures/early_warning/{summary,alerts,cell}.json` — utilisables comme
+fixtures de repli si l'API est coupée (mode dégradé propre).
+
+## 5. Ajouts progressifs possibles sans toucher aux vues
 
 1. **Bouton d'export** sur l'écran Baselines : lien direct
    `GET /export?dataset=summary&format=csv` (téléchargement, en-têtes = champs
