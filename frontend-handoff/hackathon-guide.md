@@ -23,9 +23,17 @@
 **État du dépôt (oct. 2026)** : front statique Vite 5 + React 18 + Recharts,
 CSS pur (aucun UI-kit), build `web/dist/` servi par un Worker Cloudflare
 (`web/sites-worker.js`) — aperçu publié, dépôt GitHub `Abdosrad07/pyrolens`
-(branche `main`). API FastAPI v1 en lecture seule (`api/`), 91 tests pytest
-dont 60 API. **Le front est pleinement fonctionnel sans l'API** : c'est le
-mode par défaut, à conserver.
+(branche `main`). API FastAPI v1 en lecture seule (`api/`), **160 tests
+pytest** (86 API + 74 pipeline). **Le front est pleinement fonctionnel sans
+l'API** : c'est le mode par défaut, à conserver.
+
+**Fonctionnalité phare — Early Warning** : trois GET
+`/api/v1/early-warning/{summary,alerts,alerts/{cell_id}}` exposent un moteur
+de détection d'anomalies d'activité de feu par cellule (baseline robuste +
+score statistique, sévérités NORMAL→HIGH). Contrat : `docs/api.md` §5,
+méthodologie : `docs/EARLY_WARNING_BACKEND.md`, exemples :
+`docs/fixtures/early_warning/*.json`. Toutes les réponses portent
+`estimate_kind="historical_backtest"` — jamais d'affirmation temps réel.
 
 **Fait important** : l'app réelle compte **8 écrans** — `views/Landing.jsx`
 (page d'accueil), `Auth.jsx` (session simulée) et les 6 vues de rapports.
@@ -48,7 +56,7 @@ PYTHONPATH=src uvicorn api.index:app --host 0.0.0.0 --port 8000
 # Swagger : http://localhost:8000/api/v1/docs
 
 # Tests
-python3 -m pytest                 # 91 tests (31 pipeline + 60 API)
+python3 -m pytest                 # 160 tests (74 pipeline + 86 API)
 python3 -m pytest tests/api -q    # API seule
 ```
 
@@ -152,7 +160,7 @@ bouton d'export CSV (`GET /export?dataset=summary&format=csv`), écran
       que le mode statique (comparaison curl/vue, écran par écran)
 - [ ] API coupée → écran dégradé propre (message via `data.errors[]`,
       pas de blanc, pas de crash)
-- [ ] `npm --prefix web run build` → exit 0 ; `python3 -m pytest` → 91 verts
+- [ ] `npm --prefix web run build` → exit 0 ; `python3 -m pytest` → 160 verts
 - [ ] Zéro jeton/URL/acquisition dans le bundle (`grep` sur `web/dist/`)
 
 ---

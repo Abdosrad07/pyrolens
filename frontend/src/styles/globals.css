@@ -1821,6 +1821,16 @@ img { max-width: 100%; height: auto; display: block; }
    RESPONSIVE GLOBAL — couverture complète
    ========================================================= */
 
+/* =========================================================
+   EARLY WARNING CENTER — layout dédié
+   ========================================================= */
+.ew-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.2rem;
+  margin-top: 0.6rem;
+}
+
 /* Petits écrans (mobile ≤ 600px) */
 @media (max-width: 600px) {
   :root { --hh: 3.75rem; }
@@ -1865,6 +1875,7 @@ img { max-width: 100%; height: auto; display: block; }
   .cards { grid-template-columns: 1fr; gap: 0.6rem; }
   .jgrid { grid-template-columns: 1fr; gap: 1rem; }
   .ov-grid, .ov-stats { grid-template-columns: 1fr; }
+  .ew-grid { grid-template-columns: 1fr; }
 
   /* Panneaux : pleine largeur sur mobile */
   .risk-panel { width: 100%; }

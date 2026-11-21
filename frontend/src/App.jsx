@@ -24,6 +24,7 @@ import JobsView from "./views/JobsView.jsx";
 import DqView from "./views/DqView.jsx";
 import RiskView from "./views/RiskView.jsx";
 import HarmonizationLabView from "./views/HarmonizationLabView.jsx";
+import EarlyWarningView from "./views/EarlyWarningView.jsx";
 import useMap from "./hooks/useMap.js";
 import useRiskData from "./hooks/useRiskData.js";
 import useApi from "./hooks/useApi.js";
@@ -37,6 +38,7 @@ const VIEWS = {
   dq: { fr: "Qualité des données", en: "Data quality" },
   risk: { fr: "Risque de feu", en: "Fire risk" },
   harmonization: { fr: "Harmonisation", en: "Harmonization" },
+  earlyWarning: { fr: "Pré-alerte", en: "Early warning" },
 };
 
 function InnerApp() {
@@ -181,6 +183,11 @@ function InnerApp() {
       {view === "harmonization" && (
         <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
           <HarmonizationLabView onBack={() => { setView("map"); invalidateSize(); }} />
+        </div>
+      )}
+      {view === "earlyWarning" && (
+        <div style={{ position: "absolute", inset: "var(--hh) 0 0", zIndex: 1300, background: "var(--ash)" }}>
+          <EarlyWarningView onBack={() => { setView("map"); invalidateSize(); }} />
         </div>
       )}
 

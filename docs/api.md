@@ -162,7 +162,119 @@ curl -sOJ 'https://<hôte>/api/v1/export?dataset=summary&format=csv'
 
 ---
 
-## 5. Upload (validation, jamais d'intégration)
+## 5. Early Warning — détection d'anomalies d'activité de feu
+
+Trois routes en lecture seule qui comparent l'activité récente (défaut 14 j)
+à une baseline historique par cellule de grille (défaut 730 j). **Toutes les
+réponses portent `estimate_kind: "historical_backtest"`** : les données FIRMS
+sont des archives/NRT avec latence — aucune affirmation temps réel, et une
+cellule sans détection n'implique jamais l'absence de feu.
+
+Paramètres communs (query) : `source` (`auto` | `fixture` | `raw`, défaut
+`auto`), `grid_deg` (défaut 0,25 ; (0, 2]), `recent_days` (défaut 14 ;
+[1, 365]), `baseline_days` (défaut 730 ; ≥ `recent_days`, ≤ 3650),
+`reference_date` (`AAAA-MM-JJ`, défaut = dernière détection des données ;
+les données postérieures n'influencent jamais le résultat). Paramètre inconnu
+→ 400 ; combinaison invalide → 400 ; source vide → 409.
+
+Le calcul est mis en cache (indexé sur l'empreinte SHA-256 de la source +
+paramètres) ; les filtres de présentation (`severity`, `min_score`, `limit`)
+sont appliqués après coup et ne modifient jamais les métriques.
+
+### `GET /early-warning/summary`
+
+Compteurs par sévérité + métadonnées :
+
+```json
+{ "generated_at": "…", "estimate_kind": "historical_backtest",
+  "data_origin": "synthetic_fixture",
+  "params": { "grid_deg": 0.25, "recent_days": 14, "baseline_days": 730,
+              "thresholds": {"watch": 0.55, "moderate": 0.72, "high": 0.88},
+              "min_detections": {"watch": 3, "moderate": 6, "high": 12} },
+  "period": { "data_start": "…", "data_end": "…", "recent_start": "…",
+              "recent_end": "…", "baseline_end": "…" },
+  "summary": { "n_cells_evaluated": 264, "n_cells_total": 357,
+               "n_alerts": 11,
+               "by_severity": {"NORMAL": 253, "WATCH": 11,
+                               "MODERATE": 0, "HIGH": 0} },
+  "source": { "n_files": 3, "digest_sha256": "…", "source_dir_kind": "fixture" },
+  "notes": "…", "elapsed_s": 0.93 }
+```
+
+Filtres optionnels : `severity` (`NORMAL|WATCH|MODERATE|HIGH`), `min_score`
+([0, 1]), `limit` (≤ 5000).
+
+### `GET /early-warning/alerts`
+
+Liste des cellules évaluées, tri : sévérité décroissante puis score
+décroissant. Chaque alerte :
+
+```json
+{ "cell_id": "765:385", "cell_i": 765, "cell_j": 385,
+  "lon": 11.375, "lat": 6.375, "severity": "WATCH", "score": 0.85,
+  "ratio": 26.571,
+  "recent": { "days": 14, "detections": 3, "daily_mean": 0.214 },
+  "baseline": { "median_daily": 0.0081, "q90_daily": 0.0286,
+                "level": "region", "sufficient": false,
+                "n_days_with_detection": 4 },
+  "persistence": 9,
+  "sensors": ["modis", "viirs-snpp"],
+  "reasons": ["ratio_26.6x", "baseline_insuffisante"] }
+```
+
+- `cell_id` = `ci:cj` (index de grille, origine −180°/−90°).
+- `baseline.level` ∈ `cell` | `region` | `global` (lissage hiérarchique) ;
+  `baseline.sufficient` = historique ≥ 30 jours avec détection.
+- `severity` ∈ `NORMAL` | `WATCH` | `MODERATE` | `HIGH` — seuils de score
+  **et** planchers de détections absolues (voir `params`).
+- `score` ∈ [0, 1] : force statistique d'excès d'activité (Poisson
+  sur-dispersé + ratio robuste) — **pas une probabilité d'incendie**.
+- `persistence` : jours consécutifs en fin de fenêtre récente avec
+  détections > médiane journalière de la baseline (baseline nulle → tout
+  jour avec ≥1 détection compte).
+- `sensors` : capteurs actifs sur la fenêtre récente
+  (`modis` | `viirs-snpp` | `viirs-noaa` | `unknown`).
+- `reasons` : explications lisibles (`ratio_Xx`, `baseline_insuffisante`, …).
+
+Mêmes filtres que `/summary` + `limit`. Réponse : `{ generated_at,
+estimate_kind, data_origin, params, period, summary, filters, alerts[],
+notes, source }`.
+
+#### Compatibilité Early Warning Center (frontend/)
+
+Les vues `summary_view` et `alerts_view` exposent **additivement** les champs
+attendus par le front (`frontend/src/services/earlyWarning.js`), sans modifier
+le contrat canonique ci-dessus :
+
+- `/summary` ajoute : `n_cells_monitored`, `n_anomalies`, `n_high_priority`,
+  `n_increasing_zones`, `data_period {start,end,days}`, `recent_window
+  {start,end,days}`, `historical_backtest` (bool).
+- `/alerts` ajoute : `items[]` (cellules non-NORMAL uniquement, sévérité
+  `low|moderate|high` — mapping WATCH→low, MODERATE→moderate, HIGH→high —,
+  `cell_id` au format `ci_cj`, `recent_detections`, `historical_baseline`
+  (total attendu sur la fenêtre), `activity_change` (%), `persistence`,
+  `sensors`, `observation_period`, `anomaly_score`, `reason`, `limitations`)
+  et `meta` (résumé frontend).
+- `/alerts/{cell_id}` accepte `ci:cj` **et** `ci_cj`.
+
+### `GET /early-warning/alerts/{cell_id}`
+
+Détail d'une cellule (`ci:cj` ou `ci_cj`, ex. `720:360` / `720_360`). 400 si
+format invalide, 404 si la cellule n'a pas été évaluée. Mêmes paramètres de
+calcul que `/alerts` (sans les filtres de présentation).
+
+```bash
+curl -s 'https://<hôte>/api/v1/early-warning/summary?source=fixture'
+curl -s 'https://<hôte>/api/v1/early-warning/alerts?severity=HIGH&limit=20'
+curl -s 'https://<hôte>/api/v1/early-warning/alerts/765:385'
+```
+
+Exemples de réponses réelles : `docs/fixtures/early_warning/*.json`.
+Méthodologie complète : `docs/EARLY_WARNING_BACKEND.md`.
+
+---
+
+## 6. Upload (validation, jamais d'intégration)
 
 ### `POST /datasets/validate`
 
@@ -193,7 +305,7 @@ Erreurs : 400 (nom/vide/colonnes), 413 (taille), 415 (type), 401 (jeton).
 
 ---
 
-## 6. Expériences (jobs)
+## 7. Expériences (jobs)
 
 ### `POST /experiments` → `202`
 
@@ -240,7 +352,7 @@ Détails et limites : `docs/limitations.md` §3.
 
 ---
 
-## 7. Authentification
+## 8. Authentification
 
 Lecture ouverte (choix D6 : MVP public). Si `PYROLENS_API_TOKEN` est défini,
 les deux POST exigent :
@@ -255,7 +367,7 @@ n'autorise que `GET`. Aucun secret n'est stocké côté API ; l'API ne lit jamai
 
 ---
 
-## 8. Spécification OpenAPI
+## 9. Spécification OpenAPI
 
 - Servie à `/api/v1/openapi.json` (Swagger UI : `/api/v1/docs`, ReDoc :
   `/api/v1/redoc`).
