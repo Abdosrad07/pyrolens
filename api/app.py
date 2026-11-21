@@ -42,6 +42,7 @@ from api.jobs import JobManager
 from api.routers import audit as audit_router
 from api.routers import baselines as baselines_router
 from api.routers import catalog as catalog_router
+from api.routers import early_warning as early_warning_router
 from api.routers import experiments as experiments_router
 from api.routers import firms as firms_router
 from api.routers import fire_calendar as fire_calendar_router
@@ -78,6 +79,7 @@ ROUTERS = (
     (experiments_router.router, "expériences"),
     (firms_router.router, "analyse de zone FIRMS"),
     (predict_router.router, "prédiction de risque"),
+    (early_warning_router.router, "early warning"),
 )
 
 

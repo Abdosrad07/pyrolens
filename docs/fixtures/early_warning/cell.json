@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-11-20T10:19:48+00:00",
+  "estimate_kind": "historical_backtest",
+  "data_origin": "synthetic_fixture",
+  "params": {
+    "grid_deg": 0.25,
+    "recent_days": 14,
+    "baseline_days": 730,
+    "reference_date": null,
+    "thresholds": {
+      "watch": 0.55,
+      "moderate": 0.72,
+      "high": 0.88
+    },
+    "min_detections": {
+      "watch": 3,
+      "moderate": 6,
+      "high": 12
+    }
+  },
+  "period": {
+    "data_start": "2019-01-02",
+    "data_end": "2019-12-31",
+    "recent_start": "2019-12-18",
+    "recent_end": "2019-12-31",
+    "baseline_end": "2019-12-17"
+  },
+  "cell": {
+    "cell_id": "765:385",
+    "cell_i": 765,
+    "cell_j": 385,
+    "lon": 11.375,
+    "lat": 6.375,
+    "severity": "WATCH",
+    "score": 0.85,
+    "ratio": 17.714,
+    "recent": {
+      "days": 14,
+      "detections": 3,
+      "daily_mean": 0.214
+    },
+    "baseline": {
+      "median_daily": 0.0121,
+      "q90_daily": 0.0323,
+      "level": "region",
+      "sufficient": false,
+      "n_days_with_detection": 4
+    },
+    "reasons": [
+      "ratio_17.7x",
+      "baseline_insuffisante"
+    ]
+  },
+  "notes": "Score d'anomalie = force statistique d'excès d'activité détectée vs baseline historique (Poisson sur-dispersé + ratio robuste). Ce n'est PAS une probabilité d'incendie réel ni une alerte opérationnelle : les données FIRMS sont historiques avec latence, et une cellule sans détection n'implique jamais l'absence de feu."
+}
