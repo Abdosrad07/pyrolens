@@ -217,6 +217,8 @@ décroissant. Chaque alerte :
   "baseline": { "median_daily": 0.0081, "q90_daily": 0.0286,
                 "level": "region", "sufficient": false,
                 "n_days_with_detection": 4 },
+  "persistence": 9,
+  "sensors": ["modis", "viirs-snpp"],
   "reasons": ["ratio_26.6x", "baseline_insuffisante"] }
 ```
 
@@ -227,17 +229,39 @@ décroissant. Chaque alerte :
   **et** planchers de détections absolues (voir `params`).
 - `score` ∈ [0, 1] : force statistique d'excès d'activité (Poisson
   sur-dispersé + ratio robuste) — **pas une probabilité d'incendie**.
+- `persistence` : jours consécutifs en fin de fenêtre récente avec
+  détections > médiane journalière de la baseline (baseline nulle → tout
+  jour avec ≥1 détection compte).
+- `sensors` : capteurs actifs sur la fenêtre récente
+  (`modis` | `viirs-snpp` | `viirs-noaa` | `unknown`).
 - `reasons` : explications lisibles (`ratio_Xx`, `baseline_insuffisante`, …).
 
 Mêmes filtres que `/summary` + `limit`. Réponse : `{ generated_at,
 estimate_kind, data_origin, params, period, summary, filters, alerts[],
 notes, source }`.
 
+#### Compatibilité Early Warning Center (frontend/)
+
+Les vues `summary_view` et `alerts_view` exposent **additivement** les champs
+attendus par le front (`frontend/src/services/earlyWarning.js`), sans modifier
+le contrat canonique ci-dessus :
+
+- `/summary` ajoute : `n_cells_monitored`, `n_anomalies`, `n_high_priority`,
+  `n_increasing_zones`, `data_period {start,end,days}`, `recent_window
+  {start,end,days}`, `historical_backtest` (bool).
+- `/alerts` ajoute : `items[]` (cellules non-NORMAL uniquement, sévérité
+  `low|moderate|high` — mapping WATCH→low, MODERATE→moderate, HIGH→high —,
+  `cell_id` au format `ci_cj`, `recent_detections`, `historical_baseline`
+  (total attendu sur la fenêtre), `activity_change` (%), `persistence`,
+  `sensors`, `observation_period`, `anomaly_score`, `reason`, `limitations`)
+  et `meta` (résumé frontend).
+- `/alerts/{cell_id}` accepte `ci:cj` **et** `ci_cj`.
+
 ### `GET /early-warning/alerts/{cell_id}`
 
-Détail d'une cellule (`ci:cj`, ex. `720:360`). 400 si format invalide, 404 si
-la cellule n'a pas été évaluée. Mêmes paramètres de calcul que `/alerts`
-(sans les filtres de présentation).
+Détail d'une cellule (`ci:cj` ou `ci_cj`, ex. `720:360` / `720_360`). 400 si
+format invalide, 404 si la cellule n'a pas été évaluée. Mêmes paramètres de
+calcul que `/alerts` (sans les filtres de présentation).
 
 ```bash
 curl -s 'https://<hôte>/api/v1/early-warning/summary?source=fixture'

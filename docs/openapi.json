@@ -2186,7 +2186,7 @@
           "Early Warning"
         ],
         "summary": "Détail d'une cellule (score, baseline, raisons)",
-        "description": "cell_id au format `ci:cj` (index de grille, origine -180/-90). 404 si la cellule n'a pas été évaluée (aucune activité récente ni baseline non nulle).",
+        "description": "cell_id au format `ci:cj` ou `ci_cj` (index de grille, origine -180/-90). 404 si la cellule n'a pas été évaluée (aucune activité récente ni baseline non nulle).",
         "operationId": "alert_cell_api_v1_early_warning_alerts__cell_id__get",
         "parameters": [
           {

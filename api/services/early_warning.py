@@ -8,11 +8,19 @@ provenance complète.
 Aucune affirmation temps réel : le payload porte ``estimate_kind =
 "historical_backtest"`` et les données FIRMS sont des archives/NRT avec
 latence documentée.
+
+Compatibilité frontend (Early Warning Center) : les vues ``summary_view`` et
+``alerts_view`` exposent, en plus du contrat canonique, les champs attendus
+par le front (``n_cells_monitored``, ``items[]`` avec sévérité
+``low/moderate/high``, ``activity_change``, ``persistence``, ``sensors``,
+``reason``, ``limitations``…). Le mapping est additif : le contrat canonique
+(documenté dans ``docs/api.md``) n'est pas modifié.
 """
 
 from __future__ import annotations
 
 import hashlib
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -150,9 +158,117 @@ def _apply_filters(
     return out
 
 
+# ------------------------------------------------------------------ compat front
+# Le Early Warning Center (frontend/) attend un contrat légèrement différent
+# du contrat canonique : sévérité low/moderate/high, liste sous ``items``,
+# champs aplatis (``recent_detections``, ``historical_baseline``…). On expose
+# les deux formes, additivement, sans toucher au contrat canonique.
+_SEV_TO_FRONTEND = {"WATCH": "low", "MODERATE": "moderate", "HIGH": "high"}
+
+
+def _frontend_summary(payload: dict[str, Any]) -> dict[str, Any]:
+    """Champs « summary » attendus par le front (KPI + bandeau backtest)."""
+    s = payload.get("summary", {})
+    period = payload.get("period", {})
+    params = payload.get("params", {})
+    data_start = period.get("data_start")
+    data_end = period.get("data_end")
+    days = None
+    if data_start and data_end:
+        try:
+            days = (date.fromisoformat(data_end) - date.fromisoformat(data_start)).days + 1
+        except ValueError:
+            days = None
+    return {
+        "n_cells_monitored": s.get("n_cells_evaluated"),
+        "n_anomalies": s.get("n_alerts"),
+        "n_high_priority": (s.get("by_severity") or {}).get("HIGH", 0),
+        "n_increasing_zones": s.get("n_increasing_zones", 0),
+        "data_period": {"start": data_start, "end": data_end, "days": days},
+        "recent_window": {
+            "start": period.get("recent_start"),
+            "end": period.get("recent_end"),
+            "days": params.get("recent_days"),
+        },
+        "historical_backtest": payload.get("estimate_kind") == "historical_backtest",
+        "data_origin": payload.get("data_origin"),
+        "generated_at": payload.get("generated_at"),
+    }
+
+
+def _frontend_reason(alert: dict[str, Any]) -> str:
+    """Phrase explicative lisible à partir des raisons machine."""
+    parts: list[str] = []
+    ratio = alert.get("ratio")
+    if ratio is not None and ratio > 1:
+        parts.append(
+            f"Activité {ratio:.1f}× au-dessus de la médiane historique "
+            "sur la fenêtre récente"
+        )
+    elif ratio is not None:
+        parts.append("Activité récente proche de la baseline historique")
+    else:
+        parts.append(
+            "Activité récente sur une cellule sans baseline historique "
+            "(activité nouvelle)"
+        )
+    persistence = alert.get("persistence", 0)
+    if persistence >= 3:
+        parts.append(f"signal persistant sur {persistence} jours consécutifs")
+    if not alert.get("baseline", {}).get("sufficient", True):
+        parts.append("baseline insuffisante (historique < 30 jours avec détection)")
+    return ". ".join(parts) + "."
+
+
+def _frontend_limitations(alert: dict[str, Any]) -> list[str]:
+    """Limites d'interprétation, dérivées des données (jamais inventées)."""
+    lims: list[str] = []
+    if not alert.get("baseline", {}).get("sufficient", True):
+        lims.append("Baseline historique insuffisante — interprétation prudente")
+    if alert.get("recent", {}).get("detections", 0) < 5:
+        lims.append("Peu de détections récentes — signal faible")
+    lims.append(
+        "Détections satellite ≠ feux distincts (MODIS et VIIRS peuvent "
+        "observer le même feu)"
+    )
+    lims.append("Analyse statistique uniquement — pas de validation in situ")
+    return lims
+
+
+def _frontend_item(alert: dict[str, Any], period: dict[str, Any]) -> dict[str, Any]:
+    """Une alerte canonique → item au format attendu par le Early Warning Center."""
+    recent_total = int(alert.get("recent", {}).get("detections", 0))
+    recent_days = int(alert.get("recent", {}).get("days", 1))
+    baseline_expected = float(alert.get("baseline", {}).get("median_daily", 0.0)) * recent_days
+    if baseline_expected > 0:
+        activity_change = round((recent_total - baseline_expected) / baseline_expected * 100)
+    else:
+        activity_change = 100 if recent_total > 0 else 0
+    return {
+        "cell_id": f"{alert['cell_i']}_{alert['cell_j']}",
+        "cell_i": alert["cell_i"],
+        "cell_j": alert["cell_j"],
+        "lat": alert.get("lat"),
+        "lon": alert.get("lon"),
+        "severity": _SEV_TO_FRONTEND.get(alert.get("severity", "NORMAL"), "low"),
+        "recent_detections": recent_total,
+        "historical_baseline": round(baseline_expected, 1),
+        "activity_change": activity_change,
+        "persistence": alert.get("persistence", 0),
+        "sensors": alert.get("sensors", []),
+        "observation_period": {
+            "start": period.get("recent_start"),
+            "end": period.get("recent_end"),
+        },
+        "anomaly_score": alert.get("score"),
+        "reason": _frontend_reason(alert),
+        "limitations": _frontend_limitations(alert),
+    }
+
+
 def summary_view(payload: dict[str, Any]) -> dict[str, Any]:
     """Vue « summary » : compteurs par sévérité + métadonnées, sans la liste."""
-    return {
+    out = {
         "generated_at": payload.get("generated_at"),
         "estimate_kind": payload.get("estimate_kind"),
         "data_origin": payload.get("data_origin"),
@@ -163,10 +279,19 @@ def summary_view(payload: dict[str, Any]) -> dict[str, Any]:
         "notes": payload.get("notes"),
         "elapsed_s": payload.get("elapsed_s"),
     }
+    out.update(_frontend_summary(payload))
+    return out
 
 
 def alerts_view(payload: dict[str, Any]) -> dict[str, Any]:
     """Vue « alerts » : la liste filtrée + métadonnées de pagination."""
+    period = payload.get("period", {})
+    # Compat front : seuls les écarts à la normale sont des « alertes ».
+    items = [
+        _frontend_item(a, period)
+        for a in payload.get("alerts", [])
+        if a.get("severity") != "NORMAL"
+    ]
     return {
         "generated_at": payload.get("generated_at"),
         "estimate_kind": payload.get("estimate_kind"),
@@ -176,6 +301,8 @@ def alerts_view(payload: dict[str, Any]) -> dict[str, Any]:
         "summary": payload.get("summary"),
         "filters": payload.get("filters"),
         "alerts": payload.get("alerts", []),
+        "items": items,
+        "meta": _frontend_summary(payload),
         "notes": payload.get("notes"),
     }
 

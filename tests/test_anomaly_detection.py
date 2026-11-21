@@ -17,9 +17,11 @@ from pyrolens.anomaly_detection import (
     DEFAULT_THRESHOLDS,
     CellBaseline,
     CellDailySeries,
+    _sensor_label,
     anomaly_score,
     classify_severity,
     compute_baselines,
+    compute_persistence,
     load_daily_counts,
     run_anomaly_detection,
     source_digest,
@@ -297,3 +299,95 @@ def test_run_reference_date_controls_window(tmp_path):
     assert payload["period"]["recent_end"] == ref.isoformat()
     by_id = {a["cell_id"]: a for a in payload["alerts"]}
     assert by_id[f"{ci}:{cj}"]["recent"]["detections"] == 14 * 2
+
+
+# ------------------------------------------------------------------ capteurs
+def test_sensor_label_modis():
+    assert _sensor_label("MODIS", "Terra") == "modis"
+    assert _sensor_label("", "Aqua") == "modis"
+    assert _sensor_label("MODIS", "") == "modis"
+
+
+def test_sensor_label_viirs():
+    assert _sensor_label("VIIRS", "N") == "viirs-snpp"
+    assert _sensor_label("", "Suomi NPP") == "viirs-snpp"
+    assert _sensor_label("VIIRS", "NOAA-20") == "viirs-snpp"  # instrument prioritaire
+    assert _sensor_label("", "NOAA-21") == "viirs-noaa"
+
+
+def test_sensor_label_unknown():
+    assert _sensor_label("", "") == "unknown"
+    assert _sensor_label("OTHER", "X") == "other"
+
+
+def _write_csv_with_satellite(path: Path, rows: list[tuple[float, float, str, float, str]]) -> Path:
+    """CSV FIRMS avec colonne satellite (latitude, longitude, acq_date, frp, satellite)."""
+    with path.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(["latitude", "longitude", "acq_date", "frp", "satellite"])
+        for lat, lon, d, frp, sat in rows:
+            writer.writerow([lat, lon, d, frp, sat])
+    return path
+
+
+def test_load_daily_counts_tracks_sensors(tmp_path):
+    ci, cj = 720, 360
+    from pyrolens.grids import cell_center
+
+    lon, lat = cell_center(ci, cj, 0.25)
+    d1 = _d(epoch_days(date(2020, 1, 1)))
+    d2 = _d(epoch_days(date(2020, 1, 2)))
+    rows = [
+        (lat, lon, d1, 10.0, "Terra"),   # modis
+        (lat, lon, d1, 10.0, "Aqua"),    # modis
+        (lat, lon, d2, 10.0, "N"),       # viirs-snpp
+    ]
+    csv_path = _write_csv_with_satellite(tmp_path / "s.csv", rows)
+    series = load_daily_counts([csv_path], grid_deg=0.25)
+    cell = series[(ci, cj)]
+    d1_int = epoch_days(date(2020, 1, 1))
+    d2_int = epoch_days(date(2020, 1, 2))
+    assert cell.sensors_by_day[d1_int] == {"modis"}
+    assert cell.sensors_by_day[d2_int] == {"viirs-snpp"}
+
+
+def test_run_includes_persistence_and_sensors(tmp_path):
+    """Le payload d'alerte porte persistence (jours consécutifs) et sensors."""
+    ci, cj = 720, 360
+    ref = date(2020, 6, 30)
+    ref_d = epoch_days(ref)
+    rows = []
+    # baseline : 1/jour pendant 300 jours
+    for d in range(ref_d - 300, ref_d - 14):
+        rows.extend(_cell_rows(ci, cj, [d], count_per_day=1))
+    # récent : 8/jour pendant les 14 derniers jours (pics au-dessus de la baseline)
+    for d in range(ref_d - 13, ref_d + 1):
+        rows.extend(_cell_rows(ci, cj, [d], count_per_day=8))
+    csv_path = _write_csv(tmp_path / "fires.csv", rows)
+    payload = run_anomaly_detection([csv_path], grid_deg=0.25, recent_days=14,
+                                    baseline_days=400, reference_date=ref)
+    by_id = {a["cell_id"]: a for a in payload["alerts"]}
+    spike = by_id[f"{ci}:{cj}"]
+    # baseline médiane = 1/jour → chaque jour récent (8) dépasse → persistance = 14
+    assert spike["persistence"] == 14
+    assert isinstance(spike["sensors"], list)
+    # CSV sans colonne satellite → capteur « unknown » (pas de crash)
+    assert spike["sensors"] == ["unknown"]
+
+
+# ------------------------------------------------------------------ compute_persistence
+def test_compute_persistence_counts_consecutive_days_above_baseline():
+    counts = {100: 5, 101: 5, 102: 0, 103: 5, 104: 5, 105: 5}
+    # baseline médiane = 1 → jours 103,104,105 > 1 ; 102 = 0 → stop
+    assert compute_persistence(counts, 100, 105, 1.0) == 3
+
+
+def test_compute_persistence_zero_baseline_counts_any_detection():
+    counts = {100: 0, 101: 0, 102: 1, 103: 2}
+    # baseline nulle → tout jour avec ≥1 détection compte ; 101=0 → stop
+    assert compute_persistence(counts, 100, 103, 0.0) == 2
+
+
+def test_compute_persistence_no_activity_returns_zero():
+    assert compute_persistence({}, 100, 110, 1.0) == 0
+    assert compute_persistence({100: 1}, 100, 110, 1.0) == 0  # 1 > 1 est faux

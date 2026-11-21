@@ -26,8 +26,8 @@ de feu.
 | `api/services/early_warning.py` | Service API : résolution source, cache, filtres, vues |
 | `api/routers/early_warning.py` | Router FastAPI (3 GET) |
 | `api/app.py` | Enregistrement du router (modifié, additif uniquement) |
-| `tests/test_anomaly_detection.py` | 21 tests unitaires du moteur |
-| `tests/api/test_early_warning.py` | 20 tests d'intégration API |
+| `tests/test_anomaly_detection.py` | 29 tests unitaires du moteur |
+| `tests/api/test_early_warning.py` | 25 tests d'intégration API |
 | `docs/fixtures/early_warning/*.json` | Exemples de réponses pour le frontend |
 
 Aucun module de prédiction ni aucun autre backend existant n'a été modifié.
@@ -80,7 +80,20 @@ d'activité absolue (évite d'alerter sur 0→1 détection dans une cellule vide
 
 Seuils et planchers exposés dans `params` de chaque réponse.
 
-### 3.5 Fenêtres temporelles
+### 3.5 Persistance et capteurs
+
+Chaque alerte porte deux champs additionnels :
+
+- **`persistence`** : nombre de jours consécutifs en fin de fenêtre récente
+  dont le compte journalier dépasse la médiane de la baseline (baseline nulle
+  → tout jour avec ≥1 détection compte). Mesure la *durée* de l'écart, pas
+  seulement son amplitude.
+- **`sensors`** : capteurs actifs sur la fenêtre récente, normalisés depuis
+  les colonnes `satellite` / `instrument` du CSV FIRMS
+  (`modis` | `viirs-snpp` | `viirs-noaa` | `unknown`). Permet de distinguer
+  une détection confirmée par plusieurs instruments d'un artefact isolé.
+
+### 3.6 Fenêtres temporelles
 
 - `recent_days` (défaut 14) : fenêtre « récente » comparée à la baseline.
 - `baseline_days` (défaut 730) : profondeur de la référence.
@@ -119,6 +132,8 @@ Réponse type (alerts) :
      "baseline": {"median_daily": 0.0081, "q90_daily": 0.0286,
                   "level": "region", "sufficient": false,
                   "n_days_with_detection": 4},
+     "persistence": 9,
+     "sensors": ["modis", "viirs-snpp"],
      "reasons": ["ratio_26.6x", "baseline_insuffisante"]}
   ],
   "notes": "...",
@@ -126,11 +141,25 @@ Réponse type (alerts) :
 }
 ```
 
-- `cell_id` = `ci:cj` (index de grille, origine −180°/−90°).
+- `cell_id` = `ci:cj` (index de grille, origine −180°/−90°) ; le endpoint
+  `/alerts/{cell_id}` accepte aussi le format `ci_cj` utilisé par le frontend.
 - Tri : sévérité décroissante puis score décroissant.
 - 404 si la cellule n'a pas été évaluée ; 400 sur paramètre invalide ;
   409 si la source est vide.
 - Aucun chemin local exposé ; `data_origin` ∈ `nasa_firms | synthetic_fixture | custom_source`.
+
+#### Couche de compatibilité Early Warning Center
+
+`summary_view` et `alerts_view` exposent **additivement** les champs attendus
+par `frontend/src/services/earlyWarning.js` (sans toucher au contrat
+canonique) :
+
+- `/summary` : `n_cells_monitored`, `n_anomalies`, `n_high_priority`,
+  `n_increasing_zones`, `data_period`, `recent_window`, `historical_backtest`.
+- `/alerts` : `items[]` (cellules non-NORMAL, sévérité `low|moderate|high`,
+  `cell_id` en `ci_cj`, `recent_detections`, `historical_baseline`,
+  `activity_change`, `persistence`, `sensors`, `observation_period`,
+  `anomaly_score`, `reason`, `limitations`) et `meta` (résumé frontend).
 
 ## 5. Cache et performance
 
@@ -152,14 +181,17 @@ synthetic_fixture`), prêtes pour l'intégration frontend.
 
 ## 7. Tests
 
-- **Unitaires** (`tests/test_anomaly_detection.py`, 21 tests) : agrégation,
+- **Unitaires** (`tests/test_anomaly_detection.py`, 29 tests) : agrégation,
   baseline (cellule/région/global), score (pic, normal, baseline nulle,
   insuffisante), sévérité (seuils + planchers + personnalisés), persistance,
-  fenêtre `reference_date`, tri, provenance, entrées invalides.
-- **API** (`tests/api/test_early_warning.py`, 20 tests) : les 3 endpoints,
-  filtres, tri, 400/404/409, cache, OpenAPI, absence de chemin local.
+  capteurs (labels + suivi par jour), fenêtre `reference_date`, tri,
+  provenance, entrées invalides.
+- **API** (`tests/api/test_early_warning.py`, 25 tests) : les 3 endpoints,
+  filtres, tri, 400/404/409, cache, OpenAPI, absence de chemin local,
+  compatibilité frontend (champs `items`/`meta`, sévérité `low|moderate|high`,
+  `cell_id` `ci_cj`).
 
-Suite complète : **181 tests, tous verts** (`pytest tests -q` → EXIT=0).
+Suite complète : **173 tests, tous verts** (`pytest tests -q` → EXIT=0).
 
 ## 8. Limites connues
 

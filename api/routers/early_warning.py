@@ -171,9 +171,9 @@ def alerts(
     "/early-warning/alerts/{cell_id}",
     summary="Détail d'une cellule (score, baseline, raisons)",
     description=(
-        "cell_id au format `ci:cj` (index de grille, origine -180/-90). "
-        "404 si la cellule n'a pas été évaluée (aucune activité récente ni "
-        "baseline non nulle)."
+        "cell_id au format `ci:cj` ou `ci_cj` (index de grille, origine "
+        "-180/-90). 404 si la cellule n'a pas été évaluée (aucune activité "
+        "récente ni baseline non nulle)."
     ),
     dependencies=[
         Depends(
@@ -195,8 +195,11 @@ def alert_cell(
     baseline_days: int = Query(default=DEFAULT_BASELINE_DAYS, ge=1, le=3650),
     reference_date: str | None = Query(default=None, description="AAAA-MM-JJ (défaut : max des données)."),
 ) -> dict:
+    if ":" not in cell_id and "_" not in cell_id:
+        raise ApiError(400, "cell_id invalide : format `ci:cj` ou `ci_cj` attendu (ex. 720:360).")
+    # Le front utilise `ci_cj` ; le contrat canonique `ci:cj`. On normalise.
     if ":" not in cell_id:
-        raise ApiError(400, "cell_id invalide : format `ci:cj` attendu (ex. 720:360).")
+        cell_id = cell_id.replace("_", ":", 1)
     payload = _compute(
         request, cfg, settings,
         source=source, grid_deg=grid_deg, recent_days=recent_days,

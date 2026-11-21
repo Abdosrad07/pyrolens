@@ -75,6 +75,7 @@ class CellDailySeries:
     cj: int
     counts: dict[int, int] = field(default_factory=dict)   # d_epoch -> count
     frp_sum: dict[int, float] = field(default_factory=dict)
+    sensors_by_day: dict[int, set[str]] = field(default_factory=dict)  # d_epoch -> capteurs
 
     def days_with_detection(self) -> int:
         return sum(1 for v in self.counts.values() if v > 0)
@@ -116,7 +117,26 @@ class AnomalyResult:
     severity: str                 # NORMAL | WATCH | MODERATE | HIGH
     baseline_level: str           # niveau de lissage utilisé
     baseline_sufficient: bool
+    persistence: int = 0          # jours consécutifs (fin de fenêtre) au-dessus de la baseline
+    sensors: list[str] = field(default_factory=list)  # capteurs actifs sur la fenêtre récente
     reasons: list[str] = field(default_factory=list)
+
+
+def _sensor_label(instrument: Any, satellite: Any) -> str:
+    """Normalise un capteur FIRMS en famille : ``modis`` | ``viirs-snpp`` | ``viirs-noaa``.
+
+    Priorité à la colonne ``instrument`` (MODIS/VIIRS, fiable) ; à défaut,
+    la colonne ``satellite`` (Terra/Aqua = MODIS, N/Suomi NPP = VIIRS SNPP).
+    """
+    inst = str(instrument or "").strip().upper()
+    sat = str(satellite or "").strip().upper()
+    if inst == "MODIS" or sat in {"TERRA", "AQUA"}:
+        return "modis"
+    if inst == "VIIRS" or sat in {"N", "SUOMI NPP", "SUOMINPP"}:
+        return "viirs-snpp"
+    if sat in {"NOAA-20", "NOAA-21", "NOAA20", "NOAA21"}:
+        return "viirs-noaa"
+    return inst.lower() if inst else "unknown"
 
 
 # ------------------------------------------------------------------ chargement
@@ -128,9 +148,10 @@ def load_daily_counts(
 
     Retourne ``{(ci, cj): CellDailySeries}``. Les lignes non interprétables
     (lat/lon/date invalides) sont ignorées — cohérent avec l'audit qui les
-    isole sans correction.
+    isole sans correction. Les capteurs (MODIS/VIIRS) sont suivis par jour
+    pour la provenance des alertes.
     """
-    usecols = {"latitude", "longitude", "acq_date", "frp"}
+    usecols = {"latitude", "longitude", "acq_date", "frp", "instrument", "satellite"}
     frames: list[pd.DataFrame] = []
     for path in sorted(csv_paths):
         path = Path(path)
@@ -149,6 +170,8 @@ def load_daily_counts(
                     .astype(str)
                     .str[:10],
                     "frp": pd.to_numeric(df.get("frp"), errors="coerce"),
+                    "instrument": df.get("instrument", pd.Series([""] * len(df))).astype(str),
+                    "satellite": df.get("satellite", pd.Series([""] * len(df))).astype(str),
                 }
             )
         )
@@ -168,16 +191,19 @@ def load_daily_counts(
     ev["frp"] = pd.to_numeric(ev["frp"], errors="coerce").fillna(0.0).astype(float)
     ev["ci"] = np.floor(np.round((ev["lon"].to_numpy() - ORIGIN_LON) / grid_deg, 9)).astype(int)
     ev["cj"] = np.floor(np.round((ev["lat"].to_numpy() - ORIGIN_LAT) / grid_deg, 9)).astype(int)
+    ev["sensor"] = [
+        _sensor_label(i, s) for i, s in zip(ev["instrument"], ev["satellite"])
+    ]
 
     series: dict[tuple[int, int], CellDailySeries] = {}
     for (ci, cj), g in ev.groupby(["ci", "cj"], sort=False):
         cell = CellDailySeries(ci=int(ci), cj=int(cj))
-        counts = g.groupby("d").size()
-        frp_sums = g.groupby("d")["frp"].sum()
-        for d, c in counts.items():
+        # Un seul groupby par cellule : compte, FRP et capteurs du jour.
+        for d, gd in g.groupby("d", sort=False):
             d_int = int(d)
-            cell.counts[d_int] = int(c)
-            cell.frp_sum[d_int] = float(frp_sums.loc[d])
+            cell.counts[d_int] = int(len(gd))
+            cell.frp_sum[d_int] = float(gd["frp"].sum())
+            cell.sensors_by_day[d_int] = set(gd["sensor"].unique())
         series[(int(ci), int(cj))] = cell
     return series
 
@@ -413,6 +439,28 @@ def classify_severity(
     return "NORMAL"
 
 
+def compute_persistence(
+    counts: dict[int, int],
+    recent_start: int,
+    recent_end: int,
+    baseline_median_daily: float,
+) -> int:
+    """Jours consécutifs (en fin de fenêtre récente) au-dessus de la baseline.
+
+    Un jour compte si son nombre de détections dépasse la médiane journalière
+    de la baseline (strictement). Baseline nulle → tout jour avec ≥1 détection
+    compte. La persistance s'arrête au premier jour sous le seuil.
+    """
+    threshold = baseline_median_daily
+    persistence = 0
+    for d in range(recent_end, recent_start - 1, -1):
+        if counts.get(d, 0) > threshold:
+            persistence += 1
+        else:
+            break
+    return persistence
+
+
 # ------------------------------------------------------------------ orchestration
 def run_anomaly_detection(
     csv_paths: list[str | Path],
@@ -480,6 +528,17 @@ def run_anomaly_detection(
         )
         summary[severity] += 1
 
+        persistence = compute_persistence(
+            cell.counts, recent_start, recent_end, baseline.median_daily
+        )
+        sensors = sorted(
+            {
+                s
+                for d in range(recent_start, recent_end + 1)
+                for s in cell.sensors_by_day.get(d, ())
+            }
+        )
+
         lon, lat = cell_center(ci, cj, grid_deg)
         cid = f"{ci}:{cj}"
         alerts.append({
@@ -503,6 +562,8 @@ def run_anomaly_detection(
                 "sufficient": baseline.sufficient,
                 "n_days_with_detection": baseline.n_days_with_detection,
             },
+            "persistence": persistence,
+            "sensors": sensors,
             "reasons": reasons,
         })
 
@@ -540,6 +601,11 @@ def run_anomaly_detection(
             "n_cells_evaluated": cells_with_data,
             "n_cells_total": len(series),
             "n_alerts": sum(1 for a in alerts if a["severity"] != "NORMAL"),
+            "n_increasing_zones": sum(
+                1
+                for a in alerts
+                if a["recent"]["daily_mean"] > a["baseline"]["median_daily"]
+            ),
             "by_severity": summary,
         },
         "alerts": alerts,

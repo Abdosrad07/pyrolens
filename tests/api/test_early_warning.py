@@ -189,3 +189,82 @@ def test_openapi_documents_early_warning_endpoints(client):
     assert "/api/v1/early-warning/alerts/{cell_id}" in paths
     for path in ("/api/v1/early-warning/summary", "/api/v1/early-warning/alerts"):
         assert "get" in paths[path]
+
+
+# ------------------------------------------------------------------ compat frontend
+def test_summary_exposes_frontend_fields(fixture_client):
+    """Le Early Warning Center lit ces champs directement sur la réponse summary."""
+    payload = fixture_client.get("/api/v1/early-warning/summary").json()
+    for field in (
+        "n_cells_monitored", "n_anomalies", "n_high_priority",
+        "n_increasing_zones", "data_period", "recent_window",
+        "historical_backtest", "data_origin", "generated_at",
+    ):
+        assert field in payload, field
+    assert payload["historical_backtest"] is True
+    assert payload["n_cells_monitored"] == payload["summary"]["n_cells_evaluated"]
+    assert payload["n_anomalies"] == payload["summary"]["n_alerts"]
+    assert payload["data_period"]["start"] == payload["period"]["data_start"]
+    assert payload["data_period"]["end"] == payload["period"]["data_end"]
+    assert payload["data_period"]["days"] > 0
+    assert payload["recent_window"]["days"] == payload["params"]["recent_days"]
+
+
+def test_alerts_exposes_frontend_items(fixture_client):
+    """alerts.items[] au format Early Warning Center (sévérité low/moderate/high)."""
+    payload = fixture_client.get("/api/v1/early-warning/alerts").json()
+    items = payload["items"]
+    assert isinstance(items, list)
+    # items = écarts à la normale uniquement
+    assert len(items) == payload["summary"]["n_alerts"]
+    for item in items:
+        for field in (
+            "cell_id", "cell_i", "cell_j", "lat", "lon", "severity",
+            "recent_detections", "historical_baseline", "activity_change",
+            "persistence", "sensors", "observation_period", "anomaly_score",
+            "reason", "limitations",
+        ):
+            assert field in item, field
+        assert item["severity"] in ("low", "moderate", "high")
+        assert isinstance(item["sensors"], list)
+        assert isinstance(item["limitations"], list)
+        assert item["observation_period"]["start"] == payload["period"]["recent_start"]
+    # tri : sévérité décroissante (high > moderate > low) — l'ordre secondaire
+    # canonique est par score ; le front re-trie lui-même par activité.
+    rank = {"high": 0, "moderate": 1, "low": 2}
+    sev_keys = [rank[i["severity"]] for i in items]
+    assert sev_keys == sorted(sev_keys)
+    # meta = résumé frontend
+    assert payload["meta"]["n_cells_monitored"] == payload["summary"]["n_cells_evaluated"]
+
+
+def test_alerts_items_exclude_normal_cells(fixture_client):
+    """Aucune cellule NORMAL dans items (le front n'affiche que les alertes)."""
+    payload = fixture_client.get("/api/v1/early-warning/alerts").json()
+    canonical = {a["cell_id"] for a in payload["alerts"] if a["severity"] != "NORMAL"}
+    frontend_ids = {f"{i['cell_i']}_{i['cell_j']}" for i in payload["items"]}
+    expected = {cid.replace(":", "_") for cid in canonical}
+    assert frontend_ids == expected
+
+
+def test_cell_detail_accepts_underscore_format(fixture_client):
+    """Le front utilise `ci_cj` ; le endpoint doit l'accepter comme `ci:cj`."""
+    alerts = fixture_client.get("/api/v1/early-warning/alerts", params={"limit": 1}).json()["alerts"]
+    assert alerts, "aucune alerte dans la fixture"
+    colon_id = alerts[0]["cell_id"]           # ex. "765:385"
+    under_id = colon_id.replace(":", "_", 1)  # ex. "765_385"
+    r_colon = fixture_client.get(f"/api/v1/early-warning/alerts/{colon_id}")
+    r_under = fixture_client.get(f"/api/v1/early-warning/alerts/{under_id}")
+    assert r_colon.status_code == 200
+    assert r_under.status_code == 200
+    assert r_under.json()["cell"]["cell_id"] == colon_id
+
+
+def test_alerts_canonical_contract_preserved(fixture_client):
+    """Le contrat canonique (alerts[], severity majuscule) reste intact."""
+    payload = fixture_client.get("/api/v1/early-warning/alerts").json()
+    assert "alerts" in payload and "items" in payload
+    for alert in payload["alerts"][:5]:
+        assert alert["severity"] in ("NORMAL", "WATCH", "MODERATE", "HIGH")
+        assert ":" in alert["cell_id"]
+        assert "persistence" in alert and "sensors" in alert
