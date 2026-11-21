@@ -95,6 +95,9 @@ class Settings:
     firms_map_key: str | None = None
     # Cache des CSV annuels FIRMS par pays (archive, sans clé).
     archive_dir: Path = field(default_factory=lambda: PROJECT_ROOT / "data" / "raw" / "archive")
+    # Mode démo : retourne des données réalistes sans pipeline ni données FIRMS.
+    # Sert pour la démonstration client : PYROLENS_DEMO=1 uvicorn api.index:app
+    demo: bool = False
     # Whitelist des chemins POST autorisés (relatifs à /api/v1, forme
     # canonique). Vide = tous les POST autorisés — utile pour une démo
     # publique où seuls les POST peu coûteux doivent rester ouverts.
@@ -122,6 +125,7 @@ class Settings:
             cors_origins=origins,
             firms_map_key=_env_str("FIRMS_MAP_KEY"),
             archive_dir=_env_path("PYROLENS_ARCHIVE_DIR", PROJECT_ROOT / "data" / "raw" / "archive"),
+            demo=_env_bool("PYROLENS_DEMO", False),
             allowed_posts=tuple(
                 p
                 for p in (
